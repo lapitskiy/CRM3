@@ -1,7 +1,8 @@
 from django.shortcuts import render, get_object_or_404, redirect
 from django.http import HttpResponse
 from .forms import NewsForm
-from django.views.generic import ListView
+from django.views.generic import ListView, DetailView, CreateView
+from django.urls import reverse_lazy
 
 from .models import News, Category
 
@@ -19,7 +20,37 @@ class HomeNews(ListView):
     def get_queryset(self):
         return News.objects.filter(is_published=True)
 
+class NewsByCategory(ListView):
+    model = News
+    template_name = 'news/home_news_list.html'
+    context_object_name = 'news'
+    allow_empty = False
+    # extra_context = {'title': 'Главная'}
+
+    def get_context_data(self, *, object_list=None, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['title'] = Category.objects.get(pk=self.kwargs['category_id'])
+        return context
+
+    def get_queryset(self):
+        return News.objects.filter(is_published=True, category_id=self.kwargs['category_id'])
+
+
+class ViewNews(DetailView):
+    model = News
+    context_object_name = 'news_item'
+    #template_name = 'news/news_detail.html'
+    #pk_url_kwarg = 'news_id'
+
+class CreateNews(CreateView):
+    form_class = NewsForm
+    template_name = 'news/add_news.html'
+    #success_url = reverse_lazy('home')
+    #template_name = 'news/news_detail.html'
+    #pk_url_kwarg = 'news_id'
+
 # Create your views here.
+'''
 def index(request):
     #print(request)
     news = News.objects.order_by('-created_at')
@@ -27,7 +58,7 @@ def index(request):
         'news': news,
         'title': 'Список новостей',
     }
-    return render(request,'news/index.html',context = context)
+    return render(request, 'news/del_index.html', context = context)
 
 # Create your views here.
 def get_category(request,category_id):
@@ -39,6 +70,7 @@ def get_category(request,category_id):
         'category': category,
     }
     return render(request,'news/category.html',context = context)
+
 
 # Create your views here.
 def view_news(request,news_id):
@@ -61,3 +93,4 @@ def add_news(request):
     else:
         form = NewsForm()
     return render(request, 'news/add_news.html', context = {'form': form})
+'''
