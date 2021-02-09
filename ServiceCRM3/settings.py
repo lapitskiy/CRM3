@@ -40,7 +40,7 @@ INSTALLED_APPS = [
     'news.apps.NewsConfig',
     'debug_toolbar',
     'plugins.apps.PluginsConfig',
-
+    'orders.apps.OrderConfig',
 ]
 
 MIDDLEWARE = [
@@ -140,4 +140,10 @@ INTERNAL_IPS = ['127.0.0.1',]
 
 # CRM3 GLOBAL VARS
 REPO_URL = 'http://127.0.0.1:8001/plugins/api/?format=json'
+# nav - добавляет данные в главное меню навигации
+PLUGIN_CFG = {
+    'orders': {
+        'nav': 'orders_home',
+    }
+}
 
