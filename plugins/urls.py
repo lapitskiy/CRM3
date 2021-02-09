@@ -2,6 +2,8 @@ from django.urls import path
 from .views import *
 
 urlpatterns = [
-    path('add-plugins/', ViewAddplugins.as_view(), name='view_add_plugins'),
-    path('add-plugins/<int:pk>/', ViewCurrentAddPlugins.as_view(), name='view_current_add_plugins'),
+    path('', ViewPlugins.as_view(), name='view_plugins'),
+    path('<int:pk>/', ViewCurrentPlugins.as_view(), name='view_current_plugins'),
+    path('repository/', ViewRepositoryPlugins.as_view(), name='view_repository'),
+    path('repository/<int:id>/', InstallRepositoryPlugins.as_view(), name='install_repository'),
 ]

@@ -1,0 +1,48 @@
+{% extends "base.html" %}
+{% block title %}Добавление новости - {{ block.super }}{% endblock %}
+{% block sidebar %}
+{% include 'include/_sidebar.html' %}
+{% endblock %}
+{% block content %}
+    Добавление плагина
+    <form action="{% url 'add_plugins' %}" method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+        {{ form.non_field_errors }}
+        {{ form.as_p }}
+
+
+        {% comment %}
+        <div class="mb-3">
+            <label for="{{ form.title.id_for_label }}" class="form-label">Название</label>
+            {{ form.title }}
+            <div class="valid-feedback">
+                {{ form.title.errors }}
+            </div>
+        </div>
+        <div class="mb-3">
+
+            <label for="{{ form.content.id_for_label }}" class="form-label">Контент</label>
+            {{ form.content }}
+            <div class="valid-feedback">
+                {{ form.content.errors }}
+            </div>
+        </div>
+        <div class="mb-3">
+            <label for="{{ form.is_published.id_for_label }}" class="form-label">Опубликовать</label>
+            {{ form.is_published }}
+            <div class="valid-feedback">
+                {{ form.is_published.errors }}
+            </div>
+        </div>
+        <div class="mb-3">
+            <label for="{{ form.category.id_for_label }}" class="form-label">Категория</label>
+            {{ form.category }}
+            <div class="valid-feedback">
+                {{ form.category.errors }}
+            </div>
+        </div>
+        {% endcomment %}
+        <button type="submit" class="btn btn-primary btn-block">Добавить плагин</button>
+
+    </form>
+{% endblock %}

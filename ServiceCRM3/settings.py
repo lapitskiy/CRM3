@@ -37,7 +37,10 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'news.apps.NewsConfig',
+    'debug_toolbar',
     'plugins.apps.PluginsConfig',
+
 ]
 
 MIDDLEWARE = [
@@ -48,6 +51,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'debug_toolbar.middleware.DebugToolbarMiddleware',
 ]
 
 ROOT_URLCONF = 'ServiceCRM3.urls'
@@ -129,3 +133,11 @@ STATIC_ROOT = os.path.join(BASE_DIR, 'static')
 STATICFILES_DIRS = [os.path.join(BASE_DIR, 'ServiceCRM3/static'),]
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 MEDIA_URL = 'media/'
+
+
+# DEBUG TOOLBAR
+INTERNAL_IPS = ['127.0.0.1',]
+
+# CRM3 GLOBAL VARS
+REPO_URL = 'http://127.0.0.1:8001/plugins/api/?format=json'
+

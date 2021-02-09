@@ -1,0 +1,11 @@
+{% extends "base.html" %}
+{% block title %}{{ title }} - {{ block.super }}{% endblock %}
+{% block sidebar %}
+
+{% include 'include/_sidebar.html' %}
+
+{% endblock %}
+{% block content %}
+    {% load install_tags %}
+    {% install_plugin id %}
+{% endblock %}

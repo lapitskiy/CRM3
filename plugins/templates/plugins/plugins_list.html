@@ -1,0 +1,47 @@
+{% extends "base.html" %}
+{% block title %}{{ title }} - {{ block.super }}{% endblock %}
+{% block sidebar %}
+
+{% include 'include/_sidebar.html' %}
+
+{% endblock %}
+{% block content %}
+
+
+            {% for item in plugins %}
+                <div class="card" style="width: 18rem;">
+                    <div class="card-header">
+
+                        <h5 class="card-title">{{ item.title }}</h5>
+                    </div>
+                    <img src="{{ item.photo }}" class="card-img-top" alt="{{ item.title }}">
+                    <div class="card-body">
+
+                        <p class="card-text">{{ item.description }}</p>
+                    </div>
+                    <ul class="list-group list-group-flush">
+                        <li class="list-group-item">Категория: {% if item.category.pk %}
+                        <a href="{{ item.category.get_absolute_url }} "> {{ item.category.title }} </a>
+                        {% else %}
+                        No category
+                        {% endif %}</li>
+
+                    </ul>
+                    <div class="card-body">
+                        <p><a href="{{ item.get_absolute_url }}" class="btn btn-primary">Установить</a></p>
+                        <p>Скачать модуль: <a href="{{ item.zipfile }}" class="card-link"> {{ item.zipfile }}</a></p>
+                        <p><a href="{{ item.get_absolute_url }}" class="card-link"> Подробнее</a></p>
+                    </div>
+                    <div class="card-footer text-muted">
+                        Обновлено: {{ item.updated_at|date:"Y-m-d H:i" }}
+                        Загрузок:  {{ item.loads }}
+                    </div>
+                </div>
+
+            {% endfor %}
+
+{% endblock %}
+
+
+
+

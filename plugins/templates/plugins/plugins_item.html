@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+{% block title %}{{ plugins_item.title }} - {{ block.super }}{% endblock %}
+{% block sidebar %}
+{% include 'include/_sidebar.html' %}
+{% endblock %}
+{% block content %}
+
+                <div class="card mb-3">
+                    <div class="card-header">
+                        Категория: {{ plugins_item.category.title }}
+                    </div>
+                <div class="card-body">
+                    <div class="media">
+                        {% if item.photo %}
+                            <img src="{{ plugins_item.photo.url }}" alt="" class="img-fluid">
+                        {% else  %}
+                        {% endif %}
+
+                        <div class="media-body">
+                        <h5 class="card-title">{{ plugins_item.title }}</h5>
+                        {% autoescape off %}
+                            <p class="card-text">{{ plugins_item.content|linebreaks }}</p>
+                            <p>{{ plugins_item.module_name }}</p>
+                            <p>{{ plugins_item.description }}</p>
+                            <p>{{ plugins_item.zipfile }}</p>
+                        {% endautoescape %}
+                        </div>
+                    </div>
+
+                    </div>
+                    <div class="card-footer text-muted">
+                        {{ plugins_item.created_at|date:"Y-m-d H:i" }}
+                    </div>
+                </div>
+{% endblock %}
