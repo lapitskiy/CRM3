@@ -13,18 +13,10 @@
 
             <p class="card-text">{{ item.description }}</p>
         </div>
-        <ul class="list-group list-group-flush">
-            <li class="list-group-item">Категория: {% if item.category %}
-                 {{ item.category }}
-            {% else %}
-                No category
-            {% endif %}</li>
-
-        </ul>
         <div class="card-body">
             <p><a href="{% url 'install_repository' item.id %}" class="btn btn-primary">Установить</a></p>
-            <p>Скачать модуль: <a href="{{ item.zipfile }}" class="card-link"> {{ item.zipfile }}</a></p>
-            <p><a href="{{ item.get_absolute_url }}" class="card-link"> Подробнее</a></p>
+            <p><a href="{{ item.zipfile }}" class="card-link">Скачать модуль</a></p>
+            <p><a href="http://127.0.0.1:8001/plugins/{{ item.id }}" class="card-link">Подробнее</a></p>
         </div>
         <div class="card-footer text-muted">
             Обновлено: {{ item.updated_at|date:"Y-m-d" }}<br>
@@ -32,5 +24,5 @@
             ID: {{ item.id }}<br>
         </div>
     </div>
-
+<br><br>
 {% endfor %}

@@ -18,6 +18,11 @@
                   <li class="nav-item">
                       <a class="nav-link active" aria-current="page" href="{% url 'view_repository' %}">Репозиторий</a>
                   </li>
+                  {% for key, value in nav.items %}
+                      <li class="nav-item">
+                          <a class="nav-link active" aria-current="page" href="{% url value.nav_url %}">{{value.nav_name}}</a>
+                      </li>
+                  {% endfor %}
               </ul>
           </div>
       </div>

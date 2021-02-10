@@ -11,6 +11,7 @@ https://docs.djangoproject.com/en/3.1/ref/settings/
 """
 import os
 from pathlib import Path
+from plugins import settings_plugin
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -39,9 +40,8 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'news.apps.NewsConfig',
     'debug_toolbar',
-    'plugins.apps.PluginsConfig',
-    'orders.apps.OrderConfig',
 ]
+INSTALLED_APPS += settings_plugin.INSTALLED_APPS_ADD
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
@@ -138,12 +138,5 @@ MEDIA_URL = 'media/'
 # DEBUG TOOLBAR
 INTERNAL_IPS = ['127.0.0.1',]
 
-# CRM3 GLOBAL VARS
-REPO_URL = 'http://127.0.0.1:8001/plugins/api/?format=json'
-# nav - добавляет данные в главное меню навигации
-PLUGIN_CFG = {
-    'orders': {
-        'nav': 'orders_home',
-    }
-}
+
 

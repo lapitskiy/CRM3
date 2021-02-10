@@ -32,11 +32,15 @@ django
 python -m pip install djangorestframework
 mysqlclient
 
+Documentation
+-
+читать documentation.md
+
 
 Создание плагина
 -
 
-Плагин это обычное startapp. 
-Необходимо указать в setting.ini в nav название пути к домашней view
+Плагин это обычное startapp с файлом конфигурации
+читать documentation.md
 
 

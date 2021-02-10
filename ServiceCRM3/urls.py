@@ -18,13 +18,17 @@ from django.conf.urls.static import static
 from django.contrib import admin
 from django.urls import path, include
 
+from plugins import settings_plugin
+
 
 urlpatterns = [
     path('', include('news.urls')),
     path('admin/', admin.site.urls),
     path('plugins/', include('plugins.urls')),
-    path('orders/', include('orders.urls')),
-]
+    ]
+urlpatterns += settings_plugin.PLUGIN_URLS
+
+
 
 if settings.DEBUG:
     import debug_toolbar
