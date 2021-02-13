@@ -3,7 +3,7 @@ from django.http import HttpResponse
 from django.views.generic import ListView, DetailView, CreateView
 from django.urls import reverse_lazy
 
-from .models import Plugins, Category
+from .models import Plugins, PluginsCategory
 
 class ViewPlugins(ListView):
     model = Plugins
@@ -28,7 +28,7 @@ class ViewPluginsByCategory(ListView):
 
     def get_context_data(self, *, object_list=None, **kwargs):
         context = super().get_context_data(**kwargs)
-        context['title'] = Category.objects.get(pk=self.kwargs['category_id'])
+        context['title'] = PluginsCategory.objects.get(pk=self.kwargs['category_id'])
         return context
 
     def get_queryset(self):

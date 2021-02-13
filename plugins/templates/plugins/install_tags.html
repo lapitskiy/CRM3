@@ -19,6 +19,19 @@
             <span class="badge bg-danger">Error</span>
         {% endif %}
     </li>
+    <li class="list-group-item d-flex justify-content-between align-items-center">
+        Создание файла миграции
+        {% if makemigrations_check %}
+            <span class="badge bg-success">Done</span>
+        {% else %}
+            <span class="badge bg-danger">Error</span>
+        {% endif %}
+    </li>
+    <li class="list-group-item d-flex justify-content-between align-items-center">
+        Вам надо перейти на страницу плагина и активировать его
+        <span class="badge bg-warning text-dark">Активация</span>
+    </li>
+    <p><a href="{% url 'install_repository' item.id %}" class="btn btn-primary">Страница плагина</a></p>
 
 </ul>
 

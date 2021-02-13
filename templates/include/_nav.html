@@ -6,23 +6,34 @@
           </button>
           <div class="collapse navbar-collapse" id="navbarSupportedContent">
               <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+                  {% if request.user.is_authenticated %}
+                      AUTH
+                  {% else %}
+                      NOT AUTH
+                  {% endif %}
                   <li class="nav-item">
                       <a class="nav-link active" aria-current="page" href="{% url 'home' %}">Главная</a>
                   </li>
+
                   <li class="nav-item">
                       <a class="nav-link active" aria-current="page" href="{% url 'add_news' %}">Добавить новость</a>
                   </li>
+
                   <li class="nav-item">
                       <a class="nav-link active" aria-current="page" href="{% url 'view_plugins' %}">Плагины</a>
                   </li>
+
                   <li class="nav-item">
                       <a class="nav-link active" aria-current="page" href="{% url 'view_repository' %}">Репозиторий</a>
                   </li>
+
                   {% for key, value in nav.items %}
                       <li class="nav-item">
                           <a class="nav-link active" aria-current="page" href="{% url value.nav_url %}">{{value.nav_name}}</a>
                       </li>
                   {% endfor %}
+
+
               </ul>
           </div>
       </div>

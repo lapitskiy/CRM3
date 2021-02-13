@@ -26,8 +26,9 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('plugins/', include('plugins.urls')),
     ]
-urlpatterns += settings_plugin.PLUGIN_URLS
 
+for key, value in settings_plugin.PLUGIN_URLS.items():
+    urlpatterns.append(path(value['path'], include(value['include'])))
 
 
 if settings.DEBUG:
