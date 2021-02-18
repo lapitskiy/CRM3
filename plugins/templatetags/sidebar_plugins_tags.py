@@ -8,8 +8,8 @@ register = template.Library()
 #def get_categories():
 #    return Category.objects.all()
 
-@register.inclusion_tag('plugins/list_categories.html')
-def show_categories(arg1='he11o', arg2='wor1d'):
+@register.inclusion_tag('plugins/sidebar_plugins_tags.html')
+def show_plugins_categories(arg1='he11o', arg2='wor1d'):
     categories = PluginsCategory.objects.all()
     #categories = Category.objects.annotate(cnt=Count('get_category')).filter(cnt__gt=0)
     print(categories)

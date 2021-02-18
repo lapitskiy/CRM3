@@ -7,7 +7,7 @@ from .models import Plugins, PluginsCategory
 
 class ViewPlugins(ListView):
     model = Plugins
-    template_name = 'plugins/view_plugins_list.html'
+    template_name = 'plugins/plugins_list_view.html'
     context_object_name = 'plugins'
     # extra_context = {'title': 'Главная'}
 
@@ -16,8 +16,8 @@ class ViewPlugins(ListView):
         context['title'] = 'Списко плагинов'
         return context
 
-    def get_queryset(self):
-        return Plugins.objects.filter(is_active=True)
+    #def get_queryset(self):
+    #    return Plugins.objects.filter(is_active=True)
 
 class ViewPluginsByCategory(ListView):
     model = Plugins
@@ -28,17 +28,22 @@ class ViewPluginsByCategory(ListView):
 
     def get_context_data(self, *, object_list=None, **kwargs):
         context = super().get_context_data(**kwargs)
-        context['title'] = PluginsCategory.objects.get(pk=self.kwargs['category_id'])
+        context['title'] = PluginsCategory.objects.get(pk=self.kwargs['id'])
         return context
 
     def get_queryset(self):
-        return Plugins.objects.filter(is_published=True, category_id=self.kwargs['category_id'])
+        return Plugins.objects.filter(is_published=True, category=self.kwargs['id'])
 
 
 class ViewCurrentPlugins(DetailView):
     model = Plugins
-    template_name = 'plugins/plugins_item.html'
+    template_name = 'plugins/plugins_detail_view.html'
     context_object_name = 'plugins_item'
+
+    def get_context_data(self, *, object_list=None, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['tag'] = self.kwargs['tag']
+        return context
 
 
 ###
@@ -55,6 +60,7 @@ class ViewRepositoryPlugins(ListView):
     def get_context_data(self, *, object_list=None, **kwargs):
         context = super().get_context_data(**kwargs)
         context['title'] = 'Списко плагинов'
+
         #context['link'] = request.path
         #print('context ', context)
         return context
@@ -71,6 +77,7 @@ class InstallRepositoryPlugins(ListView):
         context = super().get_context_data(**kwargs)
         context['title'] = 'Установка плагина'
         context['id']= self.kwargs['id']
+        context['tag'] = self.kwargs['tag']
         #context['link'] = request.path
         print('context ', context)
         return context
@@ -78,7 +85,6 @@ class InstallRepositoryPlugins(ListView):
     #def get(self, *args, **kwargs):
     #    resp = super().get(*args, **kwargs)
      #   return resp
-
 
 
 

@@ -14,7 +14,7 @@
             <p class="card-text">{{ item.description }}</p>
         </div>
         <div class="card-body">
-            <p><a href="{% url 'install_repository' item.id %}" class="btn btn-primary">Установить</a></p>
+            <p><a href="{% url 'install_repository' item.id 'install' %}" class="btn btn-primary">Установить</a></p>
             <p><a href="{{ item.zipfile }}" class="card-link">Скачать модуль</a></p>
             <p><a href="http://127.0.0.1:8001/plugins/{{ item.id }}" class="card-link">Подробнее</a></p>
         </div>

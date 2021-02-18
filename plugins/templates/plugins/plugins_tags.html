@@ -1,0 +1,14 @@
+<div class="card-body">
+    {% if not delete_check %}
+        {% if active_check %}
+            <p><a href="{{ plugins_item.get_absolute_url }}deactive" class="btn btn-primary">Деактивировать</a></p>
+        {% else %}
+            <p><a href="{{ plugins_item.get_absolute_url }}active" class="btn btn-success">Активировать</a></p>
+            <p><a href="{{ plugins_item.get_absolute_url }}delete" class="btn btn-warning">Удалить</a></p>
+        {% endif %}
+    {% else %}
+        <div class="alert alert-success" role="alert">
+            Плагин удален
+        </div>
+    {% endif %}
+</div>

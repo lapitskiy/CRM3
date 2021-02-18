@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+{% block title %}{{ plugins_item.title }} - {{ block.super }}{% endblock %}
+{% block sidebar %}
+    {% include 'include/_sidebar_plugins.html' %}
+{% endblock %}
+{% block content %}
+
+    <div class="card" style="width: 18rem;">
+        <div class="card-header">
+
+            <h5 class="card-title">{{ plugins_item.title }}</h5>
+        </div>
+        <img src="{{ plugins_item.photo }}" class="card-img-top" alt="{{ item.title }}">
+        <div class="card-body">
+
+            <p class="card-text">{{ plugins_item.description }}</p>
+        </div>
+
+        {% load plugin_tags %}
+        {% action_plugin plugins_item.id tag %}
+
+        <div class="card-footer text-muted">
+            Обновлено: {{ item.updated_at|date:"Y-m-d H:i" }}<br>
+            Загрузок: {{ item.loads }}<br>
+            Имя модуля: {{ plugins_item.module_name }}<br>
+        </div>
+    </div>
+{% endblock %}

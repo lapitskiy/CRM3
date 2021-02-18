@@ -1,6 +1,6 @@
 from django.contrib import admin
 
-from .models import Plugins
+from .models import Plugins, PluginsCategory
 
 # Register your models here.
 
@@ -15,4 +15,13 @@ class PluginsAdmin(admin.ModelAdmin):
     #    obj.imp_name = 'test123'
     #    super(PluginsAdmin, self).save_model(request, obj, form, change)
 
+class CategoryAdmin(admin.ModelAdmin):
+    list_display = ('id','title')
+    list_display_links = ('id','title')
+    search_fields = ('title',)
+
+admin.site.site_title = 'Управение plugin'
+admin.site.site_header = 'Управение plugin'
+
 admin.site.register(Plugins, PluginsAdmin)
+admin.site.register(PluginsCategory, CategoryAdmin)

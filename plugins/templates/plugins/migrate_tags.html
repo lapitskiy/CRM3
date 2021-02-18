@@ -1,0 +1,10 @@
+<ul class="list-group">
+    <li class="list-group-item d-flex justify-content-between align-items-center">
+        Миграция
+        {% if migrate_check %}
+            <span class="badge bg-success">Done</span>
+        {% else %}
+            <span class="badge bg-danger">Error</span>
+        {% endif %}
+    </li>
+</ul>

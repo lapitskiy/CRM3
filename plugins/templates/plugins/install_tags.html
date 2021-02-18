@@ -3,41 +3,65 @@
 {% endif %}
 
 <ul class="list-group">
-    <li class="list-group-item d-flex justify-content-between align-items-center">
-        Скачивание данных с репозитория
-        {% if json_check %}
-            <span class="badge bg-success">Done</span>
-        {% else %}
-            <span class="badge bg-danger">Error</span>
-        {% endif %}
-    </li>
-    <li class="list-group-item d-flex justify-content-between align-items-center">
-        Загрузка и установка файлов в систему
-        {% if load_check %}
-            <span class="badge bg-success">Done</span>
-        {% else %}
-            <span class="badge bg-danger">Error</span>
-        {% endif %}
-    </li>
-    <li class="list-group-item d-flex justify-content-between align-items-center">
-        Создание файла миграции
-        {% if makemigrations_check %}
-            <span class="badge bg-success">Done</span>
-        {% else %}
-            <span class="badge bg-danger">Error</span>
-        {% endif %}
-    </li>
-    <li class="list-group-item d-flex justify-content-between align-items-center">
-        Вам надо перейти на страницу плагина и активировать его
-        <span class="badge bg-warning text-dark">Активация</span>
-    </li>
-    <p><a href="{% url 'install_repository' item.id %}" class="btn btn-primary">Страница плагина</a></p>
+    {% if tag == 'install' %}
+        {% if not have_check %}
+            <li class="list-group-item d-flex justify-content-between align-items-center">
+                Скачивание данных с репозитория
+                {% if json_check %}
+                    <span class="badge bg-success">Done</span>
+                {% else %}
+                    <span class="badge bg-danger">Error</span>
+                {% endif %}
+            </li>
+            <li class="list-group-item d-flex justify-content-between align-items-center">
+                Загрузка и установка файлов в систему
+                {% if load_check %}
+                    <span class="badge bg-success">Done</span>
+                {% else %}
+                    <span class="badge bg-danger">Error</span>
+                {% endif %}
+            </li>
+            <li class="list-group-item d-flex justify-content-between align-items-center">
+                Данные с репозитория
+                <div class="alert alert-dark" role="alert">
+                    {{ install_data }}
+                </div>
 
+            </li>
+            <li class="list-group-item d-flex justify-content-between align-items-center">
+                Снизу нажав на ссылку надо запустить миграцию
+                <span class="badge bg-warning text-dark">Миграция</span>
+            </li><br>
+            <p><a href="{% url 'install_repository' id migrateUrl %}" target="_blank" class="btn btn-primary">Запустить миграцию</a></p>
+        {% else %}
+            <li class="list-group-item d-flex justify-content-between align-items-center">
+                Плагин уже установлен
+                <span class="badge bg-info text-dark">Инфо</span>
+            </li><br>
+            <p><a href="{{ plugin_url }}" class="btn btn-primary">Перейти к плагину</a></p>
+        {% endif %}
+
+
+    {% endif %}
+    {% if 'migrate' in tag  %}
+        <li class="list-group-item d-flex justify-content-between align-items-center">
+            Создание файла миграции (makemigrations)
+            {% if make_check %}
+                <span class="badge bg-success">Done</span>
+            {% else %}
+                <span class="badge bg-danger">Error</span>
+            {% endif %}
+        </li>
+        <li class="list-group-item d-flex justify-content-between align-items-center">
+            Создание базы на основе миграции (migrate)
+            {% if migrate_check %}
+                <span class="badge bg-success">Done</span>
+            {% else %}
+                <span class="badge bg-danger">Error</span>
+            {% endif %}
+        </li>
+    {% endif %}
 </ul>
-
-получены данные с репозитория:<br>
-
-{{ install_data }}<br><br>
 
 
 

@@ -12,51 +12,60 @@ import ast
 import importlib
 import re
 
-from ..models import Plugins, PluginsCategory
+from plugins.models import Plugins, PluginsCategory
 
 register = template.Library()
 
 @register.inclusion_tag('plugins/install_tags.html')
-def install_plugin(arg1=0):
+def install_plugin(arg1=0, tag=''):
     context = {}
+    context['id'] = arg1
+    context['tag'] = tag
+    if tag=='install':
+        context = install(context)
+    if 'migrate' in tag:
+        context['moduleName'] = tag[tag.find('-')+1:]
+        context = plugin_migrate(context)
+    return context
+
+
+
+def install(context):
     context['json_check'] = False
     context['load_check'] = False
     context['makemigrations_check'] = False
+    print('TYT1')
     try:
-        context['json_check'] = True
-        json_string = requests.get(settings_plugin.REPO_URL)
-        data = json.loads(json_string.text)
-        for item in data:
-            if in_dictionary('id', item):
-                if item['id']==arg1:
-                    context['install_data'] = item
-                    # repack arch zip
-                    r = requests.get(item['zipfile'])
-                    try:
-                        with r, zipfile.ZipFile(io.BytesIO(r.content)) as archive:
-                            archive.extractall()
-                        context['load_check'] = True
-
-                        impliment(item['module_name'])
-
-                        add_plugin_in_db(data)
-
-                    except:
-                        return context
-                    try:
-                        makemigrations(item['module_name'])
-
-                        context['makemigrations_check'] = True
-                        return context
-                    except:
-                        return context
-
-
-
-        return context
-    except ValueError:
-        return context
-
+        if Plugins.objects.get(id_in_rep=context['id']) != None:
+            context['have_check'] = True
+            context['plugin_url'] = Plugins.objects.get(id_in_rep=context['id']).get_absolute_url()
+            return context
+    except Plugins.DoesNotExist:
+        pass
+    print('TYT2')
+    json_string = requests.get(settings_plugin.REPO_URL)
+    data = json.loads(json_string.text)
+    context['json_check'] = True
+    data_id = {}
+    for item in data:
+        if in_dictionary('id', item):
+            if item['id'] == context['id']:
+                data_id = item
+                context['install_data'] = item
+                context['migrateUrl'] = 'migrate-'+item['module_name']
+                # repack arch zip
+                print('TYT3')
+                r = requests.get(item['zipfile'])
+                with r, zipfile.ZipFile(io.BytesIO(r.content)) as archive:
+                    archive.extractall()
+                context['load_check'] = True
+                print('TYT4')
+                impliment(item['module_name'])
+                print('install_tags.py: impliment OK')
+                add_plugin_in_db(data_id)
+                print('install_tags.py:  add_plugin_in_db OK')
+                return context
+    return context
 
 
 def impliment(moduleName):
@@ -65,7 +74,7 @@ def impliment(moduleName):
 
     with open('plugins/settings_plugin.py', 'r', encoding="utf-8") as file:
         content = file.read()
-
+    print('TYT5')
     # ADD APPS
     tag = re.findall(r'INSTALLED_APPS_ADD = (\[.*\])', content)
     listt = ast.literal_eval(tag[0])
@@ -98,30 +107,35 @@ def impliment(moduleName):
         #print('MAKE RELODA')
         #autoreload.restart_with_reloader()
 
-def makemigrations(module):
+
+def plugin_migrate(context):
     try:
-        management.call_command('makemigrations', module, interactive=False)
-        print('MAKE OK')
-        #management.call_command('migrate --check', module, interactive=False)
-        #print('MIGRATE OK', test)
-        return True
+        management.call_command('makemigrations', context['moduleName'], interactive=False)
+        management.call_command('migrate', context['moduleName'], interactive=False)
+        context['make_check'] = True
+        context['migrate_check'] = True
+        print('MIGRATE OK')
+        return context
     except:
+        context['make_check'] = False
+        context['migrate_check'] = False
         # raise Exception("Unable to perform migration)
-        return True
+        return context
 
 
 def add_plugin_in_db(data):
-    plugin = Plugins
-    plugin.id_in_repo = data['id']
+    print('data ', data)
+    plugin = Plugins()
     plugin.title = data['title']
+    plugin.id_in_rep = data['id']
     plugin.module_name = data['module_name']
-    plugin.description =  data['description']
+    plugin.description = data['description']
     plugin.photo = data['photo']
     plugin.zipfile = data['zipfile']
-    plugin.is_active = data['is_active']
-    plugin.category = data['category']
+    plugin.category_id = data['category']
     plugin.version = data['version']
-    plugin.save()
+    plugin.save(force_insert=True)
+    print('SAVE')
     #тут добавить добалвения плагина в базу плагинов и потом там уже мигрировать
 
 
