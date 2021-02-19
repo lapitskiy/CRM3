@@ -1,3 +1,5 @@
+:twisted_rightwards_arrows: Bootstrap, rest api, django, mysql
+
 Установка plugin
 -
 plugin это приложение для установки с репозитория RepositoryCRM3 через REST api
