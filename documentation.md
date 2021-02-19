@@ -2,7 +2,7 @@
 
 Установка plugin
 -
-plugin это приложение для установки с репозитория RepositoryCRM3 через REST api
+plugin это приложение для установки с репозитория RepositoryCRM3 через REST api. Приложение plugin является частью базовой установки CRM3
 
 plugin/settings_plugin.py
 -

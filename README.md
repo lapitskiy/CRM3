@@ -1,3 +1,5 @@
+[:arrow_down:Русский язык перевод](#Русский)
+
 CRM3
 -
 
@@ -42,5 +44,12 @@ Documentation
 
 Плагин это обычное startapp с файлом конфигурации
 читать documentation.md
+
+
+##Русский
+CRM3
+-
+
+Open source enterprise Customer Relationship Management, system based on the Django framework and backed by the non-profit django CRM3 Association.
 
 
