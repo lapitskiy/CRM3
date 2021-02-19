@@ -26,17 +26,10 @@
                   <li class="nav-item">
                       <a class="nav-link active" aria-current="page" href="{% url 'view_repository' %}">Репозиторий</a>
                   </li>
-
-                  value: {{ nav.items }}
                   {% for key, value in nav.items %}
-                      {{ key }}
-                      {{ value }}
-
-                      {% if value.active %}
                       <li class="nav-item">
                           <a class="nav-link active" aria-current="page" href="{% url value.nav_url %}">{{value.nav_name}}</a>
                       </li>
-                      {% endif %}
                   {% endfor %}
 
 
