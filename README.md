@@ -34,7 +34,7 @@ mysqlclient
 
 Documentation
 -
-читать documentation.md
+читать [documentation.md](documentation.md)
 
 
 Создание плагина
