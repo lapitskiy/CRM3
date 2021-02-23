@@ -3,20 +3,18 @@ from .models import Orders
 import re
 from django.core.exceptions import ValidationError
 
-
-class OrdersForm(forms.ModelForm):
+class OrderAddForm(forms.ModelForm):
     class Meta:
         model = Orders
-        #fields = '__all__'
-        fields = ['gadget', 'serial', 'status']
+        fields = ['device', 'serial', 'comment', 'status']
         widgets = {
-            'gadget': forms.TextInput(attrs={'class': 'form-control'}),
-            'serial': forms.Textarea(attrs={'class': 'form-control', 'rows': 5}),
-            'status': forms.Select(attrs={'class': 'form-control'}),
+            'device': forms.TextInput(attrs={'class': 'form-control'}),
+            'serial': forms.TextInput(attrs={'class': 'form-control'}),
+            'comment': forms.Textarea(attrs={'class': 'form-control', 'rows': 5}),
         }
 
-    def clean_title(self):
-        title = self.cleaned_data['title']
-        if re.match(r'\d', title):
+    def clean_device(self):
+        device = self.cleaned_data['device']
+        if re.match(r'\d', device):
             raise ValidationError('Название не должно начинаться с цифры')
-        return title
+        return device

@@ -1,12 +1,25 @@
 {% extends "base.html" %}
 {% block title %}{{ title }} - {{ block.super }}{% endblock %}
 {% block sidebar %}
-
-{% include 'include/_sidebar.html' %}
-
+{% include 'include/_sidebar_orders.html' %}
 {% endblock %}
+
 {% block content %}
-    
-    ORDER ADD
+
+ <h3>
+    {% if tag == 'fast' %}
+        Быстрый заказ
+    {% endif %}
+    {% if tag == 'simple' %}
+        Обычный заказ
+    {% endif %}
+    </h3>
+
+    <form action="{% url 'order_add' tag %}" method="post">
+        {% csrf_token %}
+        {{ form.non_field_errors }}
+        {{ form.as_p }}
+        <button type="submit" class="btn btn-primary btn-block">Добавить заказ</button>
+    </form>
 
 {% endblock %}

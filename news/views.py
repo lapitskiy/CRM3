@@ -53,7 +53,7 @@ class ViewNews(LoginRequiredMixin, DetailView):
 class CreateNews(LoginRequiredMixin, CreateView):
     form_class = NewsForm
     template_name = 'news/add_news.html'
-    #login_url = '/admin/'
+    #login_url = '/admin/''
     #success_url = reverse_lazy('home')
     #template_name = 'news/news_detail.html'
     #pk_url_kwarg = 'news_id'
