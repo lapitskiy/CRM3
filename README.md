@@ -3,30 +3,14 @@
 CRM3
 -
 
-Open source enterprise Customer Relationship Management, system based on the Django framework and backed by the non-profit django CRM3 Association.
+Open source enterprise Customer Relationship Management, system based on the Django framework
 
 Features
 -
 
-- repository api
-- plugin system
 - multilingual
-- support
 - version control
-
-Developing applications that integrate with and take advantage of django CRM3 features is easy and well-documented.
-
-Commercial support
--
-This project is backed by the CRM3 Association. If you need help implementing or hosting CRM3 please contact us: lapithome@gmail.com.
-
-django CRM3 Association
--
-The django CRM3 Association is a non-profit organization that was founded in 2021 with the goal to drive the success of django CRM3, by increasing customer happiness, market share and open-source contributions. We provide infrastructure and guidance for the django CRM3 project.
-
-The non-profit django CRM3 Association is dependent on donations to fulfill its purpose. The best way to donate is to become a member of the association and pay membership fees. The funding will be funneled back into core development and community projects.
-
-Join the django CRM3 Association.
+- order plugin
 
 Requirements
 -
@@ -36,8 +20,18 @@ mysqlclient
 
 Documentation
 -
-читать [documentation.md](documentation.md)
+read [documentation.md](documentation.md)
 
+
+
+## Русский перевеод
+CRM3
+-
+
+Система управления взаимоотношениями с клиентами основанная на платформе Django. Открытый исходный код.
+
+- возможность добавления плагинов
+- изначально система разрабатывалась только под модульную систему из приложений, которые устанавливаются их репозитория и взаимодействуют между собой
 
 Создание плагина
 -
@@ -46,10 +40,6 @@ Documentation
 читать documentation.md
 
 
-## Русский
-CRM3
+Документация
 -
-
-Open source enterprise Customer Relationship Management, system based on the Django framework and backed by the non-profit django CRM3 Association.
-
-
+читать [documentation.md](documentation.md)
