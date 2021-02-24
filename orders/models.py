@@ -3,14 +3,21 @@ from django.urls import reverse
 
 # Create your models here.
 class Orders(models.Model):
+
+    # добавить во вьюхе выбор формы в зависимости от tag
+    # добавить две формы
+    # поправить файл html
+    # добавить model service
+    # добавить install demodata
+
     device = models.CharField(max_length=150, verbose_name='Что ремонтируем')
     serial = models.CharField(max_length=150, blank=True, verbose_name='Серийный')
     comment = models.TextField(blank=True, verbose_name='Комментарий')
     created_at = models.DateTimeField(auto_now_add=True, verbose_name='Создан')
     updated_at = models.DateTimeField(auto_now=True, verbose_name='Обновлен')
-    status = models.ForeignKey('Status', default=1, null=True, on_delete=models.PROTECT, verbose_name='Статус', related_name='get_status')
-    category = models.ForeignKey('Category', default=1, null=True, on_delete=models.PROTECT, verbose_name='Категория', related_name='get_category')
-    related = models.ForeignKey('Related', default=1, null=True, on_delete=models.PROTECT, verbose_name='Связь', related_name='get_related')
+    status = models.ForeignKey('Status', null=True, on_delete=models.PROTECT, verbose_name='Статус', related_name='get_status')
+    category = models.ForeignKey('Category', null=True, on_delete=models.PROTECT, verbose_name='Категория', related_name='get_category')
+    related = models.ForeignKey('Related', null=True, on_delete=models.PROTECT, verbose_name='Связь', related_name='get_related')
 
     def get_absolute_url(self):
         return reverse('view_orders', kwargs={'pk': self.pk})

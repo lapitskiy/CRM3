@@ -8,6 +8,7 @@ from django.shortcuts import get_object_or_404
 from django.http import HttpResponseRedirect
 import os
 import shutil
+import importlib
 
 from plugins.models import Plugins
 
@@ -82,4 +83,14 @@ def action_plugin(arg1=0, tag=''):
         shutil.rmtree(path)
         print('PLUGIN DELETE')
         return context
+
+    if tag == 'demodata':
+        print('DEMODATA')
+        modulePath = Plugins.objects.get(id=arg1).module_name + '.install'
+        app_module = importlib.import_module(modulePath)
+        app_module.demodata()
+        context['plugin_url'] = Plugins.objects.get(id=arg1).get_absolute_url()
+        return context
+
     return context
+
