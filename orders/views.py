@@ -7,6 +7,7 @@ from .models import Orders, Status
 
 class OrdersHomeView(ListView):
     model = Orders
+    paginate_by = 1
     template_name = 'orders/orders_list.html'
     context_object_name = 'orders'
     # extra_context = {'title': 'Главная'}

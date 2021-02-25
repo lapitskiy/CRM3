@@ -1,6 +1,13 @@
 <div class="card-body">
     {% if not delete_check %}
         {% if active_check %}
+            {% if copydata %}
+                <div class="alert alert-success" role="alert">
+                    Демо данные установлены
+                </div>
+            {% else %}
+                <p><a href="{{ plugins_item.get_absolute_url }}demodata" class="btn btn-primary">Установить demo данные</a></p>
+            {% endif %}
             <p><a href="{{ plugins_item.get_absolute_url }}deactive" class="btn btn-primary">Деактивировать</a></p>
         {% else %}
             <p><a href="{{ plugins_item.get_absolute_url }}active" class="btn btn-success">Активировать</a></p>

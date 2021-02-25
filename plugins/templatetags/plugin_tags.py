@@ -21,6 +21,7 @@ def action_plugin(arg1=0, tag=''):
     context['tag'] = tag
     context['active_check'] = Plugins.objects.get(id=arg1).is_active
     context['delete_check'] = False
+    context['copydata'] = False
     print('is_active', context['active_check'])
 
     if tag == 'active' and not context['active_check']:
@@ -90,6 +91,7 @@ def action_plugin(arg1=0, tag=''):
         app_module = importlib.import_module(modulePath)
         app_module.demodata()
         context['plugin_url'] = Plugins.objects.get(id=arg1).get_absolute_url()
+        context['copydata'] = True
         return context
 
     return context

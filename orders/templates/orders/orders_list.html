@@ -1,17 +1,14 @@
 {% extends "base.html" %}
 {% block title %}{{ title }} - {{ block.super }}{% endblock %}
 {% block sidebar %}
-
     {% include 'include/_sidebar_orders.html' %}
-
 {% endblock %}
 {% block content %}
-
 
     <div class="row">
         <div class="col-4">
             <div class="list-group" id="list-tab" role="tablist">
-                {% for item in orders %}
+                {% for item in page_obj %}
                     <a class="list-group-item list-group-item-action" id="list-{{ item.pk }}" data-bs-toggle="list" href="#id-list-{{ item.pk }}" role="tab" aria-controls="home">{{ item.device }}</a>
                 {% endfor %}
             </div>
@@ -19,7 +16,7 @@
         <div class="col-8">
             <div class="tab-content" id="nav-tabContent">
 
-                    {% for item in orders %}
+                    {% for item in page_obj %}
 
                         <div class="tab-pane fade show" id="id-list-{{ item.pk }}" role="tabpanel" aria-labelledby="list-{{ item.pk }}">
                             <div class="shadow p-3 mb-5 bg-body rounded">
@@ -31,12 +28,29 @@
                             Категория: {{ item.category }}<br>
                             </div>
                         </div>
-
                     {% endfor %}
                 </div>
-
             </div>
         </div>
 
 
+
+
+<div class="pagination">
+    <span class="step-links">
+        {% if page_obj.has_previous %}
+            <a href="?page=1">&laquo; В начало</a>
+            <a href="?page={{ page_obj.previous_page_number }}">Предудущая</a>
+        {% endif %}
+
+        <span class="current">
+            Страница {{ page_obj.number }} из {{ page_obj.paginator.num_pages }}.
+        </span>
+
+        {% if page_obj.has_next %}
+            <a href="?page={{ page_obj.next_page_number }}">Следующая</a>
+            <a href="?page={{ page_obj.paginator.num_pages }}">В конец &raquo;</a>
+        {% endif %}
+    </span>
+</div>
 {% endblock %}
