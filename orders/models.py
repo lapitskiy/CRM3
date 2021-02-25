@@ -4,9 +4,8 @@ from django.urls import reverse
 # Create your models here.
 class Orders(models.Model):
 
-    # поправить файл html
-    # добавить model service
-    # добавить install demodata
+    # 44 урок добавиьт фильтр для вывода конкретных статусов и категорий в заказах
+
 
     device = models.CharField(max_length=150, verbose_name='Что ремонтируем')
     serial = models.CharField(max_length=150, blank=True, verbose_name='Серийный')
