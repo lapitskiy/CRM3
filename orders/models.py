@@ -16,6 +16,7 @@ class Orders(models.Model):
     created_at = models.DateTimeField(auto_now_add=True, verbose_name='Создан')
     updated_at = models.DateTimeField(auto_now=True, verbose_name='Обновлен')
     status = models.ForeignKey('Status', null=True, on_delete=models.PROTECT, verbose_name='Статус', related_name='get_status')
+    service = models.ForeignKey('Service', null=True, on_delete=models.PROTECT, verbose_name='Статус', related_name='get_status')
     category = models.ForeignKey('Category', null=True, on_delete=models.PROTECT, verbose_name='Категория', related_name='get_category')
     related = models.ForeignKey('Related', null=True, on_delete=models.PROTECT, verbose_name='Связь', related_name='get_related')
 
@@ -40,13 +41,23 @@ class Status(models.Model):
     def get_absolute_url(self):
         return reverse('status', kwargs={'status_id': self.pk})
 
-
     class Meta:
         verbose_name = 'Статус'
         verbose_name_plural = 'Статусы'
         ordering = ['title']
 
 class Category(models.Model):
+    title = models.CharField(max_length=150, db_index=True, verbose_name='Наименования категории')
+
+    def __str__(self):
+        return self.title
+
+    class Meta:
+        verbose_name = 'Категория'
+        verbose_name_plural = 'Категории'
+        ordering = ['title']
+
+class Service(models.Model):
     title = models.CharField(max_length=150, db_index=True, verbose_name='Наименования категории')
 
     def __str__(self):

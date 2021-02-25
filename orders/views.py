@@ -2,7 +2,7 @@ from django.shortcuts import render, get_object_or_404, redirect
 from django.http import HttpResponse
 from django.views.generic import ListView, DetailView, CreateView
 from django.urls import reverse_lazy
-from .forms import OrderAddForm
+from .forms import FastOrderAddForm, SimpleOrderAddForm
 from .models import Orders, Status
 
 class OrdersHomeView(ListView):
@@ -22,10 +22,19 @@ class OrderCurrentView(DetailView):
     context_object_name = 'plugins_item'
 
 class OrderAddView(CreateView):
-    tag_url_kwarg = 'tag'
     template_name = 'orders/order_add.html'
-    form_class = OrderAddForm
-    success_url = reverse_lazy('orders_home')
+
+    def get_form_class(self):
+        if self.kwargs.get('tag') == 'simple':
+            return SimpleOrderAddForm
+        return FastOrderAddForm
+
+    def get_success_url(self):
+        return reverse_lazy('orders_home')
+    #tag_url_kwarg = 'tag'
+    #template_name = 'orders/order_add.html'
+    #form_class = OrderAddForm
+    #success_url = reverse_lazy('orders_home')
     #tag_url_kwarg = 'tag'
     #from_class = get_order_form(tag_url_kwarg)
     #success_url = reverse_lazy('home')
@@ -37,10 +46,3 @@ class OrderAddView(CreateView):
         context['tag'] = self.kwargs['tag']
         print('tag ', context['tag'])
         return context
-
-    def get_order_form(self,tag):
-        print('tag', tag)
-        if tag == 'fast':
-            return FastOrdersForm
-        if tag == 'simple':
-            return SimpleOrdersForm
