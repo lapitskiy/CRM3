@@ -6,12 +6,17 @@ from django.core.exceptions import ValidationError
 class FastOrderAddForm(forms.ModelForm):
     class Meta:
         model = Orders
-        fields = ['device', 'serial', 'comment', 'status']
+        fields = ['device', 'serial', 'service', 'comment']
         widgets = {
             'device': forms.TextInput(attrs={'class': 'form-control'}),
+            'service': forms.TextInput(attrs={'class': 'form-control'}),
             'serial': forms.TextInput(attrs={'class': 'form-control'}),
             'comment': forms.Textarea(attrs={'class': 'form-control', 'rows': 5}),
         }
+        labels = {
+
+        }
+
 
     def clean_device(self):
         device = self.cleaned_data['device']
@@ -22,9 +27,10 @@ class FastOrderAddForm(forms.ModelForm):
 class SimpleOrderAddForm(forms.ModelForm):
     class Meta:
         model = Orders
-        fields = ['device', 'serial', 'comment', 'status']
+        fields = ['device', 'serial', 'comment', 'service']
         widgets = {
             'device': forms.TextInput(attrs={'class': 'form-control'}),
+            'service': forms.TextInput(attrs={'class': 'form-control'}),
             'serial': forms.TextInput(attrs={'class': 'form-control'}),
             'comment': forms.Textarea(attrs={'class': 'form-control', 'rows': 5}),
         }
