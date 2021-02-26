@@ -89,7 +89,7 @@ def action_plugin(arg1=0, tag=''):
         print('DEMODATA')
         modulePath = Plugins.objects.get(id=arg1).module_name + '.install'
         app_module = importlib.import_module(modulePath)
-        app_module.demodata()
+        context['info'] = app_module.demodata()
         context['plugin_url'] = Plugins.objects.get(id=arg1).get_absolute_url()
         context['copydata'] = True
         return context

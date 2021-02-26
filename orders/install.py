@@ -21,3 +21,5 @@ def demodata():
     Status.objects.update_or_create(id=1, title='Принято')
     Status.objects.update_or_create(id=2, title='Выдано')
     Status.objects.update_or_create(id=3, title='Отказ')
+    context = 'Демо данные установлены'
+    return context

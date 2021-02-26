@@ -5,6 +5,9 @@ from django.urls import reverse
 class Orders(models.Model):
 
     # 44 урок добавиьт фильтр для вывода конкретных статусов и категорий в заказах
+    # посомтреть след уроки, надо поставить возможность регистрации мастеров
+    # после сделать плагин аккаунты и связать плагины заказы и аккаунты
+    # сделать ajax для django orders
 
 
     device = models.CharField(max_length=150, verbose_name='Что ремонтируем')

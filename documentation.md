@@ -55,3 +55,20 @@ INSTALLED_URL = {
     'pluginName': {
         'path': 'pluginName/',
         'include': 'pluginName.urls'}}
+        
+demodata
+-
+
+Установка демо данных плагина
+def demodata в файле install.py
+
+
+related
+-
+база каждого плагина для создания связанных данных с другими плагинами
+
+
+install.py
+-
+данные для установки плагина
+        
