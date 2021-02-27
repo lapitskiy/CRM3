@@ -1,7 +1,7 @@
 from django.apps import AppConfig
 
 
-class ClientsConfig(AppConfig):
+class ClientConfig(AppConfig):
     name = 'clients'
     verbose_name = 'Клиенты'
 

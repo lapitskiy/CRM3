@@ -74,33 +74,34 @@ def impliment(moduleName):
 
     with open('plugins/settings_plugin.py', 'r', encoding="utf-8") as file:
         content = file.read()
-    print('TYT5')
     # ADD APPS
     tag = re.findall(r'INSTALLED_APPS_ADD = (\[.*\])', content)
     listt = ast.literal_eval(tag[0])
     listt.append(app_module.INSTALLED_APPS_NAME)
     content = re.sub(r'(INSTALLED_APPS_ADD = )\[.*\]', r'\1' + str(listt), content)
-
     # ADD CFG
     tag = re.findall(r'PLUGIN_CFG = (\{.*\})', content)
     dictt = ast.literal_eval(tag[0])
     dictt.update(app_module.PLUGIN_CFG_UPDATE)
     content = re.sub(r'(PLUGIN_CFG = )\{.*\}', r'\1' + str(dictt), content)
-
     # ADD URL
     tag = re.findall(r'PLUGIN_URLS = (\{.*\})', content)
     dictt = ast.literal_eval(tag[0])
     dictt.update(app_module.INSTALLED_URL)
     content = re.sub(r'(PLUGIN_URLS = )\{.*\}', r'\1' + str(dictt), content)
-
     with open('plugins/settings_plugin.py', 'w', encoding="utf-8") as file:
-        file.write(content)
-
+        file.write(content    )
+    print('TYT5')
     settings.INSTALLED_APPS += (app_module.INSTALLED_APPS_NAME,)
+    print('TYT6')
     apps.app_configs = OrderedDict()
+    print('TYT7')
     apps.apps_ready = apps.models_ready = apps.loading = apps.ready = False
+    print('TYT8')
     #apps.ready = False
     apps.clear_cache()
+    print('TYT9')
+    print('sett:', settings.INSTALLED_APPS)
     apps.populate(settings.INSTALLED_APPS)
     print('APPS INSTALL ADD')
         #from django.utils import autoreload
@@ -132,7 +133,7 @@ def add_plugin_in_db(data):
     plugin.description = data['description']
     plugin.photo = data['photo']
     plugin.zipfile = data['zipfile']
-    plugin.category_id = data['category']
+    plugin.category_id = 1
     plugin.version = data['version']
     plugin.save(force_insert=True)
     print('SAVE')
