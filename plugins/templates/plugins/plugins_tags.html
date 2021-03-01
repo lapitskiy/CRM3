@@ -13,9 +13,24 @@
             <p><a href="{{ plugins_item.get_absolute_url }}active" class="btn btn-success">Активировать</a></p>
             <p><a href="{{ plugins_item.get_absolute_url }}delete" class="btn btn-warning">Удалить</a></p>
         {% endif %}
+
+        <div class="card-footer">
+            Связанные данные
+            <div class="col-md-3">
+
+                <form action="{{ plugins_item.get_absolute_url }}related" method="post">
+                    {% csrf_token %}
+                    {{ form.non_field_errors }}
+                    {{ form.as_p }}
+                    <button type="submit" class="btn btn-primary btn-block">Связать</button>
+                </form>
+            </div>
+        </div>
+
     {% else %}
         <div class="alert alert-success" role="alert">
             Плагин удален
         </div>
     {% endif %}
+
 </div>

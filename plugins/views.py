@@ -2,7 +2,7 @@ from django.shortcuts import render, get_object_or_404, redirect
 from django.http import HttpResponse
 from django.views.generic import ListView, DetailView, CreateView
 from django.urls import reverse_lazy
-
+from .forms import RelatedPluginForm
 from .models import Plugins, PluginsCategory
 
 class ViewPlugins(ListView):
@@ -37,14 +37,16 @@ class ViewPluginsByCategory(ListView):
 
 class ViewCurrentPlugins(DetailView):
     model = Plugins
+    context_object_name = 'plugins'
     template_name = 'plugins/plugins_detail_view.html'
     context_object_name = 'plugins_item'
 
     def get_context_data(self, *, object_list=None, **kwargs):
         context = super().get_context_data(**kwargs)
         context['tag'] = self.kwargs['tag']
+        context['form'] = RelatedPluginForm()
+        #print('context form ',context['form'])
         return context
-
 
 ###
 ### VIEW GLOBAL PLUGIN

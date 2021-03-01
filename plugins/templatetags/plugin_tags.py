@@ -15,14 +15,15 @@ from plugins.models import Plugins
 register = template.Library()
 
 @register.inclusion_tag('plugins/plugins_tags.html')
-def action_plugin(arg1=0, tag=''):
+def action_plugin(arg1=0, tag='', form=None):
     context = {}
     context['id'] = arg1
     context['tag'] = tag
+    context['form'] = form
+    print('FORN', form)
     context['active_check'] = Plugins.objects.get(id=arg1).is_active
     context['delete_check'] = False
     context['copydata'] = False
-    print('is_active', context['active_check'])
 
     if tag == 'active' and not context['active_check']:
         print('ACTIVE')
