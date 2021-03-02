@@ -8,6 +8,11 @@ class Orders(models.Model):
     # посомтреть след уроки, надо поставить возможность регистрации мастеров
     # после сделать плагин аккаунты и связать плагины заказы и аккаунты
     # сделать ajax для django orders
+    # СДЕЛАТЬ ManyToMany - https://www.youtube.com/watch?v=ZSQ_GxURmD4
+
+    # сначала надо связать данные в апп плагинов
+    # после при создании заказа, показывать связанные апп
+    #
 
 
     device = models.CharField(max_length=150, verbose_name='Что ремонтируем')
@@ -18,7 +23,7 @@ class Orders(models.Model):
     status = models.ForeignKey('Status', null=True, blank=True, on_delete=models.PROTECT, verbose_name='Статус', related_name='get_status')
     service = models.ForeignKey('Service', null=True, blank=True, on_delete=models.PROTECT, verbose_name='Услуга', related_name='get_service')
     category = models.ForeignKey('Category', null=True, blank=True, on_delete=models.PROTECT, verbose_name='Категория', related_name='get_category')
-    related = models.ForeignKey('Related', null=True, on_delete=models.PROTECT, verbose_name='Связь', related_name='get_related')
+
 
     def get_absolute_url(self):
         return reverse('view_orders', kwargs={'pk': self.pk})
@@ -67,18 +72,3 @@ class Service(models.Model):
         verbose_name = 'Категория'
         verbose_name_plural = 'Категории'
         ordering = ['title']
-
-class Related(models.Model):
-    plugin = models.CharField(max_length=150, db_index=True, verbose_name='Наименования плагина')
-    related_id = models.IntegerField(default=0)
-
-    def __str__(self):
-        return self.plugin
-
-    def get_absolute_url(self):
-        return reverse('related', kwargs={'related_id': self.pk})
-
-    class Meta:
-        verbose_name = 'Связанные'
-        verbose_name_plural = 'Связанные данные'
-        ordering = ['plugin']
