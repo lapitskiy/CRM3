@@ -15,14 +15,19 @@
         {% endif %}
 
         <div class="card-footer">
-            Связанные данные
+            Плагин связан с:
             <div class="col-md-3">
-
+                {% for obj in isRelated %}
+                    - {{ obj }}<br>
+                {% endfor %}
+            <br>
+            Связать c этим плагином:
                 <form action="{{ plugins_item.get_absolute_url }}related" method="post">
                     {% csrf_token %}
                     {{ form.non_field_errors }}
                     {{ form.as_p }}
-                    <button type="submit" class="btn btn-primary btn-block">Связать</button>
+                    <button type="submit" name="related_add" class="btn btn-primary btn-block">Связать</button>
+                    <button type="submit" name="related_del" class="btn btn-primary btn-block">Отвязать</button>
                 </form>
             </div>
         </div>

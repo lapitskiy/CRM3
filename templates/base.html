@@ -8,9 +8,10 @@
 
     <!-- Bootstrap CSS -->
     <link href="{% static 'bootstrap-5.0.0/css/bootstrap.css' %}" rel="stylesheet">
-    <link href="{% static 'css/style.css' %}" rel="stylesheet">
+      <link href="{% static 'css/style.css' %}" rel="stylesheet">
 
-    <title>{% block title %}CRM3{% endblock %}</title>
+
+      <title>{% block title %}CRM3{% endblock %}</title>
   </head>
   <body>
 
@@ -19,7 +20,21 @@
 
 <div class="container mt-3">
     <div class="row">
-    <div class="col-md-3">{% block sidebar %}SIDEBAR{% endblock %}</div>
+        <div class="col-md-3">{% block sidebar %}SIDEBAR{% endblock %}</div>
+        {% if messages %}
+            {% for message in messages %}
+                {% if message.tags == 'error' %}
+                    <div class="alert alert-danger" role="alert">
+                        {{ message }}
+                    </div>
+                {% else %}
+                    <div class="alert alert-{{ message.tags }}" role="alert">
+                        {{ message }}
+                    </div>
+                {% endif %}
+            {% endfor %}
+        {% endif %}
+
         <div class="col-md-9">{% block content %}CONTENT{% endblock %}</div>
     </div>
 </div>

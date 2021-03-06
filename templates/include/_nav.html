@@ -31,7 +31,11 @@
                           <a class="nav-link active" aria-current="page" href="{% url value.nav_url %}">{{value.nav_name}}</a>
                       </li>
                   {% endfor %}
+
               </ul>
           </div>
+          <span class="navbar-text">
+            <a href="{% url 'register' %}">Register</a> | <a href="{% url 'login' %}">Login</a>
+        </span>
       </div>
-  </nav>
+</nav>

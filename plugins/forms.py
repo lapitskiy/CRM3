@@ -16,7 +16,7 @@ class RelatedPluginForm(forms.ModelForm):
 
     class Meta:
         model = Plugins
-        fields = ['module_name',]
+        fields = ['related',]
         #query = Plugins.objects.values_list('module_name')
         #widgets = {
           #  'module_name': forms.Select(choices=(*query,), attrs={'class': 'form-control'}),
@@ -26,7 +26,13 @@ class RelatedPluginForm(forms.ModelForm):
 
     def __init__(self, *args, **kwargs):
         super(RelatedPluginForm, self).__init__(*args, **kwargs)
-        self.fields['module_name'] = forms.ModelChoiceField(label='Плагин', queryset=Plugins.objects.all(), widget=forms.Select(attrs={'class': 'form-control'}))
+        self.fields['related'] = forms.ModelChoiceField(label='', queryset=Plugins.objects.all(), widget=forms.Select(attrs={'class': 'form-control'}))
+
+    def clean_title(self):
+        title = self.cleaned_data['title']
+        if re.match(r'\d', title):
+            raise ValidationError('Название не должно начинаться с цифры')
+        return title
 
 
    #relatedName = forms.ModelChoiceField(queryset=Plugins.objects.values_list('module_name'), required=False)

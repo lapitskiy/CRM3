@@ -17,26 +17,26 @@ register = template.Library()
 @register.inclusion_tag('plugins/plugins_tags.html')
 def action_plugin(arg1=0, tag='', form=None):
     context = {}
+    plugin = Plugins.objects.get(id=arg1)
     context['id'] = arg1
     context['tag'] = tag
     context['form'] = form
-    print('FORN', form)
-    context['active_check'] = Plugins.objects.get(id=arg1).is_active
+    context['active_check'] = plugin.is_active
+    context['isRelated'] = plugin.related.all()
     context['delete_check'] = False
     context['copydata'] = False
-
     if tag == 'active' and not context['active_check']:
         print('ACTIVE')
-        Plugins.objects.update(is_active=True)
+        plugin.update(is_active=True)
         context['active_check'] = True
-        context['plugin_url'] = Plugins.objects.get(id=arg1).get_absolute_url()
+        context['plugin_url'] = plugin.get_absolute_url()
         return context
 
     if tag == 'deactive' and context['active_check']:
         print('DEACTIVE')
-        Plugins.objects.update(is_active=False)
+        plugin.update(is_active=False)
         context['active_check'] = False
-        context['plugin_url'] = Plugins.objects.get(id=arg1).get_absolute_url()
+        context['plugin_url'] = plugin.get_absolute_url()
         return context
 
     if tag == 'delete' and not context['active_check']:
@@ -46,7 +46,7 @@ def action_plugin(arg1=0, tag='', form=None):
         with open('plugins/settings_plugin.py', 'r', encoding="utf-8") as file:
             content = file.read()
 
-        plugin_name = Plugins.objects.get(id=arg1).module_name
+        plugin_name = plugin.module_name
 
         # DEL APPS
         installes_apps = [i for i in settings_plugin.INSTALLED_APPS_ADD if plugin_name not in i]
@@ -88,12 +88,16 @@ def action_plugin(arg1=0, tag='', form=None):
 
     if tag == 'demodata':
         print('DEMODATA')
-        modulePath = Plugins.objects.get(id=arg1).module_name + '.install'
+        modulePath = plugin.module_name + '.install'
         app_module = importlib.import_module(modulePath)
         context['info'] = app_module.demodata()
-        context['plugin_url'] = Plugins.objects.get(id=arg1).get_absolute_url()
+        context['plugin_url'] = plugin.get_absolute_url()
         context['copydata'] = True
         return context
 
+    if tag == 'related':
+        print('RELATED')
+        return context
+    print('tag', tag)
     return context
 

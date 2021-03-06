@@ -1,12 +1,12 @@
 from django.contrib import admin
 
-from .models import Plugins, PluginsCategory, PluginsRelated
+from .models import Plugins, PluginsCategory
 
 # Register your models here.
 
 class PluginsAdmin(admin.ModelAdmin):
 
-    list_display = ('id','title','version','is_active','related')
+    list_display = ('id','title','version','is_active')
     list_display_links = ('id','title')
     search_fields = ('title','description')
     list_filter = ('is_active',)
@@ -28,4 +28,3 @@ admin.site.site_header = 'Управение plugin'
 
 admin.site.register(Plugins, PluginsAdmin)
 admin.site.register(PluginsCategory, CategoryAdmin)
-admin.site.register(PluginsRelated, PluginsRelatedAdmin)

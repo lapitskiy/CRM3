@@ -39,6 +39,8 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'news.apps.NewsConfig',
+    'plugins.apps.PluginsConfig',
+    'users.apps.UsersConfig',
     'debug_toolbar',
 ]
 INSTALLED_APPS += settings_plugin.INSTALLED_APPS_ADD

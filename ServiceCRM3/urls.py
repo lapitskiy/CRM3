@@ -25,9 +25,8 @@ urlpatterns = [
     path('', include('news.urls')),
     path('admin/', admin.site.urls),
     path('plugins/', include('plugins.urls')),
+    path('users/', include('users.urls')),
     ]
-
-
 for key, value in settings_plugin.PLUGIN_URLS.items():
     urlpatterns.append(path(value['path'], include(value['include'])))
 

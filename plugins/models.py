@@ -12,8 +12,7 @@ class Plugins(models.Model):
     is_active = models.BooleanField(default=False, verbose_name='Активирован')
     category = models.ForeignKey('PluginsCategory', default=1, on_delete=models.PROTECT, verbose_name='Категория', related_name='get_category')
     is_migrate = models.BooleanField(default=False, verbose_name='Миграция')
-    related = models.ForeignKey('PluginsRelated', null=True, on_delete=models.PROTECT, verbose_name='Связь',
-                                 related_name='get_plugin_related')
+    related = models.ManyToManyField('self')
 
 
     def get_absolute_url(self):
@@ -46,13 +45,3 @@ class PluginsCategory(models.Model):
         verbose_name = 'Категория'
         verbose_name_plural = 'Категории'
         ordering = ['title']
-
-
-
-# связанные данные для плагинов
-class PluginsRelated(models.Model):
-    related = models.ManyToManyField('Plugins', verbose_name='Связь')
-
-    class Meta:
-        verbose_name = 'Связанные'
-        verbose_name_plural = 'Связанные данные'
