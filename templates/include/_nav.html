@@ -6,15 +6,11 @@
           </button>
           <div class="collapse navbar-collapse" id="navbarSupportedContent">
               <ul class="navbar-nav me-auto mb-2 mb-lg-0">
-                  {% if request.user.is_authenticated %}
-                      AUTH
-                  {% else %}
-                      NOT AUTH
-                  {% endif %}
                   <li class="nav-item">
                       <a class="nav-link active" aria-current="page" href="{% url 'home' %}">Главная</a>
                   </li>
 
+                  {% if user.is_authenticated %}
                   <li class="nav-item">
                       <a class="nav-link active" aria-current="page" href="{% url 'add_news' %}">Добавить новость</a>
                   </li>
@@ -31,11 +27,17 @@
                           <a class="nav-link active" aria-current="page" href="{% url value.nav_url %}">{{value.nav_name}}</a>
                       </li>
                   {% endfor %}
-
+                  {% else %}
+                      NOT AUTH
+                  {% endif %}
               </ul>
           </div>
           <span class="navbar-text">
-            <a href="{% url 'register' %}">Register</a> | <a href="{% url 'login' %}">Login</a>
+ {% if user.is_authenticated %}
+     Добро пожаловать, {{ user.username }} | <a href="{% url 'logout' %}">Выход</a>
+ {% else %}
+     <a href="{% url 'register' %}">Register</a> | <a href="{% url 'login' %}">Login</a>
+ {% endif %}
         </span>
       </div>
 </nav>
