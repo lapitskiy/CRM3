@@ -14,7 +14,6 @@ class Orders(models.Model):
     # после при создании заказа, показывать связанные апп
     #
 
-
     device = models.CharField(max_length=150, verbose_name='Что ремонтируем')
     serial = models.CharField(max_length=150, blank=True, verbose_name='Серийный')
     comment = models.TextField(blank=True, verbose_name='Комментарий')
@@ -23,6 +22,7 @@ class Orders(models.Model):
     status = models.ForeignKey('Status', null=True, blank=True, on_delete=models.PROTECT, verbose_name='Статус', related_name='get_status')
     service = models.ForeignKey('Service', null=True, blank=True, on_delete=models.PROTECT, verbose_name='Услуга', related_name='get_service')
     category = models.ForeignKey('Category', null=True, blank=True, on_delete=models.PROTECT, verbose_name='Категория', related_name='get_category')
+    related_uuid = models.CharField(max_length=22, blank=True, verbose_name='uuid')
 
 
     def get_absolute_url(self):

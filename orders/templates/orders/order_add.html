@@ -1,4 +1,5 @@
 {% extends "base.html" %}
+
 {% block title %}{{ title }} - {{ block.super }}{% endblock %}
 {% block sidebar %}
 {% include 'include/_sidebar_orders.html' %}
@@ -14,11 +15,13 @@
         Обычный заказ
     {% endif %}
     </h3>
-
     <form action="{% url 'order_add' tag %}" method="post">
         {% csrf_token %}
-        {{ form.non_field_errors }}
-        {{ form.as_p }}
+        {% for x in forms %}
+            {{ x.as_p }}
+        {% endfor %}
+        {{ formOne.non_field_errors }}
+        {{ formOne.as_p }}
         <button type="submit" class="btn btn-primary btn-block">Добавить заказ</button>
     </form>
 

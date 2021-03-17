@@ -137,6 +137,7 @@ MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 MEDIA_URL = 'media/'
 
 
+
 # DEBUG TOOLBAR
 INTERNAL_IPS = ['127.0.0.1',]
 
