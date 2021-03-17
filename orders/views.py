@@ -10,6 +10,7 @@ import shortuuid
 from django.core.paginator import Paginator
 from django.core.paginator import EmptyPage
 from django.core.paginator import PageNotAnInteger
+from django.core.exceptions import ObjectDoesNotExist
 
 
 
@@ -19,7 +20,6 @@ class OrdersHomeView(ListView):
     paginate_by = 2
     template_name = 'orders/orders_list.html'
     context_object_name = 'orders'
-    # extra_context = {'title': 'Главная'}
 
     def get_context_data(self, *, object_list=None, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -39,16 +39,23 @@ class OrdersHomeView(ListView):
 
         # related data
         related = self.checkRelated()
+        related_list = []
         if related:
-            related_uuid = []
             for x in related:
                 modelPath = x.module_name + '.models'
                 app_model = importlib.import_module(modelPath)
                 cls = getattr(app_model, x.related_class_name)
-                print('cls', cls)
                 for r in orders_page:
-                    related_uuid.append(cls.objects.filter(related_uuid=r.related_uuid))
-        context['related_uuid'] = related_uuid
+                    print('tyt0')
+                    try:
+                        cls2 = cls.objects.get(related_uuid=r.related_uuid)
+                        related_list.append(cls2)
+                    except ObjectDoesNotExist:
+                        pass
+        print('related_list', related_list)
+        for x in related_list:
+            print('related_uuid', x.related_uuid)
+        context['related_list'] = related_list
         return context
 
     def checkRelated(self):

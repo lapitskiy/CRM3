@@ -17,7 +17,11 @@
                 {% for item in page_obj %}
                     <div class="tab-pane fade show" id="id-list-{{ item.pk }}" role="tabpanel" aria-labelledby="list-{{ item.pk }}">
                         <div class="shadow p-3 mb-5 bg-body rounded">
-                            {{ related_uuid }}
+                            {% for related_item in related_list %}
+                                {% if item.related_uuid == related_item.related_uuid %}
+                                   {{ related_item }}<br>
+                                {% endif %}
+                            {% endfor %}
                             Заказ: {{ item.pk }}<br>
                             В ремонте: {{ item.device }}<br>
                             Статус: {{ item.status }}<br>
