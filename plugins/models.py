@@ -13,6 +13,7 @@ class Plugins(models.Model):
     category = models.ForeignKey('PluginsCategory', default=1, on_delete=models.PROTECT, verbose_name='Категория', related_name='get_category')
     is_migrate = models.BooleanField(default=False, verbose_name='Миграция')
     related = models.ManyToManyField('self')
+    related_class_name = models.CharField(max_length=150, verbose_name='Имя класса для связи')
 
 
     def get_absolute_url(self):

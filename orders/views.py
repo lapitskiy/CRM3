@@ -7,6 +7,9 @@ from .models import Orders, Status
 from plugins.models import Plugins
 import importlib
 import shortuuid
+from django.core.paginator import Paginator
+from django.core.paginator import EmptyPage
+from django.core.paginator import PageNotAnInteger
 
 
 
@@ -21,7 +24,36 @@ class OrdersHomeView(ListView):
     def get_context_data(self, *, object_list=None, **kwargs):
         context = super().get_context_data(**kwargs)
         context['title'] = 'Все заказы'
+
+        list_orders = Orders.objects.all()
+        paginator = Paginator(list_orders, self.paginate_by)
+        page = self.request.GET.get('page')
+        try:
+            orders_page = paginator.page(page)
+        except PageNotAnInteger:
+            page = 1
+            orders_page = paginator.page(page)
+        except EmptyPage:
+            orders_page = paginator.page(paginator.num_pages)
+        print('paginator', orders_page.object_list)
+
+        # related data
+        related = self.checkRelated()
+        if related:
+            related_uuid = []
+            for x in related:
+                modelPath = x.module_name + '.models'
+                app_model = importlib.import_module(modelPath)
+                cls = getattr(app_model, x.related_class_name)
+                print('cls', cls)
+                for r in orders_page:
+                    related_uuid.append(cls.objects.filter(related_uuid=r.related_uuid))
+        context['related_uuid'] = related_uuid
         return context
+
+    def checkRelated(self):
+        related = Plugins.objects.get(module_name='orders')
+        return related.related.all()
 
 class OrderCurrentView(DetailView):
     model = Orders
@@ -135,3 +167,4 @@ class OrderAddView(TemplateView):
         return reverse_lazy('orders_home')
         
     '''
+
