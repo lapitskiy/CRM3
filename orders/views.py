@@ -44,17 +44,20 @@ class OrdersHomeView(ListView):
             for x in related:
                 modelPath = x.module_name + '.models'
                 app_model = importlib.import_module(modelPath)
+
                 cls = getattr(app_model, x.related_class_name)
                 for r in orders_page:
                     print('tyt0')
                     try:
                         cls2 = cls.objects.get(related_uuid=r.related_uuid)
-                        related_list.append(cls2)
+                        related_get = cls2.get_related_data()
+                        print('related_get', related_get)
+                        related_list.append(related_get)
                     except ObjectDoesNotExist:
                         pass
         print('related_list', related_list)
-        for x in related_list:
-            print('related_uuid', x.related_uuid)
+        #for x in related_list:
+        #    print('related_uuid', x.related_uuid)
         context['related_list'] = related_list
         return context
 

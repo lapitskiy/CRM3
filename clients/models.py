@@ -14,6 +14,15 @@ class Clients(models.Model):
     def get_absolute_url(self):
         return reverse('view_clients', kwargs={'pk': self.pk})
 
+    def get_related_data(self):
+        data = {
+            'module_name': 'Контакт',
+            'Имя': self.name,
+            'Телефон': self.phone,
+            'related_uuid': self.related_uuid,
+            }
+        return data
+
     def __str__(self):
         return self.name
 
