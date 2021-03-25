@@ -6,7 +6,7 @@ from .models import Orders, Status, Category, Service
 
 class OrdersAdmin(admin.ModelAdmin):
 
-    list_display = ('id','device','serial','created_at','updated_at','status','related_uuid')
+    list_display = ('id','device','serial','created_at','updated_at','status','related_uuid','related_user')
     list_display_links = ('id','device')
     search_fields = ('device','serial')
     list_editable = ('status',)

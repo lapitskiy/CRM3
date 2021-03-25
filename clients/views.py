@@ -3,7 +3,7 @@ from .models import Clients
 
 class ClientsHomeView(ListView):
     model = Clients
-    paginate_by = 1
+    paginate_by = 2
     template_name = 'clients/clients_list.html'
     context_object_name = 'clients'
     # extra_context = {'title': 'Главная'}

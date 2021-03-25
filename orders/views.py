@@ -115,6 +115,7 @@ class OrderAddView(TemplateView):
             related_uuid = shortuuid.uuid()
             form_update = formOne.save(commit=False)
             form_update.related_uuid = related_uuid
+            form_update.related_user = request.user
             form_update.save()
             for x in form_list:
                 form_update = x.save(commit=False)

@@ -1,5 +1,6 @@
 from django.db import models
 from django.urls import reverse
+from django.contrib.auth.models import User
 
 # Create your models here.
 class Orders(models.Model):
@@ -23,6 +24,7 @@ class Orders(models.Model):
     service = models.ForeignKey('Service', null=True, blank=True, on_delete=models.PROTECT, verbose_name='Услуга', related_name='get_service')
     category = models.ForeignKey('Category', null=True, blank=True, on_delete=models.PROTECT, verbose_name='Категория', related_name='get_category')
     related_uuid = models.CharField(max_length=22, blank=True, verbose_name='uuid')
+    related_user = models.ForeignKey(User, related_name='order_user', null=True, blank=True, on_delete=models.PROTECT, verbose_name='Owner')
 
 
     def get_absolute_url(self):

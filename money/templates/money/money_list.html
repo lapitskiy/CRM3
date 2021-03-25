@@ -1,7 +1,7 @@
 {% extends "base.html" %}
 {% block title %}{{ title }} - {{ block.super }}{% endblock %}
 {% block sidebar %}
-    {% include 'include/_sidebar_orders.html' %}
+    {% include 'include/_sidebar_money.html' %}
 {% endblock %}
 {% block content %}
     <div class="row">
@@ -17,34 +17,10 @@
                 {% for item in page_obj %}
                     <div class="tab-pane fade show" id="id-list-{{ item.pk }}" role="tabpanel" aria-labelledby="list-{{ item.pk }}">
                         <div class="shadow p-3 mb-5 bg-body rounded">
-
-                                {% for related_item in related_list %}
-                                    {% if related_item.related_uuid and item.related_uuid == related_item.related_uuid %}
-                                        <div class="card border-light" >
-                                        <div class="card-header">{{ related_item.module_name }}</div>
-                                        <div class="card-body">
-                                        {% for key, value in related_item.items %}
-                                            {% if key != 'related_uuid' and key != 'module_name' %}
-                                                {{ key }}: {{ value }}<br>
-                                            {% endif %}
-                                        {% endfor %}
-                                        </div>
-                                        </div>
-                                {% endif %}
-                            {% endfor %}
-
-                            <div class="card border-light" >
-                                <div class="card-header bg-gradient">Заказ: {{ item.pk }}<br></div>
-                                <div class="card-body">
-                                    В ремонте: {{ item.device }}<br>
-                                    Статус: {{ item.status }}<br>
-                                    Серийный: {{ item.serial }}<br>
-                                    Комментарий: {{ item.comment }}<br>
-                                    Категория: {{ item.category }}<br>
-
-                                </div>
-                            </div>
-
+                            Номер: {{ item.pk }}<br>
+                            Имя: {{ item.name }}<br>
+                            Телефон: {{ item.phone }}<br>
+                            Комментарий: {{ item.comment }}<br>
                         </div>
                     </div>
                 {% endfor %}
