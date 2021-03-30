@@ -17,7 +17,7 @@ from django.core.exceptions import ObjectDoesNotExist
 
 class OrdersHomeView(ListView):
     model = Orders
-    paginate_by = 2
+    paginate_by = 10
     template_name = 'orders/orders_list.html'
     context_object_name = 'orders'
 
@@ -42,10 +42,11 @@ class OrdersHomeView(ListView):
         related_list = []
         if related:
             for x in related:
+                print('X = ', x)
                 modelPath = x.module_name + '.models'
                 app_model = importlib.import_module(modelPath)
-
                 cls = getattr(app_model, x.related_class_name)
+                print('TYT')
                 for r in orders_page:
                     print('tyt0')
                     try:
@@ -56,8 +57,6 @@ class OrdersHomeView(ListView):
                     except ObjectDoesNotExist:
                         pass
         print('related_list', related_list)
-        #for x in related_list:
-        #    print('related_uuid', x.related_uuid)
         context['related_list'] = related_list
         return context
 
@@ -123,6 +122,86 @@ class OrderAddView(TemplateView):
                 form_update.save()
             print('Valid')
             return HttpResponseRedirect('orders_home')
+        else:
+            print('NotValid')
+            return self.form_invalid(formOne, form_list, **kwargs)
+
+    def form_invalid(self, formOne, form_list, **kwargs):
+        context = self.get_context_data()
+        formOne.prefix = 'one_form'
+        #tag = 0
+        #for x in form_list:
+        #    x.prefix = module_list[tag]
+        #    tag += 1
+        context.update({'formOne': formOne})
+        context['forms'] = form_list
+        context['tag'] = 'fast'
+        return self.render_to_response(context)
+
+    def checkRelated(self):
+        related = Plugins.objects.get(module_name='orders')
+        return related.related.all()
+
+class OrderEditView(TemplateView):
+    template_name = 'orders/order_edit.html'
+
+    def get(self, request, *args, **kwargs):
+        context = super().get_context_data(**kwargs)
+        related = self.checkRelated()
+        get_order = Orders.objects.get(pk=context['order_id'])
+        if related:
+            form_list = []
+            print('related ',related)
+            for x in related:
+                formPath = x.module_name + '.forms'
+                modelPath = x.module_name + '.models'
+                app_form = importlib.import_module(formPath)
+                app_model = importlib.import_module(modelPath)
+                cls = getattr(app_model, x.related_class_name)
+                get_related = cls.objects.get(related_uuid=get_order.related_uuid)
+                related_form = app_form.RelatedAddForm(instance=get_related)
+                related_form.prefix = x.module_name
+                form_list.append(related_form)
+        context['forms'] = form_list
+        print('form ', context)
+        formOne = SimpleOrderAddForm(instance=get_order)
+        print('TYt1')
+        formOne.prefix = 'one_form'
+        context.update({'formOne': formOne})
+        print('TYt2')
+        return self.render_to_response(context)
+
+
+    def post(self, request, *args, **kwargs):
+        context = super().get_context_data(**kwargs)
+
+        related = self.checkRelated()
+        form_list = []
+        #module_list = []
+        valid = True
+        get_order = Orders.objects.get(pk=context['order_id'])
+        formOne = SimpleOrderAddForm(self.request.POST, prefix='one_form', instance=get_order)
+        if related:
+            for x in related:
+                formPath = x.module_name + '.forms'
+                modelPath = x.module_name + '.models'
+                app_form = importlib.import_module(formPath)
+                app_model = importlib.import_module(modelPath)
+                cls = getattr(app_model, x.related_class_name)
+                get_related = cls.objects.get(related_uuid=get_order.related_uuid)
+                related_form = app_form.RelatedAddForm(self.request.POST, prefix=x.module_name, instance=get_related)
+                related_form.prefix = x.module_name
+                form_list.append(related_form)
+                #module_list.append(x.module_name)
+                if not related_form.is_valid():
+                    valid = False
+
+        if formOne.is_valid() and valid:
+            formOne.save()
+            for x in form_list:
+                x.save()
+            print('Valid')
+            return HttpResponseRedirect(reverse_lazy('orders_home'))
         else:
             print('NotValid')
             return self.form_invalid(formOne, form_list, **kwargs)

@@ -34,7 +34,6 @@ def install(context):
     context['json_check'] = False
     context['load_check'] = False
     context['makemigrations_check'] = False
-    print('TYT1')
     try:
         if Plugins.objects.get(id_in_rep=context['id']) != None:
             context['have_check'] = True
@@ -42,7 +41,6 @@ def install(context):
             return context
     except Plugins.DoesNotExist:
         pass
-    print('TYT2')
     json_string = requests.get(settings_plugin.REPO_URL)
     data = json.loads(json_string.text)
     context['json_check'] = True
@@ -54,16 +52,12 @@ def install(context):
                 context['install_data'] = item
                 context['migrateUrl'] = 'migrate-'+item['module_name']
                 # repack arch zip
-                print('TYT3')
                 r = requests.get(item['zipfile'])
                 with r, zipfile.ZipFile(io.BytesIO(r.content)) as archive:
                     archive.extractall()
                 context['load_check'] = True
-                print('TYT4')
                 impliment(item['module_name'])
-                print('install_tags.py: impliment OK')
                 add_plugin_in_db(data_id)
-                print('install_tags.py:  add_plugin_in_db OK')
                 return context
     return context
 
@@ -135,6 +129,7 @@ def add_plugin_in_db(data):
     plugin.zipfile = data['zipfile']
     plugin.category_id = 1
     plugin.version = data['version']
+    plugin.related_class_name = data['related_class_name']
     plugin.save(force_insert=True)
     print('SAVE')
     #тут добавить добалвения плагина в базу плагинов и потом там уже мигрировать

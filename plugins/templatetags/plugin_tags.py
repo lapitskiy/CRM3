@@ -17,7 +17,7 @@ register = template.Library()
 @register.inclusion_tag('plugins/plugins_tags.html')
 def action_plugin(arg1=0, tag='', form=None):
     context = {}
-    plugin = Plugins.objects.get(id=arg1)
+    plugin = Plugins.objects.get(pk=arg1)
     context['id'] = arg1
     context['tag'] = tag
     context['form'] = form
@@ -27,14 +27,18 @@ def action_plugin(arg1=0, tag='', form=None):
     context['copydata'] = False
     if tag == 'active' and not context['active_check']:
         print('ACTIVE')
-        plugin.update(is_active=True)
+        print('plugin', plugin)
+        print('arg1', arg1)
+        plugin.is_active = True
+        plugin.save()
         context['active_check'] = True
         context['plugin_url'] = plugin.get_absolute_url()
         return context
 
     if tag == 'deactive' and context['active_check']:
         print('DEACTIVE')
-        plugin.update(is_active=False)
+        plugin.is_active = False
+        plugin.save()
         context['active_check'] = False
         context['plugin_url'] = plugin.get_absolute_url()
         return context

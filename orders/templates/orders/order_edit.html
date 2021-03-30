@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+
+{% block title %}{{ title }} - {{ block.super }}{% endblock %}
+{% block sidebar %}
+{% include 'include/_sidebar_orders.html' %}
+{% endblock %}
+
+{% block content %}
+
+ <h3>
+    {% if tag == 'fast' %}
+        Быстрый заказ
+    {% endif %}
+    {% if tag == 'simple' %}
+        Обычный заказ
+    {% endif %}
+    </h3>
+    <form action="{% url 'order_edit' order_id %}" method="post">
+        {% csrf_token %}
+        {% for x in forms %}
+            {{ x.as_p }}
+        {% endfor %}
+        {{ formOne.non_field_errors }}
+        {{ formOne.as_p }}
+        <button type="submit" class="btn btn-primary btn-block">Сохранить</button>
+    </form>
+
+{% endblock %}
