@@ -3,8 +3,8 @@ from django.urls import reverse
 
 # Create your models here.
 class Money(models.Model):
-    money = models.DecimalField(max_digits=19, blank=True, default=0, decimal_places=2)
-    prepayment = models.DecimalField(max_digits=19, blank=True, default=0, decimal_places=2)
+    money = models.DecimalField(max_digits=19, blank=True, default=0, decimal_places=2, verbose_name='Сумма')
+    prepayment = models.DecimalField(max_digits=19, blank=True, default=0, decimal_places=2, verbose_name='Предоплата')
     created_at = models.DateTimeField(auto_now_add=True, verbose_name='Создан')
     updated_at = models.DateTimeField(auto_now=True, verbose_name='Обновлен')
     related_uuid = models.CharField(max_length=22, blank=True, verbose_name='uuid')

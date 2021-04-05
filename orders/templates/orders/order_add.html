@@ -15,13 +15,13 @@
         Обычный заказ
     {% endif %}
     </h3>
-    <form action="{% url 'order_add' tag %}" method="post">
+    <form action="{% url 'order_add'%}?category={{ tag }}" method="post">
         {% csrf_token %}
         {% for x in forms %}
             {{ x.as_p }}
         {% endfor %}
         {{ formOne.non_field_errors }}
-        {{ formOne.as_p }}
+        {{ formOne }}
         <button type="submit" class="btn btn-primary btn-block">Добавить заказ</button>
     </form>
 

@@ -6,12 +6,12 @@ from .models import Orders, Status, Category, Service
 
 class OrdersAdmin(admin.ModelAdmin):
 
-    list_display = ('id','device','serial','created_at','updated_at','status','related_uuid','related_user')
+    list_display = ('id','device','serial','category','created_at','updated_at','status','related_uuid','related_user')
     list_display_links = ('id','device')
     search_fields = ('device','serial')
     list_editable = ('status',)
     list_filter = ('status',)
-    fields = ('device', 'serial', 'status', 'created_at', 'updated_at')
+    fields = ('device', 'serial', 'status', 'category', 'created_at', 'updated_at')
     readonly_fields = ('created_at', 'updated_at')
     save_on_top = True
 
@@ -21,8 +21,8 @@ class StatusAdmin(admin.ModelAdmin):
     search_fields = ('title',)
 
 class CategoryAdmin(admin.ModelAdmin):
-    list_display = ('id','title')
-    list_display_links = ('id','title')
+    list_display = ('id','title', 'category')
+    list_display_links = ('id','title', 'category')
     search_fields = ('title',)
 
 class ServiceAdmin(admin.ModelAdmin):

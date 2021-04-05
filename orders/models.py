@@ -5,24 +5,14 @@ from django.contrib.auth.models import User
 # Create your models here.
 class Orders(models.Model):
 
-    # 44 урок добавиьт фильтр для вывода конкретных статусов и категорий в заказах
-    # посомтреть след уроки, надо поставить возможность регистрации мастеров
-    # после сделать плагин аккаунты и связать плагины заказы и аккаунты
-    # сделать ajax для django orders
-    # СДЕЛАТЬ ManyToMany - https://www.youtube.com/watch?v=ZSQ_GxURmD4
-
-    # сначала надо связать данные в апп плагинов
-    # после при создании заказа, показывать связанные апп
-    #
-
     device = models.CharField(max_length=150, verbose_name='Что ремонтируем')
     serial = models.CharField(max_length=150, blank=True, verbose_name='Серийный')
     comment = models.TextField(blank=True, verbose_name='Комментарий')
     created_at = models.DateTimeField(auto_now_add=True, verbose_name='Создан')
     updated_at = models.DateTimeField(auto_now=True, verbose_name='Обновлен')
-    status = models.ForeignKey('Status', null=True, blank=True, on_delete=models.PROTECT, verbose_name='Статус', related_name='get_status')
+    status = models.ForeignKey('Status', default=1, on_delete=models.PROTECT, verbose_name='Статус', related_name='get_status')
     service = models.ForeignKey('Service', null=True, blank=True, on_delete=models.PROTECT, verbose_name='Услуга', related_name='get_service')
-    category = models.ForeignKey('Category', null=True, blank=True, on_delete=models.PROTECT, verbose_name='Категория', related_name='get_category')
+    category = models.ForeignKey('Category', default=1, on_delete=models.PROTECT, verbose_name='Категория', related_name='get_category')
     related_uuid = models.CharField(max_length=22, blank=True, verbose_name='uuid')
     related_user = models.ForeignKey(User, related_name='order_user', null=True, blank=True, on_delete=models.PROTECT, verbose_name='Owner')
 
@@ -54,7 +44,9 @@ class Status(models.Model):
         ordering = ['title']
 
 class Category(models.Model):
-    title = models.CharField(max_length=150, db_index=True, verbose_name='Наименования категории')
+    title = models.CharField(max_length=150, verbose_name='Наименования категории')
+    category = models.CharField(max_length=150, db_index=True, verbose_name='Категория')
+
 
     def __str__(self):
         return self.title
@@ -65,12 +57,12 @@ class Category(models.Model):
         ordering = ['title']
 
 class Service(models.Model):
-    title = models.CharField(max_length=150, db_index=True, verbose_name='Наименования категории')
+    title = models.CharField(max_length=150, db_index=True, verbose_name='Наименования услуги')
 
     def __str__(self):
         return self.title
 
     class Meta:
-        verbose_name = 'Категория'
-        verbose_name_plural = 'Категории'
+        verbose_name = 'Услуга'
+        verbose_name_plural = 'Услуги'
         ordering = ['title']

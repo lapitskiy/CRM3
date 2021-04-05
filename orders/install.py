@@ -16,8 +16,8 @@ INSTALLED_URL = {
         'include': 'orders.urls'}}
 
 def demodata():
-    Category.objects.update_or_create(id=1, title='fast')
-    Category.objects.update_or_create(id=2, title='simple')
+    Category.objects.update_or_create(id=1, title='fast', category='fast')
+    Category.objects.update_or_create(id=2, title='simple', category='simple')
     Status.objects.update_or_create(id=1, title='Принято')
     Status.objects.update_or_create(id=2, title='Выдано')
     Status.objects.update_or_create(id=3, title='Отказ')

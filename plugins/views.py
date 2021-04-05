@@ -54,7 +54,6 @@ class ViewCurrentPlugins(DetailView):
         context = super().get_context_data(**kwargs)
         print('context ', context)
         #context = super().get_context_data(**kwargs)
-        print('TYT00')
         #context['id'] = self.kwargs['pk']
 
         form = RelatedPluginForm(request.POST)
@@ -64,7 +63,6 @@ class ViewCurrentPlugins(DetailView):
         print('related_id', related_id)
 
         if form.is_valid():
-            print('TYT1')
             self.plugin = self.get_object()
             if 'related_add' in request.POST:
                 self.plugin.related.add(related_id)

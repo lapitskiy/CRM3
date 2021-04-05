@@ -1,4 +1,24 @@
 <div class="list-group">
-    <a href="{% url 'order_add' 'fast' %}" class="list-group-item list-group-item-action">Быстрый заказ</a>
-    <a href="{% url 'order_add' 'simple' %}" class="list-group-item list-group-item-action">Обычный заказ</a>
+    <a href="{% url 'order_add'%}?category=simple" class="list-group-item list-group-item-action">Создать заказ в ремонт</a>
+    <a href="{% url 'order_add'%}?category=fast" class="list-group-item list-group-item-action">Создать заказ на месте</a>
+</div>
+<br>
+<div class="list-group">
+    <a href="{% url 'orders_home' %}?category=simple" class="list-group-item list-group-item-action">Заказы в ремонт</a>
+    <a href="{% url 'orders_home' %}?category=fast" class="list-group-item list-group-item-action">Заказы на месте</a>
+    <a href="{% url 'orders_home' %}" class="list-group-item list-group-item-action">Все заказы</a>
+</div>
+<br>
+<div class="input-group mb-3">
+        <form action="{% url 'orders_home' %}" method="post">
+        {% csrf_token %}
+        <input type="text" class="form-control" placeholder="Поиск" aria-label="Поиск" id="filter">
+        <button type="submit" class="btn btn-outline-secondary" id="button-addon2">Искать</button>
+    </form>
+
+
+</div>
+<br>
+<div class="list-group">
+    <a href="{% url 'order_add'%}" class="list-group-item list-group-item-action">Настройки</a>
 </div>

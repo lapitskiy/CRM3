@@ -3,17 +3,19 @@ from .models import Orders
 import re
 from django.core.exceptions import ValidationError
 
-class FastOrderAddForm(forms.ModelForm):
+
+class SimpleOrderAddForm(forms.ModelForm):
     class Meta:
         model = Orders
-        fields = ['device', 'serial', 'service', 'comment']
+        fields = ['device', 'serial', 'service', 'status','comment']
         widgets = {
+            #'category': forms.Select(attrs={'class': 'form-control'}),
+                #forms.HiddenInput(),
             'device': forms.TextInput(attrs={'class': 'form-control', 'autocomplete':'off'}),
             'service': forms.TextInput(attrs={'class': 'form-control', 'autocomplete':'off'}),
             'serial': forms.TextInput(attrs={'class': 'form-control', 'autocomplete':'off'}),
+            'status': forms.Select(attrs={'class': 'form-control'}),
             'comment': forms.Textarea(attrs={'class': 'form-control', 'rows': 5}),
-        }
-        labels = {
         }
 
     def clean_device(self):
@@ -22,7 +24,7 @@ class FastOrderAddForm(forms.ModelForm):
             raise ValidationError('Название не должно начинаться с цифры')
         return device
 
-class SimpleOrderAddForm(forms.ModelForm):
+class FastOrderAddForm(forms.ModelForm):
     class Meta:
         model = Orders
         fields = ['device', 'serial', 'service', 'comment']

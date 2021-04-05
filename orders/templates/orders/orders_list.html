@@ -17,9 +17,16 @@
                 {% for item in page_obj %}
                     <div class="tab-pane fade show" id="id-list-{{ item.pk }}" role="tabpanel" aria-labelledby="list-{{ item.pk }}">
                         <div class="shadow p-3 mb-5 bg-body rounded">
-                            <div class="d-flex justify-content-end">
-                                <a href="edit/{{ item.pk }}"><button type="button" class="btn btn-secondary">Редактировать</button></a>
-                            </div><br>
+                            <div class="card border-light" >
+                                <div class="card-header bg-gradient">Заказ: <span class="badge rounded-pill bg-info text-dark">{{ item.pk }}</span> | Статус: <span class="badge rounded-pill bg-warning text-dark"> {{ item.status }}</span></div>
+                                <div class="card-body">
+                                    В ремонте: {{ item.device }}<br>
+                                    Серийный: {{ item.serial }}<br>
+                                    Комментарий: {{ item.comment }}<br>
+                                    Категория: {{ item.category }}<br>
+
+                                </div>
+                            </div>
                             {% for related_item in related_list %}
                                 {% if related_item.related_uuid and item.related_uuid == related_item.related_uuid %}
                                     <div class="card border-light" >
@@ -34,19 +41,9 @@
                                         </div>
                                 {% endif %}
                             {% endfor %}
-
-                            <div class="card border-light" >
-                                <div class="card-header bg-gradient">Заказ: {{ item.pk }}<br></div>
-                                <div class="card-body">
-                                    В ремонте: {{ item.device }}<br>
-                                    Статус: {{ item.status }}<br>
-                                    Серийный: {{ item.serial }}<br>
-                                    Комментарий: {{ item.comment }}<br>
-                                    Категория: {{ item.category }}<br>
-
-                                </div>
-                            </div>
-
+                                                    <div class="d-flex justify-content-end">
+                                <a href="edit/{{ item.pk }}"><button type="button" class="btn btn-secondary">Редактировать</button></a>
+                            </div><br>
                         </div>
                     </div>
                 {% endfor %}

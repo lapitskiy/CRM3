@@ -2,7 +2,7 @@ from django.shortcuts import render, get_object_or_404, redirect
 from django.http import HttpResponse, HttpResponseRedirect
 from django.views.generic import ListView, DetailView, CreateView, FormView, TemplateView
 from django.urls import reverse_lazy
-from .forms import FastOrderAddForm, SimpleOrderAddForm
+from .forms import SimpleOrderAddForm, FastOrderAddForm
 from .models import Orders, Status
 from plugins.models import Plugins
 import importlib
@@ -11,21 +11,26 @@ from django.core.paginator import Paginator
 from django.core.paginator import EmptyPage
 from django.core.paginator import PageNotAnInteger
 from django.core.exceptions import ObjectDoesNotExist
+from django.db import connection
 
 
 
 
 class OrdersHomeView(ListView):
-    model = Orders
+    #model = Orders
     paginate_by = 10
     template_name = 'orders/orders_list.html'
     context_object_name = 'orders'
 
+    def get_queryset(self):
+        return self.getQuery()
+
     def get_context_data(self, *, object_list=None, **kwargs):
         context = super().get_context_data(**kwargs)
         context['title'] = 'Все заказы'
-
-        list_orders = Orders.objects.all()
+        # filter
+        list_orders = self.getQuery()
+        #paginator
         paginator = Paginator(list_orders, self.paginate_by)
         page = self.request.GET.get('page')
         try:
@@ -35,28 +40,24 @@ class OrdersHomeView(ListView):
             orders_page = paginator.page(page)
         except EmptyPage:
             orders_page = paginator.page(paginator.num_pages)
-        print('paginator', orders_page.object_list)
-
+        print('orders_page ', orders_page.object_list)
         # related data
         related = self.checkRelated()
         related_list = []
         if related:
             for x in related:
-                print('X = ', x)
                 modelPath = x.module_name + '.models'
                 app_model = importlib.import_module(modelPath)
                 cls = getattr(app_model, x.related_class_name)
-                print('TYT')
                 for r in orders_page:
-                    print('tyt0')
                     try:
                         cls2 = cls.objects.get(related_uuid=r.related_uuid)
                         related_get = cls2.get_related_data()
-                        print('related_get', related_get)
+                        #print('related_get', related_get)
                         related_list.append(related_get)
                     except ObjectDoesNotExist:
                         pass
-        print('related_list', related_list)
+        #print('related_list', related_list)
         context['related_list'] = related_list
         return context
 
@@ -64,7 +65,15 @@ class OrdersHomeView(ListView):
         related = Plugins.objects.get(module_name='orders')
         return related.related.all()
 
-class OrderCurrentView(DetailView):
+    def getQuery(self):
+        category_filter = self.request.GET.get('category')
+        if category_filter:
+            list_orders = Orders.objects.filter(category__category=category_filter)
+        else:
+            list_orders = Orders.objects.all()
+        return list_orders
+
+class OrdersFilterView(DetailView):
     model = Orders
     template_name = 'orders/order_item.html'
     context_object_name = 'plugins_item'
@@ -77,7 +86,6 @@ class OrderAddView(TemplateView):
         related = self.checkRelated()
         if related:
             form_list = []
-            print('related ',related)
             for x in related:
                 formPath = x.module_name + '.forms'
                 app_form = importlib.import_module(formPath)
@@ -86,15 +94,17 @@ class OrderAddView(TemplateView):
                 form_list.append(related_form)
         context['forms'] = form_list
         #context['count_form'] = range(1, tag+1)
-        print('form ', context)
-        formOne = SimpleOrderAddForm()
+        formOne = self.getForm()
         formOne.prefix = 'one_form'
         context.update({'formOne': formOne})
+        context.update({'tag': self.getVar()})
+        print('tag ', context['tag'])
         return self.render_to_response(context)
 
 
     def post(self, request, *args, **kwargs):
-        formOne = SimpleOrderAddForm(self.request.POST, prefix='one_form')
+        formOne = self.getPostForm(self.request.POST)
+        #print('formOne', formOne)
         related = self.checkRelated()
         form_list = []
         #module_list = []
@@ -113,18 +123,54 @@ class OrderAddView(TemplateView):
         if formOne.is_valid() and valid:
             related_uuid = shortuuid.uuid()
             form_update = formOne.save(commit=False)
+            #print('form.cleaned_data', form_update.cleaned_data['category'])
+            cat = self.getCategory()
+            print('cat', cat)
+            form_update.category_id = self.getCategory()
             form_update.related_uuid = related_uuid
             form_update.related_user = request.user
+            print('tyt update form')
             form_update.save()
             for x in form_list:
                 form_update = x.save(commit=False)
                 form_update.related_uuid = related_uuid
                 form_update.save()
             print('Valid')
-            return HttpResponseRedirect('orders_home')
+            return HttpResponseRedirect(reverse_lazy('orders_home'))
         else:
             print('NotValid')
             return self.form_invalid(formOne, form_list, **kwargs)
+
+    def getVar(self):
+        category_filter = self.request.GET.get('category')
+        if category_filter:
+            tag = category_filter
+        return tag
+
+    def getCategory(self):
+        category_filter = self.request.GET.get('category')
+        if category_filter == 'fast':
+            return 1
+        if category_filter == 'simple':
+            return 2
+        return 1
+
+    def getForm(self):
+        category_filter = self.request.GET.get('category')
+        if category_filter:
+            if category_filter == 'simple':
+                return SimpleOrderAddForm
+            if category_filter == 'fast':
+                return FastOrderAddForm
+
+    def getPostForm(self, req):
+        category_filter = self.request.GET.get('category')
+        if category_filter:
+            if category_filter == 'simple':
+                return SimpleOrderAddForm(req, prefix='one_form')
+            if category_filter == 'fast':
+                return FastOrderAddForm(req, prefix='one_form')
+
 
     def form_invalid(self, formOne, form_list, **kwargs):
         context = self.get_context_data()
@@ -163,12 +209,10 @@ class OrderEditView(TemplateView):
                 related_form.prefix = x.module_name
                 form_list.append(related_form)
         context['forms'] = form_list
-        print('form ', context)
+        print('form 1', context)
         formOne = SimpleOrderAddForm(instance=get_order)
-        print('TYt1')
         formOne.prefix = 'one_form'
         context.update({'formOne': formOne})
-        print('TYt2')
         return self.render_to_response(context)
 
 
