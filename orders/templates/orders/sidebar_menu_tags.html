@@ -9,15 +9,15 @@
     <a href="{% url 'orders_home' %}" class="list-group-item list-group-item-action">Все заказы</a>
 </div>
 <br>
-<div class="input-group mb-3">
-        <form action="{% url 'orders_home' %}" method="post">
-        {% csrf_token %}
-        <input type="text" class="form-control" placeholder="Поиск" aria-label="Поиск" id="filter">
+
+<form action="{% url 'orders_home' %}" method="get">
+    {% csrf_token %}
+    <div class="input-group mb-3">
+        <input type="text" class="form-control" placeholder="Поиск" aria-label="Поиск" name="filter" aria-describedby="button-addon2">
         <button type="submit" class="btn btn-outline-secondary" id="button-addon2">Искать</button>
-    </form>
+    </div>
+</form>
 
-
-</div>
 <br>
 <div class="list-group">
     <a href="{% url 'order_add'%}" class="list-group-item list-group-item-action">Настройки</a>

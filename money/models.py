@@ -21,6 +21,13 @@ class Money(models.Model):
             }
         return data
 
+    def get_related_filter(self, **kwargs):
+        print('kw ', kwargs)
+        #print('arg ', self.args) *args, **kwargs
+        #search_query = kwargs['search_query']
+        results = super(Money, self).objects.filter(Q(money__icontains=kwargs['search_query']) | Q(prepayment__icontains=kwargs['search_query']))
+        return results
+
     def __str__(self):
         return self.money
 

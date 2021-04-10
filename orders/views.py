@@ -3,7 +3,7 @@ from django.http import HttpResponse, HttpResponseRedirect
 from django.views.generic import ListView, DetailView, CreateView, FormView, TemplateView
 from django.urls import reverse_lazy
 from .forms import SimpleOrderAddForm, FastOrderAddForm
-from .models import Orders, Status
+from .models import Orders
 from plugins.models import Plugins
 import importlib
 import shortuuid
@@ -12,6 +12,7 @@ from django.core.paginator import EmptyPage
 from django.core.paginator import PageNotAnInteger
 from django.core.exceptions import ObjectDoesNotExist
 from django.db import connection
+from django.db.models import Q
 
 
 
@@ -23,16 +24,18 @@ class OrdersHomeView(ListView):
     context_object_name = 'orders'
 
     def get_queryset(self):
-        return self.getQuery()
+        return self.getQuery(self.checkRelated())
 
     def get_context_data(self, *, object_list=None, **kwargs):
         context = super().get_context_data(**kwargs)
         context['title'] = 'Все заказы'
         # filter
-        list_orders = self.getQuery()
+        related = self.checkRelated()
+        list_orders = self.getQuery(related)
         #paginator
         paginator = Paginator(list_orders, self.paginate_by)
         page = self.request.GET.get('page')
+
         try:
             orders_page = paginator.page(page)
         except PageNotAnInteger:
@@ -40,9 +43,7 @@ class OrdersHomeView(ListView):
             orders_page = paginator.page(page)
         except EmptyPage:
             orders_page = paginator.page(paginator.num_pages)
-        print('orders_page ', orders_page.object_list)
         # related data
-        related = self.checkRelated()
         related_list = []
         if related:
             for x in related:
@@ -61,17 +62,42 @@ class OrdersHomeView(ListView):
         context['related_list'] = related_list
         return context
 
+    def post(self, request, *args, **kwargs):
+        print('EEE')
+        print('self 2', self.request.POST['csrfmiddlewaretoken'])
+        return super(OrdersHomeView, self).post(request, *args, **kwargs)
+
+
     def checkRelated(self):
         related = Plugins.objects.get(module_name='orders')
         return related.related.all()
 
-    def getQuery(self):
-        category_filter = self.request.GET.get('category')
-        if category_filter:
-            list_orders = Orders.objects.filter(category__category=category_filter)
-        else:
-            list_orders = Orders.objects.all()
-        return list_orders
+    def getQuery(self, related):
+        if self.request.GET.get('filter'):
+            search_query = self.request.GET.get('filter')
+
+            results_query = Orders.objects.filter(
+                ~Q(related_uuid='') | Q(device__icontains=search_query) | Q(serial__icontains=search_query) | Q(
+                    comment__icontains=search_query))
+            #conds = ''
+            if related:
+                for x in related:
+                    modelPath = x.module_name + '.models'
+                    app_model = importlib.import_module(modelPath)
+                    cls = getattr(app_model, x.related_class_name)
+                    #search_query = {'search_query' : search_query}
+                    print('search_query ', search_query)
+                    #r_cls = cls()
+                    related_result = cls().get_related_filter(search_query='search_query', results_query=results_query)
+                    related_conds += Q(relted_uuid__icontains=related_result)
+
+            conds = Q(relted_uuid__icontains=results_query) | Q(relted_uuid__icontains=related_conds)
+            search_filter_three = Orders.objects.filter(conds)
+            return search_filter_three
+
+        if self.request.GET.get('category'):
+            return Orders.objects.filter(category__category=self.request.GET.get('category'))
+        return Orders.objects.all()
 
 class OrdersFilterView(DetailView):
     model = Orders

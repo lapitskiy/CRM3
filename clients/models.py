@@ -1,6 +1,7 @@
 from django.db import models
 from django.urls import reverse
 from django.core.validators import RegexValidator
+from django.db.models import Q
 
 # Create your models here.
 class Clients(models.Model):
@@ -22,6 +23,10 @@ class Clients(models.Model):
             'related_uuid': self.related_uuid,
             }
         return data
+
+    def get_related_filter(self, search_query):
+        results = super(Clients, self).objects.filter(Q(name__icontains=search_query) | Q(phone__icontains=search_query))
+        return results
 
     def __str__(self):
         return self.name
