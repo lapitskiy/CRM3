@@ -32,6 +32,7 @@ class OrdersHomeView(ListView):
         # filter
         related = self.checkRelated()
         list_orders = self.getQuery(related)
+        print('list_orders ', list_orders)
         #paginator
         paginator = Paginator(list_orders, self.paginate_by)
         page = self.request.GET.get('page')
@@ -75,24 +76,37 @@ class OrdersHomeView(ListView):
     def getQuery(self, related):
         if self.request.GET.get('filter'):
             search_query = self.request.GET.get('filter')
-
-            results_query = Orders.objects.filter(
-                ~Q(related_uuid='') | Q(device__icontains=search_query) | Q(serial__icontains=search_query) | Q(
+            # ~Q(related_uuid='') |
+            results_query = Orders.objects.filter(Q(device__icontains=search_query) | Q(serial__icontains=search_query) | Q(
                     comment__icontains=search_query))
-            #conds = ''
+
+            print('search_query', search_query)
+            print('results_query 1', results_query)
+            list_related = []
             if related:
                 for x in related:
                     modelPath = x.module_name + '.models'
                     app_model = importlib.import_module(modelPath)
                     cls = getattr(app_model, x.related_class_name)
                     #search_query = {'search_query' : search_query}
-                    print('search_query ', search_query)
                     #r_cls = cls()
-                    related_result = cls().get_related_filter(search_query='search_query', results_query=results_query)
-                    related_conds += Q(relted_uuid__icontains=related_result)
-
-            conds = Q(relted_uuid__icontains=results_query) | Q(relted_uuid__icontains=related_conds)
+                    related_result = cls().get_related_filter(search_query=search_query)
+                    if related_result:
+                        for z in related_result:
+                            list_related.append(z.related_uuid)
+            print('list_related', list_related)
+            related_query = Orders.objects.filter(related_uuid__in=list_related)
+            print('related_query', related_query)
+            #related_conds = list_related_conds[0]
+            #for x in list_related_conds[1:]:
+            #    related_conds = related_conds | x
+            #print('related_conds 3', related_conds)
+            if results_query:
+                conds = Q(related_uuid__icontains=results_query) | Q(related_uuid__icontains=related_query)
+            else:
+                conds = Q(related_uuid__icontains=related_query)
             search_filter_three = Orders.objects.filter(conds)
+            print('tyty ', search_filter_three)
             return search_filter_three
 
         if self.request.GET.get('category'):

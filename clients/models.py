@@ -24,9 +24,10 @@ class Clients(models.Model):
             }
         return data
 
-    def get_related_filter(self, search_query):
-        results = super(Clients, self).objects.filter(Q(name__icontains=search_query) | Q(phone__icontains=search_query))
+    def get_related_filter(self, **kwargs):
+        results = Clients.objects.filter(Q(name__icontains=kwargs['search_query']) | Q(phone__icontains=kwargs['search_query']))
         return results
+
 
     def __str__(self):
         return self.name
