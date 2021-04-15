@@ -29,6 +29,8 @@ class OrdersHomeView(ListView):
     def get_context_data(self, *, object_list=None, **kwargs):
         context = super().get_context_data(**kwargs)
         context['title'] = 'Все заказы'
+        context['filter'] = self.requestGet('filter')
+        context['date'] = self.requestGet('date')
         # filter
         related = self.checkRelated()
         list_orders = self.getQuery(related)
@@ -73,15 +75,23 @@ class OrdersHomeView(ListView):
         related = Plugins.objects.get(module_name='orders')
         return related.related.all()
 
+    def requestGet(self, req):
+        if self.request.GET.get(req):
+            return self.request.GET.get('filter')
+        else:
+            return ''
+
     def getQuery(self, related):
+        if self.request.GET.get('date'):
+            date_get = self.request.GET.get('date')
+            # ~Q(related_uuid='') |
+            results_date_uuid = Orders.objects.filter(Q(created_at__icontains=date_get)).values_list('related_uuid')
+
         if self.request.GET.get('filter'):
             search_query = self.request.GET.get('filter')
             # ~Q(related_uuid='') |
             results_query = Orders.objects.filter(Q(device__icontains=search_query) | Q(serial__icontains=search_query) | Q(
-                    comment__icontains=search_query))
-
-            print('search_query', search_query)
-            print('results_query 1', results_query)
+                    comment__icontains=search_query)).values_list('related_uuid')
             list_related = []
             if related:
                 for x in related:
@@ -95,19 +105,31 @@ class OrdersHomeView(ListView):
                         for z in related_result:
                             list_related.append(z.related_uuid)
             print('list_related', list_related)
-            related_query = Orders.objects.filter(related_uuid__in=list_related)
+            related_query = Orders.objects.filter(related_uuid__in=list_related).values_list('related_uuid')
             print('related_query', related_query)
             #related_conds = list_related_conds[0]
             #for x in list_related_conds[1:]:
             #    related_conds = related_conds | x
             #print('related_conds 3', related_conds)
-            if results_query:
-                conds = Q(related_uuid__icontains=results_query) | Q(related_uuid__icontains=related_query)
+            if related_query:
+                #conds = Q(related_uuid__icontains=results_query) | Q(related_uuid__icontains=related_query)
+                conds = Q(related_uuid__in=results_query) | Q(related_uuid__in=related_query)
+                print('try cond if', conds)
+                results_filter_uuid = Orders.objects.filter(conds).values_list('related_uuid')
             else:
-                conds = Q(related_uuid__icontains=related_query)
-            search_filter_three = Orders.objects.filter(conds)
-            print('tyty ', search_filter_three)
-            return search_filter_three
+                print('try cond else')
+                results_filter_uuid = results_query
+
+        if self.request.GET.get('date') and self.request.GET.get('filter'):
+            conds = Q(related_uuid__in=results_date_uuid) | Q(related_uuid__in=results_filter_uuid)
+            return Orders.objects.filter(conds)
+        else:
+            if self.request.GET.get('filter'):
+                return Orders.objects.filter(Q(related_uuid__in=results_filter_uuid))
+            else:
+                if self.request.GET.get('date'):
+                    return Orders.objects.filter(Q(related_uuid__in=results_date_uuid))
+
 
         if self.request.GET.get('category'):
             return Orders.objects.filter(category__category=self.request.GET.get('category'))
@@ -244,8 +266,11 @@ class OrderEditView(TemplateView):
                 app_form = importlib.import_module(formPath)
                 app_model = importlib.import_module(modelPath)
                 cls = getattr(app_model, x.related_class_name)
-                get_related = cls.objects.get(related_uuid=get_order.related_uuid)
-                related_form = app_form.RelatedAddForm(instance=get_related)
+                try:
+                    get_related = cls.objects.get(related_uuid=get_order.related_uuid)
+                    related_form = app_form.RelatedAddForm(instance=get_related)
+                except cls.DoesNotExist:
+                    related_form = app_form.RelatedAddForm()
                 related_form.prefix = x.module_name
                 form_list.append(related_form)
         context['forms'] = form_list
@@ -263,6 +288,7 @@ class OrderEditView(TemplateView):
         form_list = []
         #module_list = []
         valid = True
+        flag_uuid = False
         get_order = Orders.objects.get(pk=context['order_id'])
         formOne = SimpleOrderAddForm(self.request.POST, prefix='one_form', instance=get_order)
         if related:
@@ -272,8 +298,14 @@ class OrderEditView(TemplateView):
                 app_form = importlib.import_module(formPath)
                 app_model = importlib.import_module(modelPath)
                 cls = getattr(app_model, x.related_class_name)
-                get_related = cls.objects.get(related_uuid=get_order.related_uuid)
-                related_form = app_form.RelatedAddForm(self.request.POST, prefix=x.module_name, instance=get_related)
+
+                try:
+                    get_related = cls.objects.get(related_uuid=get_order.related_uuid)
+                    related_form = app_form.RelatedAddForm(self.request.POST, prefix=x.module_name,
+                                                           instance=get_related)
+                except cls.DoesNotExist:
+                    related_form = app_form.RelatedAddForm(self.request.POST, prefix=x.module_name)
+                    flag_uuid = True
                 related_form.prefix = x.module_name
                 form_list.append(related_form)
                 #module_list.append(x.module_name)
@@ -283,7 +315,12 @@ class OrderEditView(TemplateView):
         if formOne.is_valid() and valid:
             formOne.save()
             for x in form_list:
-                x.save()
+                if flag_uuid:
+                    form_update = x.save(commit=False)
+                    form_update.related_uuid = get_order.related_uuid
+                    form_update.save()
+                else:
+                    x.save()
             print('Valid')
             return HttpResponseRedirect(reverse_lazy('orders_home'))
         else:

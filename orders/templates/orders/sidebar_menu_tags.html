@@ -1,8 +1,10 @@
+<h5>Создать заказ</h5>
 <div class="list-group">
     <a href="{% url 'order_add'%}?category=simple" class="list-group-item list-group-item-action">Создать заказ в ремонт</a>
     <a href="{% url 'order_add'%}?category=fast" class="list-group-item list-group-item-action">Создать заказ на месте</a>
 </div>
 <br>
+<h5>Заказы</h5>
 <div class="list-group">
     <a href="{% url 'orders_home' %}?category=simple" class="list-group-item list-group-item-action">Заказы в ремонт</a>
     <a href="{% url 'orders_home' %}?category=fast" class="list-group-item list-group-item-action">Заказы на месте</a>
@@ -10,15 +12,19 @@
 </div>
 <br>
 
+
+<h5>Поиск</h5>
 <form action="{% url 'orders_home' %}" method="get">
     {% csrf_token %}
     <div class="input-group mb-3">
         <input type="text" class="form-control" placeholder="Поиск" aria-label="Поиск" name="filter" aria-describedby="button-addon2">
         <button type="submit" class="btn btn-outline-secondary" id="button-addon2">Искать</button>
     </div>
+    <input class="form-control" type="date" id="date" name="date">
 </form>
 
 <br>
+<h5>Настройки</h5>
 <div class="list-group">
     <a href="{% url 'order_add'%}" class="list-group-item list-group-item-action">Настройки</a>
 </div>

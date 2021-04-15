@@ -18,7 +18,7 @@
                     <div class="tab-pane fade show" id="id-list-{{ item.pk }}" role="tabpanel" aria-labelledby="list-{{ item.pk }}">
                         <div class="shadow p-3 mb-5 bg-body rounded">
                             <div class="card border-light" >
-                                <div class="card-header bg-gradient">Заказ: <span class="badge rounded-pill bg-info text-dark">{{ item.pk }}</span> | Статус: <span class="badge rounded-pill bg-warning text-dark"> {{ item.status }}</span></div>
+                                <div class="card-header bg-gradient">Заказ: <span class="badge rounded-pill bg-info text-dark">{{ item.pk }}</span> | Статус: <span class="badge rounded-pill bg-warning text-dark"> {{ item.status }}</span>  | Дата: <span class="badge rounded-pill bg-dark"> {{ item.created_at }}</span></div>
                                 <div class="card-body">
                                     В ремонте: {{ item.device }}<br>
                                     Серийный: {{ item.serial }}<br>
@@ -55,10 +55,10 @@
         <ul class="pagination">
             {% if page_obj.has_previous %}
                 <li class="page-item">
-                    <a class="page-link" href="?page=1">&laquo; В начало</a>
+                    <a class="page-link" href="?page=1&filter={{ filter }}">&laquo; В начало</a>
                 </li>
                 <li class="page-item">
-                    <a class="page-link" href="?page={{ page_obj.previous_page_number }}">Предудущая</a>
+                    <a class="page-link" href="?page={{ page_obj.previous_page_number }}&filter={{ filter }}">Предудущая</a>
                 </li>
             {% endif %}
             {% for p in page_obj.paginator.page_range %}
@@ -68,16 +68,16 @@
                     </li>
                 {% elif p > page_obj.number|add:-3 and p < page_obj.number|add:3 %}
                     <li class="page-item">
-                        <a class="page-link" href="?page={{ p }}">{{ p }}</a>
+                        <a class="page-link" href="?page={{ p }}&filter={{ filter }}">{{ p }}</a>
                     </li>
                 {% endif %}
             {% endfor %}
             {% if page_obj.has_next %}
                 <li class="page-item">
-                    <a class="page-link" href="?page={{ page_obj.next_page_number }}">Следующая</a>
+                    <a class="page-link" href="?page={{ page_obj.next_page_number }}&filter={{ filter }}">Следующая</a>
                 </li>
                 <li class="page-item">
-                    <a class="page-link" href="?page={{ page_obj.paginator.num_pages }}"> В конец &raquo;</a>
+                    <a class="page-link" href="?page={{ page_obj.paginator.num_pages }}&filter={{ filter }}"> В конец &raquo;</a>
                 </li>
             {% endif %}
         </ul>
