@@ -7,6 +7,15 @@
 
 {% block content %}
 
+    <script type="text/javascript">
+  $(document).ready(
+    function(){
+      $("#jqtest").html("JQuery installed successfully!");
+    }
+  );
+</script>
+<p id="jqtest"></p>
+
  <h3>
     {% if tag == 'fast' %}
         Быстрый заказ

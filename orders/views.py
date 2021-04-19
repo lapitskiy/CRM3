@@ -13,18 +13,21 @@ from django.core.paginator import PageNotAnInteger
 from django.core.exceptions import ObjectDoesNotExist
 from django.db import connection
 from django.db.models import Q
+from plugins.utils import RelatedMixin
 
 
 
 
-class OrdersHomeView(ListView):
+class OrdersHomeView(RelatedMixin, ListView):
     #model = Orders
     paginate_by = 10
     template_name = 'orders/orders_list.html'
     context_object_name = 'orders'
+    related_module_name = 'orders'
+
 
     def get_queryset(self):
-        return self.getQuery(self.checkRelated())
+        return self.getQuery()
 
     def get_context_data(self, *, object_list=None, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -32,9 +35,7 @@ class OrdersHomeView(ListView):
         context['filter'] = self.requestGet('filter')
         context['date'] = self.requestGet('date')
         # filter
-        related = self.checkRelated()
-        list_orders = self.getQuery(related)
-        print('list_orders ', list_orders)
+        list_orders = self.getQuery()
         #paginator
         paginator = Paginator(list_orders, self.paginate_by)
         page = self.request.GET.get('page')
@@ -46,34 +47,11 @@ class OrdersHomeView(ListView):
             orders_page = paginator.page(page)
         except EmptyPage:
             orders_page = paginator.page(paginator.num_pages)
-        # related data
-        related_list = []
-        if related:
-            for x in related:
-                modelPath = x.module_name + '.models'
-                app_model = importlib.import_module(modelPath)
-                cls = getattr(app_model, x.related_class_name)
-                for r in orders_page:
-                    try:
-                        cls2 = cls.objects.get(related_uuid=r.related_uuid)
-                        related_get = cls2.get_related_data()
-                        #print('related_get', related_get)
-                        related_list.append(related_get)
-                    except ObjectDoesNotExist:
-                        pass
-        #print('related_list', related_list)
-        context['related_list'] = related_list
+        context['related_list'] = self.getDataListRelated(page=orders_page)
         return context
 
     def post(self, request, *args, **kwargs):
-        print('EEE')
-        print('self 2', self.request.POST['csrfmiddlewaretoken'])
         return super(OrdersHomeView, self).post(request, *args, **kwargs)
-
-
-    def checkRelated(self):
-        related = Plugins.objects.get(module_name='orders')
-        return related.related.all()
 
     def requestGet(self, req):
         if self.request.GET.get(req):
@@ -81,7 +59,8 @@ class OrdersHomeView(ListView):
         else:
             return ''
 
-    def getQuery(self, related):
+    def getQuery(self):
+        related = self.checkRelated()
         if self.request.GET.get('date'):
             date_get = self.request.GET.get('date')
             # ~Q(related_uuid='') |
@@ -92,27 +71,12 @@ class OrdersHomeView(ListView):
             # ~Q(related_uuid='') |
             results_query = Orders.objects.filter(Q(device__icontains=search_query) | Q(serial__icontains=search_query) | Q(
                     comment__icontains=search_query)).values_list('related_uuid')
-            list_related = []
-            if related:
-                for x in related:
-                    modelPath = x.module_name + '.models'
-                    app_model = importlib.import_module(modelPath)
-                    cls = getattr(app_model, x.related_class_name)
-                    #search_query = {'search_query' : search_query}
-                    #r_cls = cls()
-                    related_result = cls().get_related_filter(search_query=search_query)
-                    if related_result:
-                        for z in related_result:
-                            list_related.append(z.related_uuid)
-            print('list_related', list_related)
-            related_query = Orders.objects.filter(related_uuid__in=list_related).values_list('related_uuid')
+
+            uudi_filter_related_list = self.getUuidListFilterRelated(search_query)
+
+            related_query = Orders.objects.filter(related_uuid__in=uudi_filter_related_list).values_list('related_uuid')
             print('related_query', related_query)
-            #related_conds = list_related_conds[0]
-            #for x in list_related_conds[1:]:
-            #    related_conds = related_conds | x
-            #print('related_conds 3', related_conds)
             if related_query:
-                #conds = Q(related_uuid__icontains=results_query) | Q(related_uuid__icontains=related_query)
                 conds = Q(related_uuid__in=results_query) | Q(related_uuid__in=related_query)
                 print('try cond if', conds)
                 results_filter_uuid = Orders.objects.filter(conds).values_list('related_uuid')
@@ -249,6 +213,14 @@ class OrderAddView(TemplateView):
     def checkRelated(self):
         related = Plugins.objects.get(module_name='orders')
         return related.related.all()
+
+def ajax_request(request):
+    """Check ajax"""
+    service = request.GET.get('service', None)
+    response = {
+        'is_taken': Orders.objects.filter(service__iexact=service).exists()
+    }
+    return JsonResponse(response)
 
 class OrderEditView(TemplateView):
     template_name = 'orders/order_edit.html'
