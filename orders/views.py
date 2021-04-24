@@ -1,9 +1,9 @@
 from django.shortcuts import render, get_object_or_404, redirect
-from django.http import HttpResponse, HttpResponseRedirect
+from django.http import HttpResponse, HttpResponseRedirect, JsonResponse
 from django.views.generic import ListView, DetailView, CreateView, FormView, TemplateView
 from django.urls import reverse_lazy
 from .forms import SimpleOrderAddForm, FastOrderAddForm
-from .models import Orders
+from .models import Orders, Service
 from plugins.models import Plugins
 import importlib
 import shortuuid
@@ -14,6 +14,7 @@ from django.core.exceptions import ObjectDoesNotExist
 from django.db import connection
 from django.db.models import Q
 from plugins.utils import RelatedMixin
+import json
 
 
 
@@ -216,10 +217,22 @@ class OrderAddView(TemplateView):
 
 def ajax_request(request):
     """Check ajax"""
-    service = request.GET.get('service', None)
-    response = {
-        'is_taken': Orders.objects.filter(service__iexact=service).exists()
-    }
+    service = request.GET.get('one_form-service', None)
+    print('service ', service)
+    qry = Service.objects.filter(Q(title__icontains=service)).values_list('title', flat=True)
+    qry = list(qry)
+    if not qry or service == '':
+        response = {
+            'is_taken': '',
+            'is_exist': False,
+        }
+    else:
+        response = {
+            'is_taken': qry,
+            'is_exist' : True,
+        }
+    print('response ', response['is_taken'])
+    print(response)
     return JsonResponse(response)
 
 class OrderEditView(TemplateView):

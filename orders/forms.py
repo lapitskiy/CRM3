@@ -12,7 +12,7 @@ class SimpleOrderAddForm(forms.ModelForm):
             #'category': forms.Select(attrs={'class': 'form-control'}),
                 #forms.HiddenInput(),
             'device': forms.TextInput(attrs={'class': 'form-control', 'autocomplete':'off'}),
-            'service': forms.TextInput(attrs={'class': 'form-control', 'autocomplete':'off'}),
+            'service': forms.TextInput(attrs={'id':'ajax-service', 'class': 'form-control', 'autocomplete':'off'}),
             'serial': forms.TextInput(attrs={'class': 'form-control', 'autocomplete':'off'}),
             'status': forms.Select(attrs={'class': 'form-control'}),
             'comment': forms.Textarea(attrs={'class': 'form-control', 'rows': 5}),
