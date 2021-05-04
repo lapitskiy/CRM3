@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+
+{% block title %}{{ title }} - {{ block.super }}{% endblock %}
+{% block sidebar %}
+{% include 'include/_sidebar_settings_orders.html' %}
+{% endblock %}
+
+{% block content %}
+
+    <form action="{% url 'settings_edit'%}?model={{ model }}&id={{ id }}" method="post">
+        {% csrf_token %}
+        {{ formEdit.non_field_errors }}
+        {{ formEdit.as_p }}
+        <button type="submit" class="btn btn-primary btn-block">Сохранить</button>
+    </form>
+
+{% endblock %}

@@ -1,0 +1,30 @@
+<h5>Настройки</h5>
+<h6>Услуги</h6>
+<div class="list-group">
+    <a href="{% url 'settings_add'%}?model=service" class="list-group-item list-group-item-action">Создать услугу</a>
+    <a href="{% url 'order_settings'%}?model=service" class="list-group-item list-group-item-action">Список всех услуг</a><br>
+    <form action="{% url 'order_settings' %}" method="get">
+    {% csrf_token %}
+    <div class="input-group mb-3">
+        <input type="text" class="form-control" placeholder="Поиск" aria-label="Поиск" name="filter" aria-describedby="button-addon2">
+        <input type="hidden" name="model" value="service">
+        <button type="submit" class="btn btn-outline-secondary" id="button-addon2">Искать</button>
+    </div>
+</form>
+
+<br>
+</div>
+<br>
+<h6>Устройства</h6>
+<div class="list-group">
+    <a href="{% url 'settings_add' %}?model=device" class="list-group-item list-group-item-action">Создать устройство</a>
+    <a href="{% url 'order_settings'%}?model=device" class="list-group-item list-group-item-action">Все устройства</a><br>
+    <form action="{% url 'order_settings' %}?model=device" method="get">
+    {% csrf_token %}
+    <div class="input-group mb-3">
+        <input type="text" class="form-control" placeholder="Поиск" aria-label="Поиск" name="filter" aria-describedby="button-addon2">
+                <input type="hidden" name="model" value="device">
+        <button type="submit" class="btn btn-outline-secondary" id="button-addon2">Искать</button>
+    </div>
+    </form>
+</div>

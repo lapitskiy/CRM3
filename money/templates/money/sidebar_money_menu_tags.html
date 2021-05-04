@@ -1,3 +1,24 @@
+{% for item in relatedmenu %}
+    {% for key, value in item.items %}
+        {% if key == 'name' %}
+            <h5>{{ value }}</h5>
+            <div class="list-group">
+                <a href="" class="list-group-item list-group-item-action">Все {{ value }}</a><br>
+                <form action="" method="get">
+                    {% csrf_token %}
+                    <div class="input-group mb-3">
+                        <input type="text" class="form-control" placeholder="Поиск" aria-label="Поиск" name="filter" aria-describedby="button-addon2">
+                        <button type="submit" class="btn btn-outline-secondary" id="button-addon2">Искать</button>
+                    </div>
+                    <input class="form-control" type="date" id="date" name="date">
+                </form>
+            </div>
+            <br>
+        {% endif %}
+    {% endfor %}
+{% endfor %}
+
+<h5>Настройки</h5>
 <div class="list-group">
-    <a href="#" class="list-group-item list-group-item-action">Настройки</a>
+    <a href="" class="list-group-item list-group-item-action">Настройки</a>
 </div>

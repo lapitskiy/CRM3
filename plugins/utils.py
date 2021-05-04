@@ -6,7 +6,6 @@ class RelatedMixin(object):
     related_module_name = ''
 
     # list related apps
-
     def checkRelated(self):
         related = Plugins.objects.get(module_name=self.related_module_name)
         return related.related.all()
@@ -24,11 +23,11 @@ class RelatedMixin(object):
                     try:
                         cls2 = cls.objects.get(related_uuid=r.related_uuid)
                         related_get = cls2.get_related_data()
-                        # print('related_get', related_get)
                         data_related_list.append(related_get)
                     except ObjectDoesNotExist:
                         pass
         return data_related_list
+
 
     # return uuid related list for search query
     def getUuidListFilterRelated(self, search_query):

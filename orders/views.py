@@ -2,8 +2,9 @@ from django.shortcuts import render, get_object_or_404, redirect
 from django.http import HttpResponse, HttpResponseRedirect, JsonResponse
 from django.views.generic import ListView, DetailView, CreateView, FormView, TemplateView
 from django.urls import reverse_lazy
-from .forms import SimpleOrderAddForm, FastOrderAddForm
-from .models import Orders, Service
+from .forms import SimpleOrderAddForm, FastOrderAddForm, SettingDeviceAddForm, SettingServiceAddForm
+from .models import Orders, Service, Device
+
 from plugins.models import Plugins
 import importlib
 import shortuuid
@@ -61,7 +62,6 @@ class OrdersHomeView(RelatedMixin, ListView):
             return ''
 
     def getQuery(self):
-        related = self.checkRelated()
         if self.request.GET.get('date'):
             date_get = self.request.GET.get('date')
             # ~Q(related_uuid='') |
@@ -100,11 +100,6 @@ class OrdersHomeView(RelatedMixin, ListView):
             return Orders.objects.filter(category__category=self.request.GET.get('category'))
         return Orders.objects.all()
 
-class OrdersFilterView(DetailView):
-    model = Orders
-    template_name = 'orders/order_item.html'
-    context_object_name = 'plugins_item'
-
 class OrderAddView(TemplateView):
     template_name = 'orders/order_add.html'
 
@@ -125,7 +120,6 @@ class OrderAddView(TemplateView):
         formOne.prefix = 'one_form'
         context.update({'formOne': formOne})
         context.update({'tag': self.getVar()})
-        print('tag ', context['tag'])
         return self.render_to_response(context)
 
 
@@ -217,23 +211,38 @@ class OrderAddView(TemplateView):
 
 def ajax_request(request):
     """Check ajax"""
-    service = request.GET.get('one_form-service', None)
-    print('service ', service)
-    qry = Service.objects.filter(Q(title__icontains=service)).values_list('title', flat=True)
-    qry = list(qry)
-    if not qry or service == '':
-        response = {
-            'is_taken': '',
-            'is_exist': False,
-        }
-    else:
-        response = {
-            'is_taken': qry,
-            'is_exist' : True,
-        }
-    print('response ', response['is_taken'])
-    print(response)
-    return JsonResponse(response)
+    model = request.GET.get('model')
+    if model:
+        if model == 'service':
+            service = request.GET.get('one_form-service', None)
+            qry = Service.objects.filter(Q(name__icontains=service)).values_list('name', flat=True)
+            qry = list(qry)
+            if not qry or service == '':
+                response = {
+                    'is_taken': '',
+                    'is_exist': False,
+                }
+            else:
+                response = {
+                    'is_taken': qry,
+                    'is_exist' : True,
+                }
+            return JsonResponse(response)
+        if model == 'device':
+            device = request.GET.get('one_form-device', None)
+            qry = Device.objects.filter(Q(name__icontains=device)).values_list('name', flat=True)
+            qry = list(qry)
+            if not qry or device == '':
+                response = {
+                    'is_taken': '',
+                    'is_exist': False,
+                }
+            else:
+                response = {
+                    'is_taken': qry,
+                    'is_exist' : True,
+                }
+            return JsonResponse(response)
 
 class OrderEditView(TemplateView):
     template_name = 'orders/order_edit.html'
@@ -364,3 +373,163 @@ class OrderEditView(TemplateView):
         
     '''
 
+class SettingsView(RelatedMixin, ListView):
+    #model = Orders
+    paginate_by = 10
+    template_name = 'settings/orders_settings_list.html'
+    context_object_name = 'service'
+
+    def get_queryset(self):
+        return self.getQuery()
+
+    def get_context_data(self, *, object_list=None, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['title'] = 'Настройки'
+        context['filter'] = self.requestGet('filter')
+        # filter
+        list_orders = self.getQuery()
+        #paginator
+        paginator = Paginator(list_orders, self.paginate_by)
+        page = self.request.GET.get('page')
+        try:
+            orders_page = paginator.page(page)
+        except PageNotAnInteger:
+            page = 1
+            orders_page = paginator.page(page)
+        except EmptyPage:
+            orders_page = paginator.page(paginator.num_pages)
+
+        if self.request.GET.get('model'):
+            context.update({'model': self.request.GET.get('model')})
+        else:
+            context.update({'model': 'service'})
+        return context
+
+    def post(self, request, *args, **kwargs):
+        return super(OrdersSettingsView, self).post(request, *args, **kwargs)
+
+    def requestGet(self, req):
+        if self.request.GET.get(req):
+            return ''
+        else:
+            return ''
+
+    def getQuery(self):
+        model = self.request.GET.get('model')
+        filter_q = self.request.GET.get('filter')
+        print('1-2', model)
+        if model and not filter_q:
+            if model == 'service':
+                print('TYT55')
+                return Service.objects.all()
+            if model == 'device':
+                return Device.objects.all()
+
+        if filter_q and model:
+            if model == 'service':
+                return Service.objects.filter(Q(name__icontains=filter_q))
+            if model == 'device':
+                return Device.objects.filter(Q(name__icontains=filter_q))
+        return Service.objects.all()
+
+    def requestGet(self, req):
+        if self.request.GET.get(req):
+            return self.request.GET.get('filter')
+        else:
+            return ''
+
+class SettingsAddView(TemplateView):
+    template_name = 'settings/settings_add.html'
+
+    def get(self, request, *args, **kwargs):
+        context = super().get_context_data(**kwargs)
+        formAdd = self.getForm()
+        formAdd.prefix = 'add_form'
+        context.update({'formAdd': formAdd})
+        context.update({'model': self.request.GET.get('model')})
+        return self.render_to_response(context)
+
+
+    def post(self, request, *args, **kwargs):
+        formAdd = self.getPostForm(self.request.POST)
+        if formAdd.is_valid():
+            form_update = formAdd.save(commit=False)
+            form_update.save()
+            print('Valid')
+            return HttpResponseRedirect(reverse_lazy('order_settings') + '?model=' + self.request.GET.get('model'))
+        else:
+            print('NotValid')
+            return self.form_invalid(formAdd, **kwargs)
+
+    def getForm(self):
+        getadd = self.request.GET.get('model')
+        if getadd:
+            if getadd == 'service':
+                return SettingServiceAddForm
+            if getadd == 'device':
+                return SettingDeviceAddForm
+
+    def getPostForm(self, req):
+        getadd = self.request.GET.get('model')
+        if getadd:
+            if getadd == 'service':
+                return SettingServiceAddForm(req, prefix='add_form')
+            if getadd == 'device':
+                return SettingDeviceAddForm(req, prefix='add_form')
+
+
+    def form_invalid(self, formAdd, **kwargs):
+        context = self.get_context_data()
+        formAdd.prefix = 'add_form'
+        context.update({'formAdd': formAdd})
+        context['model'] = self.request.GET.get('model')
+        return self.render_to_response(context)
+
+class SettingsEditView(TemplateView):
+    template_name = 'settings/settings_edit.html'
+
+    def get(self, request, *args, **kwargs):
+        context = super().get_context_data(**kwargs)
+        formEdit = self.getForm()
+        formEdit.prefix = 'edit_form'
+        context.update({'formEdit': formEdit})
+        context.update({'model': self.request.GET.get('model')})
+        context.update({'id': self.request.GET.get('id')})
+        return self.render_to_response(context)
+
+    def post(self, request, *args, **kwargs):
+        context = super().get_context_data(**kwargs)
+        formEdit = self.getPostForm()
+        if formEdit.is_valid():
+            formEdit.save()
+            return HttpResponseRedirect(reverse_lazy('order_settings') + '?model=' + self.request.GET.get('model'))
+        else:
+            return self.form_invalid(formEdit, **kwargs)
+
+    def form_invalid(self, formEdit, **kwargs):
+        context = self.get_context_data()
+        formEdit.prefix = 'edit_form'
+        context.update({'formEdit': formEdit})
+        context.update({'model': self.request.GET.get('model')})
+        context.update({'id': self.request.GET.get('id')})
+        return self.render_to_response(context)
+
+    def getForm(self):
+        getmodel = self.request.GET.get('model')
+        if getmodel:
+            if getmodel == 'service':
+                get_id = Service.objects.get(pk=self.request.GET.get('id'))
+                return SettingServiceAddForm(instance=get_id)
+            if getmodel == 'device':
+                get_id = Device.objects.get(pk=self.request.GET.get('id'))
+                return SettingDeviceAddForm(instance=get_id)
+
+    def getPostForm(self):
+        getedit = self.request.GET.get('model')
+        if getedit:
+            if getedit == 'service':
+                get_id = Service.objects.get(pk=self.request.GET.get('id'))
+                return SettingServiceAddForm(self.request.POST, prefix='edit_form', instance=get_id)
+            if getedit == 'device':
+                get_id = Device.objects.get(pk=self.request.GET.get('id'))
+                return SettingDeviceAddForm(self.request.POST, prefix='edit_form', instance=get_id)

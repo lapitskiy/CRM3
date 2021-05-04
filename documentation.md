@@ -12,7 +12,7 @@ plugin/settings_plugin.py
 
 REPO_URL ссылка на текущий рабочий json репозиторий плагинов
 
-INSTALLED_APPS_ADD перечень занчений для INSTALLED_APPS. Они добавляются в settings.py файле django INSTALLED_APPS += settings_plugin.INSTALLED_APPS_ADD
+INSTALLED_APPS_ADD перечень значений для INSTALLED_APPS. Они добавляются в settings.py файле django INSTALLED_APPS += settings_plugin.INSTALLED_APPS_ADD
 _INSTALLED_APPS_ADD = ['plugins.apps.PluginsConfig', 'pluginName.apps.pluginNameConfig']_
 
 PLUGIN_URLS - пути плагинов приложений,которые добавляются в urls.py
@@ -41,8 +41,16 @@ pluginName/template/pluginName/sidebar_orders_tags.html
 pluginName/templatetags//sidebar_orders_tags.py 
 рекомендованый файл tag.py
 
+install.py - обязательный файл с настройками приложения
+
+def get_related_data() - связанные данные которые отдает приложение
+
+def get_related_filter() - фильтр для связаннных данных со своей логикой
+
 Настройки плагина в файле install.py
 -
+данные для установки плагина
+
 MODULE_NAME = 'pluginName'
 
 INSTALLED_APPS_NAME = 'pluginName.apps.OrderConfig'
@@ -57,22 +65,23 @@ INSTALLED_URL = {
         'path': 'pluginName/',
         'include': 'pluginName.urls'}}
         
-demodata
--
-
 Установка демо данных плагина
 def demodata в файле install.py
+      
 
 
 related
 -
-- приложения связываются в настройках приложений
+- приложения связываются в настройках приложения
 - если приложение активно, оно автоматически добавляется в верхнее меню
 - база каждого приложения(плагина) для создания связанных данных с другими приложениями в модели plugins есть переменная related_uuid, которая связывает данные между любыми приложениями
 - пример вывода связанных данных в виде форм или данных можно посмотреть в файле views приложения orders
+- relatedMixin (plugins.utils) класс с методами для вызова связанных данных, который использует общую логику для всех приложений. Получение связанных данных и обработка, вывод связанного меню (пример в приложении money)
 
 
 install.py
 -
-данные для установки плагина
+
+
+
         

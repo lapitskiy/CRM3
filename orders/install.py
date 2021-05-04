@@ -1,6 +1,5 @@
 from .models import Category, Status
 
-# файл удаляется после установки
 MODULE_NAME = 'orders'
 
 INSTALLED_APPS_NAME = 'orders.apps.OrderConfig'

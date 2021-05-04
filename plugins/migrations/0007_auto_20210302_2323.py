@@ -7,7 +7,6 @@ import django.db.models.deletion
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('orders', '0003_remove_orders_related'),
         ('plugins', '0006_related'),
     ]
 

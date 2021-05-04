@@ -5,13 +5,13 @@ from django.contrib.auth.models import User
 # Create your models here.
 class Orders(models.Model):
 
-    device = models.CharField(max_length=150, verbose_name='Что ремонтируем')
     serial = models.CharField(max_length=150, blank=True, verbose_name='Серийный')
     comment = models.TextField(blank=True, verbose_name='Комментарий')
     created_at = models.DateTimeField(auto_now_add=True, verbose_name='Создан')
     updated_at = models.DateTimeField(auto_now=True, verbose_name='Обновлен')
     status = models.ForeignKey('Status', default=1, on_delete=models.PROTECT, verbose_name='Статус', related_name='get_status')
     service = models.ForeignKey('Service', null=True, blank=True, on_delete=models.PROTECT, verbose_name='Услуга', related_name='get_service')
+    device = models.ForeignKey('Device', null=True, blank=True, on_delete=models.PROTECT, verbose_name='Устройство', related_name='get_device')
     category = models.ForeignKey('Category', default=1, on_delete=models.PROTECT, verbose_name='Категория', related_name='get_category')
     related_uuid = models.CharField(max_length=22, blank=True, verbose_name='uuid')
     related_user = models.ForeignKey(User, related_name='order_user', null=True, blank=True, on_delete=models.PROTECT, verbose_name='Owner')
@@ -30,7 +30,7 @@ class Orders(models.Model):
 
 
 class Status(models.Model):
-    title = models.CharField(max_length=150, db_index=True, verbose_name='Наименования статуса')
+    title = models.CharField(max_length=150, db_index=True, unique=True, verbose_name='Наименования статуса')
 
     def __str__(self):
         return self.title
@@ -45,8 +45,7 @@ class Status(models.Model):
 
 class Category(models.Model):
     title = models.CharField(max_length=150, verbose_name='Наименования категории')
-    category = models.CharField(max_length=150, db_index=True, verbose_name='Категория')
-
+    category = models.CharField(max_length=150, db_index=True, unique=True, verbose_name='Категория')
 
     def __str__(self):
         return self.title
@@ -57,12 +56,25 @@ class Category(models.Model):
         ordering = ['title']
 
 class Service(models.Model):
-    title = models.CharField(max_length=150, db_index=True, verbose_name='Наименования услуги')
+    name = models.CharField(max_length=150, db_index=True, unique=True, verbose_name='Наименования услуги')
+    used = models.IntegerField(default=0)
 
     def __str__(self):
-        return self.title
+        return self.name
 
     class Meta:
         verbose_name = 'Услуга'
         verbose_name_plural = 'Услуги'
-        ordering = ['title']
+        ordering = ['name']
+
+class Device(models.Model):
+    name = models.CharField(max_length=150, db_index=True, unique=True, verbose_name='Устройство')
+    used = models.IntegerField(default=0)
+
+    def __str__(self):
+        return self.name
+
+    class Meta:
+        verbose_name = 'Устройство'
+        verbose_name_plural = 'Устройство'
+        ordering = ['name']
