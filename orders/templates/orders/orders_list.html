@@ -21,7 +21,8 @@
                             <div class="card border-light" >
                                 <div class="card-header bg-gradient">Заказ: <span class="badge rounded-pill bg-info text-dark">{{ item.pk }}</span> | Статус: <span class="badge rounded-pill bg-warning text-dark"> {{ item.status }}</span>  | Дата: <span class="badge rounded-pill bg-dark"> {{ item.created_at }}</span></div>
                                 <div class="card-body">
-                                    В ремонте: {{ item.device }}<br>
+                                    В ремонте устройство: {{ item.device }}<br>
+                                    Услуга: {{ item.service }}<br>
                                     Серийный: {{ item.serial }}<br>
                                     Комментарий: {{ item.comment }}<br>
                                     Категория: {{ item.category }}<br>

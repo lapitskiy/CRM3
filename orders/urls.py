@@ -1,4 +1,4 @@
-from django.urls import path
+from django.urls import path, include
 from .views import *
 
 urlpatterns = [
@@ -8,5 +8,5 @@ urlpatterns = [
     path('settings/', SettingsView.as_view(), name='order_settings'),
     path('settings/add/', SettingsAddView.as_view(), name='settings_add'),
     path('settings/edit/', SettingsEditView.as_view(), name='settings_edit'),
-    path('ajax_request', ajax_request, name='ajax_request')
+    path('ajax_request', ajax_request, name='ajax_request'),
 ]

@@ -124,7 +124,10 @@ class OrderAddView(TemplateView):
 
 
     def post(self, request, *args, **kwargs):
-        formOne = self.getPostForm(self.request.POST)
+        postCopy = self.ajaxConvert()
+        formOne = self.getPostForm(postCopy)
+        print('self.request.POST', self.request.POST['one_form-device'])
+        print('COPY', postCopy['one_form-device'])
         #print('formOne', formOne)
         related = self.checkRelated()
         form_list = []
@@ -161,6 +164,29 @@ class OrderAddView(TemplateView):
         else:
             print('NotValid')
             return self.form_invalid(formOne, form_list, **kwargs)
+
+    def ajaxConvert(self):
+        postCopy = self.request.POST.copy()
+        if postCopy['one_form-device']:
+            try:
+                pk = Device.objects.get(name=postCopy['one_form-device'])
+                postCopy['one_form-device'] = pk.pk
+            except ObjectDoesNotExist:
+                pass
+        if postCopy['one_form-service']:
+            try:
+                pk = Service.objects.get(name=postCopy['one_form-service'])
+                postCopy['one_form-service'] = pk.pk
+            except ObjectDoesNotExist:
+                pass
+        return postCopy
+
+
+
+
+
+
+        return tag
 
     def getVar(self):
         category_filter = self.request.GET.get('category')

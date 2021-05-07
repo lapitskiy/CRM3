@@ -4,7 +4,6 @@ from django.contrib.auth.models import User
 
 # Create your models here.
 class Orders(models.Model):
-
     serial = models.CharField(max_length=150, blank=True, verbose_name='Серийный')
     comment = models.TextField(blank=True, verbose_name='Комментарий')
     created_at = models.DateTimeField(auto_now_add=True, verbose_name='Создан')
@@ -73,6 +72,7 @@ class Device(models.Model):
 
     def __str__(self):
         return self.name
+
 
     class Meta:
         verbose_name = 'Устройство'

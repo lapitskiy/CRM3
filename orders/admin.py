@@ -6,12 +6,12 @@ from .models import Orders, Status, Category, Service, Device
 
 class OrdersAdmin(admin.ModelAdmin):
 
-    list_display = ('id','device','serial','category','created_at','updated_at','status','related_uuid','related_user')
-    list_display_links = ('id','device')
+    list_display = ('id','device','serial','service','category','created_at','updated_at','status','related_uuid','related_user')
+    list_display_links = ('id','device', 'service')
     search_fields = ('device','serial')
     list_editable = ('status',)
-    list_filter = ('status',)
-    fields = ('device', 'serial', 'status', 'category', 'created_at', 'updated_at')
+    list_filter = ('status','device','service')
+    fields = ('service', 'device', 'serial', 'status', 'category', 'created_at', 'updated_at')
     readonly_fields = ('created_at', 'updated_at')
     save_on_top = True
 
