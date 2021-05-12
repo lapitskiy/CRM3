@@ -8,7 +8,8 @@ class Money(models.Model):
     prepayment = models.DecimalField(max_digits=19, blank=True, default=0, decimal_places=2, verbose_name='Предоплата')
     created_at = models.DateTimeField(auto_now_add=True, verbose_name='Создан')
     updated_at = models.DateTimeField(auto_now=True, verbose_name='Обновлен')
-    related_uuid = models.CharField(max_length=22, blank=True, verbose_name='uuid')
+    #related_uuid = models.CharField(max_length=22, blank=True, verbose_name='uuid')
+    related_uuid = models.JSONField(blank=True) # json dict
 
     def get_absolute_url(self):
         return reverse('view_money', kwargs={'pk': self.pk})

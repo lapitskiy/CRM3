@@ -67,6 +67,7 @@ class OrdersHomeView(RelatedMixin, ListView):
             # ~Q(related_uuid='') |
             results_date_uuid = Orders.objects.filter(Q(created_at__icontains=date_get)).values_list('related_uuid')
 
+
         if self.request.GET.get('filter'):
             search_query = self.request.GET.get('filter')
             # ~Q(related_uuid='') |
@@ -75,10 +76,16 @@ class OrdersHomeView(RelatedMixin, ListView):
 
             uudi_filter_related_list = self.getUuidListFilterRelated(search_query)
 
-            related_query = Orders.objects.filter(related_uuid__in=uudi_filter_related_list).values_list('related_uuid')
+            #related_query = Orders.objects.filter(related_uuid__in=uudi_filter_related_list).values_list('related_uuid')
+            related_query = Orders.objects.filter(related_uuid__icontains=uudi_filter_related_list).values_list('related_uuid')
+
+
             print('related_query', related_query)
             if related_query:
-                conds = Q(related_uuid__in=results_query) | Q(related_uuid__in=related_query)
+                #conds = Q(related_uuid__in=results_query) | Q(related_uuid__in=related_query)
+                q1 = getListUuidFromDictKeyRelated(results_query)
+                q2 = getListUuidFromDictKeyRelated(related_query)
+                conds = Q(related_uuid__icontains=q1) | Q(related_uuid__icontains=q2)
                 print('try cond if', conds)
                 results_filter_uuid = Orders.objects.filter(conds).values_list('related_uuid')
             else:
@@ -100,8 +107,9 @@ class OrdersHomeView(RelatedMixin, ListView):
             return Orders.objects.filter(category__category=self.request.GET.get('category'))
         return Orders.objects.all()
 
-class OrderAddView(TemplateView):
+class OrderAddView(RelatedMixin, TemplateView):
     template_name = 'orders/order_add.html'
+    related_module_name = 'orders' #relatedmixin module
 
     def get(self, request, *args, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -126,13 +134,13 @@ class OrderAddView(TemplateView):
     def post(self, request, *args, **kwargs):
         postCopy = self.ajaxConvert()
         formOne = self.getPostForm(postCopy)
-        print('self.request.POST', self.request.POST['one_form-device'])
-        print('COPY', postCopy['one_form-device'])
         #print('formOne', formOne)
         related = self.checkRelated()
         form_list = []
         #module_list = []
         valid = True
+        related_isValid_dict = self.checkRelatedIsValidDict(self.request.POST) # return dict
+        print('related_form_dict', related_form_dict)
         if related:
             for x in related:
                 formPath = x.module_name + '.forms'
@@ -142,10 +150,11 @@ class OrderAddView(TemplateView):
                 form_list.append(related_form)
                 #module_list.append(x.module_name)
                 if not related_form.is_valid():
+                    print('valid ', related_form.is_valid())
                     valid = False
 
         if formOne.is_valid() and valid:
-            related_uuid = shortuuid.uuid()
+            related_uuid = {shortuuid.uuid() : ''}
             form_update = formOne.save(commit=False)
             #print('form.cleaned_data', form_update.cleaned_data['category'])
             cat = self.getCategory()
@@ -231,9 +240,6 @@ class OrderAddView(TemplateView):
         context['tag'] = 'fast'
         return self.render_to_response(context)
 
-    def checkRelated(self):
-        related = Plugins.objects.get(module_name='orders')
-        return related.related.all()
 
 def ajax_request(request):
     """Check ajax"""
@@ -311,6 +317,7 @@ class OrderEditView(TemplateView):
         flag_uuid = False
         get_order = Orders.objects.get(pk=context['order_id'])
         formOne = SimpleOrderAddForm(self.request.POST, prefix='one_form', instance=get_order)
+
         if related:
             for x in related:
                 formPath = x.module_name + '.forms'

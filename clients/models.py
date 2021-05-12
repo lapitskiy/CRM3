@@ -10,7 +10,8 @@ class Clients(models.Model):
     phone = models.CharField(validators=[phone_regex], max_length=17, verbose_name='Телефон') # validators should be a list
     created_at = models.DateTimeField(auto_now_add=True, verbose_name='Создан')
     updated_at = models.DateTimeField(auto_now=True, verbose_name='Обновлен')
-    related_uuid = models.CharField(max_length=22, blank=True, verbose_name='uuid')
+    #related_uuid = models.CharField(max_length=22, blank=True, verbose_name='uuid')
+    related_uuid = models.JSONField(blank=True) # json dict
 
     def get_absolute_url(self):
         return reverse('view_clients', kwargs={'pk': self.pk})
