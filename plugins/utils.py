@@ -83,10 +83,18 @@ class RelatedMixin(object):
         related_form_dict = {}
         if related:
             for x in related:
+                _dict= {}
                 imp_related = importlib.import_module(x.module_name + '.related')
                 getrelatedClass = getattr(imp_related, 'checkRelated')
                 relatedClass = getrelatedClass()
-                related_form_dict['module'] = x.module_name
-                related_form_dict['update'] = relatedClass.checkUpdate(request_post=request_post)
-                related_form_dict['form'] = relatedClass.checkRelatedAddForm(request_post=request_post)
+                _dict['module'] = x.module_name
+                _dict['update'] = relatedClass.checkUpdate(request_post=request_post)
+                _dict2 = relatedClass.checkRelatedAddForm(request_post=request_post)
+                _dict['form'] = _dict2['form']
+                _dict['uuid'] = _dict2['uuid']
+                if _dict['form'].is_valid():
+                    _dict['valid'] = True
+                else:
+                    _dict['valid'] = False
+                related_form_dict[x.module_name] = _dict
         return related_form_dict

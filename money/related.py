@@ -8,11 +8,15 @@ class checkRelated(object):
         return False
 
     def checkRelatedAddForm(self, **kwargs):
-        if self.checkUpdate(request_post=kwargs['request_post']):
+        context = {}
+        request_post = kwargs['request_post']
+        if self.checkUpdate(request_post=request_post):
             pass
         else:
-            related_form = RelatedAddForm(kwargs['request_post'], prefix=self.prefix)
+            related_form = RelatedAddForm(request_post, prefix=self.prefix)
             related_form.prefix = self.prefix
-        print('request_post ', kwargs['request_post'])
+            context['uuid'] = ''
+        print('request_post ', request_post)
         print('related_form ', related_form)
-        return related_form
+        context['form'] = related_form
+        return context

@@ -16,13 +16,18 @@ class checkRelated(object):
         return False
 
     def checkRelatedAddForm(self, **kwargs):
-        if self.checkUpdate(request_post=kwargs['request_post']):
-            get_client = Clients.objects.get(phone=kwargs['request_post']['clients-phone'])
-            related_form = RelatedAddForm(self.request.POST, prefix=self.prefix, instance=get_client)
+        context= {}
+        request_post = kwargs['request_post']
+        if self.checkUpdate(request_post=request_post):
+            get_client = Clients.objects.get(phone=request_post['clients-phone'])
+            related_form = RelatedAddForm(request_post, prefix=self.prefix, instance=get_client)
+            context['uuid'] = get_client.related_uuid
         else:
-            related_form = RelatedAddForm(kwargs['request_post'], prefix=self.prefix)
+            related_form = RelatedAddForm(request_post, prefix=self.prefix)
             related_form.prefix = self.prefix
-        print('request_post ', kwargs['request_post'])
+            context['uuid'] = ''
+        print('request_post ', request_post)
         print('related_form ', related_form)
-        return related_form
+        context['form'] = related_form
+        return context
 
