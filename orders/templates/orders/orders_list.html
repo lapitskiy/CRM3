@@ -26,22 +26,23 @@
                                     Серийный: {{ item.serial }}<br>
                                     Комментарий: {{ item.comment }}<br>
                                     Категория: {{ item.category }}<br>
-
                                 </div>
                             </div>
                             {% for related_item in related_list %}
-                                {% if related_item.related_uuid and item.related_uuid == related_item.related_uuid %}
-                                    <div class="card border-light" >
-                                        <div class="card-header">{{ related_item.module_name }}</div>
-                                        <div class="card-body">
-                                        {% for key, value in related_item.items %}
-                                            {% if key != 'related_uuid' and key != 'module_name' %}
-                                                {{ key }}: {{ value }}<br>
-                                            {% endif %}
-                                        {% endfor %}
+                                {% for order_uuid_key, order_uuid_value in item.related_uuid.items %}
+                                    {% if related_item.related_uuid and order_uuid_key == related_item.related_uuid %}
+                                        <div class="card border-light" >
+                                            <div class="card-header">{{ related_item.module_name }}</div>
+                                            <div class="card-body">
+                                                {% for key, value in related_item.items %}
+                                                    {% if key != 'related_uuid' and key != 'module_name' %}
+                                                        {{ key }}: {{ value }}<br>
+                                                    {% endif %}
+                                                {% endfor %}
+                                            </div>
                                         </div>
-                                        </div>
-                                {% endif %}
+                                    {% endif %}
+                                {% endfor %}
                             {% endfor %}
                                                     <div class="d-flex justify-content-end">
                                 <a href="edit/{{ item.pk }}"><button type="button" class="btn btn-secondary">Редактировать</button></a>

@@ -50,6 +50,7 @@ class OrdersHomeView(RelatedMixin, ListView):
         except EmptyPage:
             orders_page = paginator.page(paginator.num_pages)
         context['related_list'] = self.getDataListRelated(page=orders_page)
+
         return context
 
     def post(self, request, *args, **kwargs):
@@ -102,7 +103,6 @@ class OrdersHomeView(RelatedMixin, ListView):
                 if self.request.GET.get('date'):
                     return Orders.objects.filter(Q(related_uuid__in=results_date_uuid))
 
-
         if self.request.GET.get('category'):
             return Orders.objects.filter(category__category=self.request.GET.get('category'))
         return Orders.objects.all()
@@ -137,7 +137,7 @@ class OrderAddView(RelatedMixin, TemplateView):
         #print('formOne', formOne)
         form_list = []
         valid = True
-        related_isValid_dict = self.checkRelatedIsValidDict(self.request.POST) # return dict
+        related_isValid_dict = self.checkRelatedIsValidDict(self.request.POST, doing='add') # return dict
         print('related_isValid_dict', related_isValid_dict)
         #related = self.checkRelated()
         #if related:
@@ -156,9 +156,7 @@ class OrderAddView(RelatedMixin, TemplateView):
             form_one.category_id = self.getCategory()
             form_one.related_uuid = related_uuid
             form_one.related_user = request.user
-            print('tyt update form')
             form_one.save()
-            print('erorr1?')
             for k, v  in related_isValid_dict.items():
                 form_from_dict = related_isValid_dict[k]['form']
                 form_add = form_from_dict.save(commit=False)
@@ -281,7 +279,7 @@ def ajax_request(request):
                 }
             return JsonResponse(response)
 
-class OrderEditView(TemplateView):
+class OrderEditView(RelatedMixin, TemplateView):
     template_name = 'orders/order_edit.html'
 
     def get(self, request, *args, **kwargs):
@@ -297,11 +295,12 @@ class OrderEditView(TemplateView):
                 app_form = importlib.import_module(formPath)
                 app_model = importlib.import_module(modelPath)
                 cls = getattr(app_model, x.related_class_name)
-                try:
-                    get_related = cls.objects.get(related_uuid=get_order.related_uuid)
-                    related_form = app_form.RelatedAddForm(instance=get_related)
-                except cls.DoesNotExist:
-                    related_form = app_form.RelatedAddForm()
+                for key_uuid, value_uuid in get_order.related_uuid.items():
+                    try:
+                        get_related = cls.objects.get(Q(related_uuid__icontains=key_uuid))
+                        related_form = app_form.RelatedAddForm(instance=get_related)
+                    except cls.DoesNotExist:
+                        related_form = app_form.RelatedAddForm()
                 related_form.prefix = x.module_name
                 form_list.append(related_form)
         context['forms'] = form_list
@@ -323,36 +322,21 @@ class OrderEditView(TemplateView):
         get_order = Orders.objects.get(pk=context['order_id'])
         formOne = SimpleOrderAddForm(self.request.POST, prefix='one_form', instance=get_order)
 
-        if related:
-            for x in related:
-                formPath = x.module_name + '.forms'
-                modelPath = x.module_name + '.models'
-                app_form = importlib.import_module(formPath)
-                app_model = importlib.import_module(modelPath)
-                cls = getattr(app_model, x.related_class_name)
+        related_isValid_dict = self.checkRelatedIsValidDict(self.request.POST, doing='edit', uuid=get_order.related_uuid) # return dict
 
-                try:
-                    get_related = cls.objects.get(related_uuid=get_order.related_uuid)
-                    related_form = app_form.RelatedAddForm(self.request.POST, prefix=x.module_name,
-                                                           instance=get_related)
-                except cls.DoesNotExist:
-                    related_form = app_form.RelatedAddForm(self.request.POST, prefix=x.module_name)
-                    flag_uuid = True
-                related_form.prefix = x.module_name
-                form_list.append(related_form)
-                #module_list.append(x.module_name)
-                if not related_form.is_valid():
-                    valid = False
-
-        if formOne.is_valid() and valid:
+        if formOne.is_valid() and not False in related_isValid_dict:
             formOne.save()
-            for x in form_list:
-                if flag_uuid:
-                    form_update = x.save(commit=False)
-                    form_update.related_uuid = get_order.related_uuid
-                    form_update.save()
+            for k, v  in related_isValid_dict.items():
+                if not related_isValid_dict[k]['update']:
+                    form_from_dict = related_isValid_dict[k]['form']
+                    form_add = form_from_dict.save(commit=False)
+                    form_add.related_uuid = get_order.related_uuid
+                    self.relatedDeleteMultipleUuid(dictt=related_isValid_dict[k], deleteUuid=get_order.related_uuid)
+                    form_add.save()
                 else:
-                    x.save()
+                    form_from_dict = related_isValid_dict[k]['form']
+                    form_add = form_from_dict.save(commit=False)
+                    form_add.save()
             print('Valid')
             return HttpResponseRedirect(reverse_lazy('orders_home'))
         else:
