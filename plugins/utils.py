@@ -115,12 +115,14 @@ class RelatedMixin(object):
                 relatedClass = getrelatedClass()
                 _dict['module'] = x.module_name
                 _dict['update'] = relatedClass.checkUpdate(request_post=request_post)
+                _dict['convert'] = relatedClass.checkConvert(uuid=self.dictUuidToList(kwargs['uuid']), request_post=request_post)
                 if 'add' in kwargs['doing']:
                     _dict2 = relatedClass.checkRelatedAddForm(request_post=request_post)
                 if 'edit' in kwargs['doing']:
                     _dict2 = relatedClass.checkRelatedEditForm(request_post=request_post, uuid=self.dictUuidToList(kwargs['uuid']))
                 _dict['form'] = _dict2['form']
                 _dict['uuid'] = _dict2['uuid']
+                _dict['pk'] = _dict2['pk']
                 if _dict['form'].is_valid():
                     _dict['valid'] = True
                 else:

@@ -36,3 +36,6 @@ class AppRelated(object):
             context['uuid'] = ''
         context['form'] = related_form
         return context
+
+    def deleteRelatedMultipleUuid(self, **kwargs):
+        pass

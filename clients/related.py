@@ -17,6 +17,22 @@ class AppRelated(object):
                 return False
         return False
 
+    # если это не создание новой модели, а изминение старой на другую уже существующую, тогда мы должены произвести смену
+    # uuid мужду этими моделями
+    # return False or dict uudi convert
+    def checkConvert(self, **kwargs):
+        if kwargs['uuid']:
+            try:
+                get_client_before = Clients.objects.get(Q(related_uuid__icontains=kwargs['uuid'][0]))
+                get_client_now = Clients.objects.get(phone=kwargs['request_post']['clients-phone'])
+                if get_client_before.pk != get_client_now.pk:
+                    new_uuid_dict = get_client_now.related_uuid
+                    new_uuid_dict.update({kwargs['uuid'][0]:''})
+                    return new_uuid_dict
+            except ObjectDoesNotExist:
+                return False
+        return False
+
     def checkRelatedAddForm(self, **kwargs):
         context= {}
         request_post = kwargs['request_post']
