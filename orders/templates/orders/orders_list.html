@@ -16,9 +16,15 @@
         <div class="col-8">
             <div class="tab-content" id="nav-tabContent">
                 {% for item in page_obj %}
-                    <div class="tab-pane fade show" id="id-list-{{ item.pk }}" role="tabpanel" aria-labelledby="list-{{ item.pk }}">
-                        <div class="shadow p-3 mb-5 bg-body rounded">
-                            <div class="card border-light" >
+                    {% if forloop.counter == 1 %}
+                        <div class="tab-pane active show" id="id-list-{{ item.pk }}" role="tabpanel" aria-labelledby="list-{{ item.pk }}">
+
+                    {% else %}
+                        <div class="tab-pane fade show" id="id-list-{{ item.pk }}" role="tabpanel" aria-labelledby="list-{{ item.pk }}">
+                    {% endif %}
+
+                <div class="shadow p-3 mb-5 bg-body rounded">
+                    <div class="card border-light" >
                                 <div class="card-header bg-gradient">Заказ: <span class="badge rounded-pill bg-info text-dark">{{ item.pk }}</span> | Статус: <span class="badge rounded-pill bg-warning text-dark"> {{ item.status }}</span>  | Дата: <span class="badge rounded-pill bg-dark"> {{ item.created_at }}</span></div>
                                 <div class="card-body">
                                     В ремонте устройство: {{ item.device }}<br>

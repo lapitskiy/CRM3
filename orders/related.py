@@ -59,4 +59,11 @@ class AppRelated():
                         for z in related_result:
                             uudi_filter_related_list.append(z.related_uuid)
                     return uudi_filter_related_list
+                if _dict['category'] == 'simple':
+                    related_result = Orders.objects.filter(category__category='simple')
+                    uudi_filter_related_list = []
+                    if related_result:
+                        for z in related_result:
+                            uudi_filter_related_list.append(z.related_uuid)
+                    return uudi_filter_related_list
         return uudi_filter_related_list
