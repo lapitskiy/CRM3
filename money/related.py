@@ -8,6 +8,12 @@ class AppRelated(object):
     def checkUpdate(self, **kwargs):
         return False
 
+    # если это не создание новой модели, а изминение старой на другую уже существующую, тогда мы должены произвести смену
+    # uuid мужду этими моделями
+    # return False or dict uudi convert
+    def checkConvert(self, **kwargs):
+        return False
+
     def checkRelatedAddForm(self, **kwargs):
         context = {}
         request_post = kwargs['request_post']

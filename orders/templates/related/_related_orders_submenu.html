@@ -1,0 +1,15 @@
+<h5>Деньги заказы</h5>
+<div class="list-group">
+    <a href="?relateddata={'orders' : {'category': 'all'}}" class="list-group-item list-group-item-action">Все заказы</a>
+    <a href="?relateddata={'orders' : {'category': 'fast'}}" class="list-group-item list-group-item-action">Быстрые заказы</a>
+    <a href="?relateddata={'orders' : {'category': 'simple'}}" class="list-group-item list-group-item-action">Заказы в ремонт</a><br>
+    <form action="" method="get">
+        {% csrf_token %}
+        <div class="input-group mb-3">
+            <input type="text" class="form-control" placeholder="Поиск" aria-label="Поиск" name="filter" aria-describedby="button-addon2">
+            <button type="submit" class="btn btn-outline-secondary" id="button-addon2">Искать</button>
+        </div>
+        <input class="form-control" type="date" id="date" name="date">
+    </form>
+</div>
+<br>

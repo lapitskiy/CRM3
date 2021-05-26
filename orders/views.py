@@ -80,17 +80,13 @@ class OrdersHomeView(RelatedMixin, ListView):
             #related_query = Orders.objects.filter(related_uuid__in=uudi_filter_related_list).values_list('related_uuid')
             related_query = Orders.objects.filter(related_uuid__icontains=uudi_filter_related_list).values_list('related_uuid')
 
-
-            print('related_query', related_query)
             if related_query:
                 #conds = Q(related_uuid__in=results_query) | Q(related_uuid__in=related_query)
-                q1 = getListUuidFromDictKeyRelated(results_query)
-                q2 = getListUuidFromDictKeyRelated(related_query)
+                q1 = self.dictUuidToList(results_query)
+                q2 = self.dictUuidToList(related_query)
                 conds = Q(related_uuid__icontains=q1) | Q(related_uuid__icontains=q2)
-                print('try cond if', conds)
                 results_filter_uuid = Orders.objects.filter(conds).values_list('related_uuid')
             else:
-                print('try cond else')
                 results_filter_uuid = results_query
 
         if self.request.GET.get('date') and self.request.GET.get('filter'):
@@ -243,7 +239,6 @@ class OrderAddView(RelatedMixin, TemplateView):
         context['tag'] = 'fast'
         return self.render_to_response(context)
 
-
 def ajax_request(request):
     """Check ajax"""
     model = request.GET.get('model')
@@ -326,7 +321,8 @@ class OrderEditView(RelatedMixin, TemplateView):
 
 
         relatedValid = True
-        for k, v in related_isValid_dict:
+        print('related_isValid_dict ', related_isValid_dict)
+        for k, v in related_isValid_dict.items():
             if not related_isValid_dict[k]['valid']:
                 relatedValid = False
 
