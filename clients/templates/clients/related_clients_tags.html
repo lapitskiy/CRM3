@@ -1,1 +1,33 @@
 Вывод добавления клиентского поля
+
+
+                            var request = new XMLHttpRequest();
+                            // Обрабатываем изменение состояния для запроса.
+                            // Парсируем JSON
+                            // Перебираем через цикл массив JSON.
+                            jsonOptions.forEach(function(response.is_taken) {
+                                    // Создаем новый элемент <option>.
+                                    var option = document.createElement('option');
+                                    // Устанавливаем значение, используя элементы массива JSON.
+                                    option.value = response.is_taken['id'];
+                                    option.label = response.is_taken['name'];
+                                    // Добавляем элемент <option> к <datalist>.
+                                    dataList.appendChild(option);
+                                  });
+
+                                  // Обновляем текст заполнителя.
+                            input.placeholder = "e.g. datalist";
+
+
+                            // Обновляем текст заполнителя.
+                            input.placeholder = "Loading options...";
+
+                            // Настраиваем и выполняем запрос.
+                            request.open('GET', 'html-elements.json', true);
+                            request.send();
+
+
+
+
+                            console.log(vardataList)
+                            console.log(input)

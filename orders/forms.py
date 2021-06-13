@@ -50,14 +50,14 @@ class SimpleOrderAddForm(forms.ModelForm):
 
 
 
-
 class FastOrderAddForm(forms.ModelForm):
+    service = ChoiceTxtField(queryset=Service.objects.all().order_by('-id'))
+    device = ChoiceTxtField(queryset=Device.objects.all().order_by('-id'))
+
     class Meta:
         model = Orders
         fields = ['device', 'serial', 'service', 'comment']
         widgets = {
-            'device': forms.TextInput(attrs={'id':'ajax-device', 'class': 'form-control', 'autocomplete':'off'}),
-            'service': forms.TextInput(attrs={'id':'ajax-service', 'class': 'form-control', 'autocomplete':'off'}),
             'serial': forms.TextInput(attrs={'class': 'form-control', 'autocomplete':'off'}),
             'comment': forms.Textarea(attrs={'class': 'form-control', 'rows': 5}),
         }

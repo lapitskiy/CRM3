@@ -1,7 +1,144 @@
+
+
+{% block javascript %}
+    <script>
+        $(document).ready(function () {
+            // catch the form's submit event
+            $('#ajax-service').keyup(function () {
+                // create an AJAX call
+                $.ajax({
+                    data: $(this).serialize(), // get the form data
+                    url: "{% url 'ajax_request' %}?model=service",
+                    // on success
+                    success: function (response) {
+                        //console.log('tyt1')
+                        if (response.is_exist == true) {
+                            let list = ''
+                            for (var i in response.is_taken) {
+                                list = list + '<span class="service-list-item badge bg-secondary" name="'+(response.is_taken[i])+'" id="service'+(i)+'">'+(response.is_taken[i])+'</span> '
+                                }
+                            //console.log("i: "+i);
+
+                            $('#ajax-service-list').remove();
+                            $('#ajax-service').after('<div id="ajax-service-list" name="ajax-service-list">'+(list)+'</div>')
+                            $(document).on('click', '.service-list-item', function(e){
+                               $('#ajax-service').val( $(this).text());
+                            });
+
+                        }
+                        else {
+                             $('#ajax-service-list').remove();
+                            $('#ajax-service').after('<div id="ajax-service-list" name="ajax-service-list"><span class="badge rounded-pill bg-warning text-dark" id="ajax-service-list">Нет совпадений</span></div>')
+                        }
+                    },
+                    // on error
+                    error: function (response) {
+                        // alert the error if any error occured
+                        console.log(response.responseJSON.errors)
+                    }
+                });
+                return false;
+            });
+
+            $(":input").on("keyup change", function(e) {
+    // do stuff!
+})
+
+            //$('#id_one_form-device').keyup(function () {
+            //$('#id_one_form-device').on("keyup change", function() {
+
+
+            $('#ajax_input_{{ widget.name }}').keyup(function () {
+                // create an AJAX call
+                $.ajax({
+                    data: $(this).serialize(), // get the form data
+                    url: "{% url 'ajax_request' %}?model=device",
+                    // on success
+                    success: function (response) {
+                        if (response.is_exist == true) {
+                            console.log('is_exist = true')
+                            $("#ajax-one_form-device").text(response.is_taken.name);
+                            vardataList = document.getElementById('{{ widget.name }}');
+                            var input = document.getElementById('ajax_input_{{ widget.name }}');
+                            var request = new XMLHttpRequest();
+                            // Обрабатываем изменение состояния для запроса.
+                            // Парсируем JSON
+                            // Перебираем через цикл массив JSON.
+                            jsonOptions.forEach(function(response.is_taken) {
+                                    // Создаем новый элемент <option>.
+                                    var option = document.createElement('option');
+                                    // Устанавливаем значение, используя элементы массива JSON.
+                                    option.value = response.is_taken['id'];
+                                    option.label = response.is_taken['name'];
+                                    // Добавляем элемент <option> к <datalist>.
+                                    dataList.appendChild(option);
+                                  });
+
+                                  // Обновляем текст заполнителя.
+                            input.placeholder = "e.g. datalist";
+
+
+                            // Обновляем текст заполнителя.
+                            input.placeholder = "Loading options...";
+
+                            // Настраиваем и выполняем запрос.
+                            request.open('GET', 'html-elements.json', true);
+                            request.send();
+
+
+
+
+                            console.log(vardataList)
+                            console.log(input)
+
+                        }
+                        else {
+                             $("#ajax-{{ widget.name }}").text('Нет в базе');
+                        }
+                    },
+                    // on error
+                    error: function (response) {
+                        // alert the error if any error occured
+                        console.log(response.responseJSON.errors)
+                    }
+                });
+                return false;
+            });
+
+            $('#id_one_form-service').keyup(function () {
+                // create an AJAX call
+                $.ajax({
+                    data: $(this).serialize(), // get the form data
+                    url: "{% url 'ajax_request' %}?model=service",
+                    // on success
+                    success: function (response) {
+                        if (response.is_exist == true) {
+                            console.log('is_exist = true')
+                            $("#ajax-one_form-service").text(response.is_taken.name);
+                            console.log('click')
+
+                        }
+                        else {
+                             $("#ajax-{{ widget.name }}").text('Нет в базе');
+                        }
+                    },
+                    // on error
+                    error: function (response) {
+                        // alert the error if any error occured
+                        console.log(response.responseJSON.errors)
+                    }
+                });
+                return false;
+            });
+        })
+    </script>
+{% endblock javascript %}
+
 <br>
-<input list="{{ widget.name }}"
+<input id="ajax_input_{{ widget.name }}"  list="{{ widget.name }}"
     {% if widget.value != None %} name="{{ widget.name }}" value="{{ widget.value|stringformat:'s' }}"{% endif %}
     {% include "django/forms/widgets/attrs.html" %}>
+    <span class="badge rounded-pill bg-warning text-dark" id="ajax-{{ widget.name }}" name="ajax-{{ widget.name }}"></span>
 
 <datalist id="{{ widget.name }}">
     {% for group_name, group_choices, group_index in widget.optgroups %}

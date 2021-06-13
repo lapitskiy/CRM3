@@ -13,7 +13,6 @@ class Orders(models.Model):
     device = models.ForeignKey('Device', default=1, on_delete=models.PROTECT, verbose_name='Устройство', related_name='get_device')
     category = models.ForeignKey('Category', default=1, on_delete=models.PROTECT, verbose_name='Категория', related_name='get_category')
     related_uuid = models.JSONField(blank=True) # json dict
-    #related_uuid = models.CharField(max_length=22, blank=True, verbose_name='uuid')
     related_user = models.ForeignKey(User, related_name='order_user', null=True, blank=True, on_delete=models.PROTECT, verbose_name='Owner')
 
 

@@ -18,13 +18,15 @@ class AppRelated(object):
         context = {}
         request_post = kwargs['request_post']
         if self.checkUpdate(request_post=request_post):
-            pass
+            context['uuid'] = ''
+            context['pk'] = ''
         else:
             related_form = RelatedAddForm(request_post, prefix=self.prefix)
             related_form.prefix = self.prefix
             context['uuid'] = ''
-        print('request_post ', request_post)
-        print('related_form ', related_form)
+            context['pk'] = '1'
+        print('Related - Money')
+        print('pk ', context['pk'])
         context['form'] = related_form
         return context
 

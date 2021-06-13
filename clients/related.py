@@ -40,12 +40,12 @@ class AppRelated(object):
             get_client = Clients.objects.get(phone=request_post['clients-phone'])
             related_form = RelatedAddForm(request_post, prefix=self.prefix, instance=get_client)
             context['uuid'] = get_client.related_uuid
+            context['pk'] = get_client.pk
         else:
             related_form = RelatedAddForm(request_post, prefix=self.prefix)
             related_form.prefix = self.prefix
             context['uuid'] = ''
-        print('request_post ', request_post)
-        print('related_form ', related_form)
+            context['pk'] = ''
         context['form'] = related_form
         return context
 

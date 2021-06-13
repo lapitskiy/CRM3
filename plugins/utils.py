@@ -17,14 +17,21 @@ class RelatedMixin(object):
     # [RU] бывший getListUuidFromDictKeyRelated
     # [EN] list related apps
     def dictUuidToList(self, uuid):
+        print('======')
+        print('uuid ', type(uuid))
         _list = []
         if type(uuid) == dict:
             for k, v in uuid.items():
                 _list.append(k)
         if type(uuid) == list:
             for x in uuid:
+                print('x ', x)
                 for k, v in x.items():
+                    print('k ', k)
                     _list.append(k)
+        #if type(uuid) == django.db.models.query.QuerySet:
+        #    print('zzzz')
+        print('_list ', _list)
         return _list
 
     # [EN] return related data from class get_related_data() in app models
@@ -106,20 +113,28 @@ class RelatedMixin(object):
         related_form_dict = {}
         if related:
             for x in related:
-                _dict= {}
+                _dict= dict()
                 imp_related = importlib.import_module(x.module_name + '.related')
                 getrelatedClass = getattr(imp_related, 'AppRelated')
                 relatedClass = getrelatedClass()
                 _dict['module'] = x.module_name
                 _dict['update'] = relatedClass.checkUpdate(request_post=request_post)
-                _dict['convert'] = relatedClass.checkConvert(uuid=self.dictUuidToList(kwargs['uuid']), request_post=request_post)
+
+                if 'uuid' in kwargs:
+                    _dict['convert'] = relatedClass.checkConvert(uuid=self.dictUuidToList(kwargs['uuid']),
+                                                             request_post=request_post)
+                    if 'edit' in kwargs['doing']:
+                        _dict2 = relatedClass.checkRelatedEditForm(request_post=request_post, uuid=self.dictUuidToList(kwargs['uuid']))
                 if 'add' in kwargs['doing']:
                     _dict2 = relatedClass.checkRelatedAddForm(request_post=request_post)
-                if 'edit' in kwargs['doing']:
-                    _dict2 = relatedClass.checkRelatedEditForm(request_post=request_post, uuid=self.dictUuidToList(kwargs['uuid']))
-                _dict['form'] = _dict2['form']
                 _dict['uuid'] = _dict2['uuid']
+                print('=================')
+                print('dict 2', _dict2)
+
+                print(_dict2.get('pk') is None)
+                print('=================')
                 _dict['pk'] = _dict2['pk']
+                _dict['form'] = _dict2['form']
                 if _dict['form'].is_valid():
                     _dict['valid'] = True
                 else:

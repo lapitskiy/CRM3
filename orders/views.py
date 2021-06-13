@@ -16,6 +16,7 @@ from django.db import connection
 from django.db.models import Q
 from plugins.utils import RelatedMixin
 import json
+from django.forms.models import model_to_dict
 
 
 
@@ -72,20 +73,33 @@ class OrdersHomeView(RelatedMixin, ListView):
         if self.request.GET.get('filter'):
             search_query = self.request.GET.get('filter')
             # ~Q(related_uuid='') |
-            results_query = Orders.objects.filter(Q(device__icontains=search_query) | Q(serial__icontains=search_query) | Q(
-                    comment__icontains=search_query)).values_list('related_uuid')
+            results_query = Orders.objects.filter(Q(id__icontains=search_query) | Q(service__name__icontains=search_query) | Q(device__name__icontains=search_query) | Q(serial__icontains=search_query) | Q(comment__icontains=search_query)).values_list('related_uuid')
+
 
             uudi_filter_related_list = self.getUuidListFilterRelated(search_query)
 
-            #related_query = Orders.objects.filter(related_uuid__in=uudi_filter_related_list).values_list('related_uuid')
-            related_query = Orders.objects.filter(related_uuid__icontains=uudi_filter_related_list).values_list('related_uuid')
+            print('uudi_filter_related_list ', uudi_filter_related_list)
 
+            #related_query = Orders.objects.filter(related_uuid__in=uudi_filter_related_list).values_list('related_uuid')
+            conds = Q()
+            for q in uudi_filter_related_list:
+                conds |= Q(related_uuid__icontains=q)
+            related_query = Orders.objects.filter(conds).values_list('related_uuid', flat=True)
+
+            print('related_query ', list(related_query))
             if related_query:
                 #conds = Q(related_uuid__in=results_query) | Q(related_uuid__in=related_query)
-                q1 = self.dictUuidToList(results_query)
-                q2 = self.dictUuidToList(related_query)
-                conds = Q(related_uuid__icontains=q1) | Q(related_uuid__icontains=q2)
+                q1 = self.dictUuidToList(list(results_query))
+                print('q1 ', q1)
+                q2 = self.dictUuidToList(list(related_query))
+                print('q2 ', q2)
+                conds = Q()
+                for q in q1:
+                    conds |= Q(related_uuid__icontains=q)
+                for q in q2:
+                    conds |= Q(related_uuid__icontains=q)
                 results_filter_uuid = Orders.objects.filter(conds).values_list('related_uuid')
+                print('results_filter_uuid ', results_filter_uuid)
             else:
                 results_filter_uuid = results_query
 
@@ -242,11 +256,13 @@ class OrderAddView(RelatedMixin, TemplateView):
 def ajax_request(request):
     """Check ajax"""
     model = request.GET.get('model')
+    print('model ', model)
     if model:
         if model == 'service':
             service = request.GET.get('one_form-service', None)
-            qry = Service.objects.filter(Q(name__icontains=service)).values_list('name', flat=True)
-            qry = list(qry)
+            print('service ', service)
+            qry = Service.objects.filter(Q(name__icontains=service))
+            print('qry inst', qry.values())
             if not qry or service == '':
                 response = {
                     'is_taken': '',
@@ -260,8 +276,11 @@ def ajax_request(request):
             return JsonResponse(response)
         if model == 'device':
             device = request.GET.get('one_form-device', None)
-            qry = Device.objects.filter(Q(name__icontains=device)).values_list('name', flat=True)
-            qry = list(qry)
+            print('device', device)
+            #qry = Device.objects.filter(Q(name__icontains=device)).values_list('name', flat=True)
+            qry = Device.objects.filter(Q(name__icontains=device)).values()
+            qry_list = [entry for entry in qry]
+            print('qry inst', qry_list)
             if not qry or device == '':
                 response = {
                     'is_taken': '',
@@ -269,9 +288,10 @@ def ajax_request(request):
                 }
             else:
                 response = {
-                    'is_taken': qry,
+                    'is_taken': qry_list,
                     'is_exist' : True,
                 }
+            print('response ', response)
             return JsonResponse(response)
 
 class OrderEditView(RelatedMixin, TemplateView):
