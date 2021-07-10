@@ -26,6 +26,10 @@ class AppRelated(object):
             context['uuid'] = ''
             context['pk'] = '1'
         print('Related - Money')
+        if related_form.is_valid():
+            print('money valid')
+        else:
+            print('money not valid')
         print('pk ', context['pk'])
         context['form'] = related_form
         return context

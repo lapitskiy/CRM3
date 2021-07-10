@@ -44,7 +44,7 @@ class AppRelated():
             getdata = kwargs['relateddata']
             if getdata['orders']:
                 _dict = getdata['orders']
-                print('dict ', _dict)
+                #print('dict ', _dict)
                 if _dict['category'] == 'all':
                     related_result = Orders.objects.all()
                     uudi_filter_related_list = []
@@ -60,6 +60,13 @@ class AppRelated():
                             uudi_filter_related_list.append(z.related_uuid)
                     return uudi_filter_related_list
                 if _dict['category'] == 'simple':
+                    related_result = Orders.objects.filter(category__category='simple')
+                    uudi_filter_related_list = []
+                    if related_result:
+                        for z in related_result:
+                            uudi_filter_related_list.append(z.related_uuid)
+                    return uudi_filter_related_list
+                if _dict['category'] == 'filter':
                     related_result = Orders.objects.filter(category__category='simple')
                     uudi_filter_related_list = []
                     if related_result:

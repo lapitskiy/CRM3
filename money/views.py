@@ -19,13 +19,14 @@ class MoneyHomeView(RelatedMixin, ListView):
         context = super().get_context_data(**kwargs)
         context['info'] = self.getInfo(self.getQuery())
         context['title'] = 'Деньги'
-        print('context info', context['info'])
+        #print('context info', context['info'])
         return context
 
     def getQuery(self):
         if self.request.GET.get('relateddata'):
             date_get = ast.literal_eval(self.request.GET.get('relateddata'))
             # нужно вернуть uuid по relateddata и сформировать query по Money.object
+            print('filter', self.request.GET)
             relatedListUuid = self.relatedPostGetData(relateddata=date_get)
             print('relatedListUuid', relatedListUuid)
             valuelist = []
@@ -33,10 +34,10 @@ class MoneyHomeView(RelatedMixin, ListView):
                 for r in v['relateddata']:
                     appendlist = Money.objects.filter(Q(related_uuid__icontains=r)).values_list('pk', flat=True)
                     valuelist.extend(appendlist)
-                    print('valuelist', valuelist)
-            print('valuelist', valuelist)
+                    #print('valuelist', valuelist)
+            #print('valuelist', valuelist)
             #valuelist = self.dictUuidToList(valuelist)
-            print('valuelist', valuelist)
+            #print('valuelist', valuelist)
             return Money.objects.filter(Q(pk__in=valuelist))
         return Money.objects.all()
 
@@ -44,7 +45,7 @@ class MoneyHomeView(RelatedMixin, ListView):
         allmoney = Decimal('0.0')
         context = {}
         for x in query:
-            print('money ', x.money)
+            #print('money ', x.money)
             allmoney = allmoney + x.money
 
         context.update({'allmoney' : str(allmoney)})

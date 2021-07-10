@@ -17,21 +17,21 @@ class RelatedMixin(object):
     # [RU] бывший getListUuidFromDictKeyRelated
     # [EN] list related apps
     def dictUuidToList(self, uuid):
-        print('======')
-        print('uuid ', type(uuid))
+        #print('======')
+        #print('uuid ', type(uuid))
         _list = []
         if type(uuid) == dict:
             for k, v in uuid.items():
                 _list.append(k)
         if type(uuid) == list:
             for x in uuid:
-                print('x ', x)
+                #print('x ', x)
                 for k, v in x.items():
-                    print('k ', k)
+                    #print('k ', k)
                     _list.append(k)
         #if type(uuid) == django.db.models.query.QuerySet:
         #    print('zzzz')
-        print('_list ', _list)
+        #print('_list ', _list)
         return _list
 
     # [EN] return related data from class get_related_data() in app models
@@ -119,7 +119,7 @@ class RelatedMixin(object):
                 relatedClass = getrelatedClass()
                 _dict['module'] = x.module_name
                 _dict['update'] = relatedClass.checkUpdate(request_post=request_post)
-
+                print('=================')
                 if 'uuid' in kwargs:
                     _dict['convert'] = relatedClass.checkConvert(uuid=self.dictUuidToList(kwargs['uuid']),
                                                              request_post=request_post)
@@ -128,16 +128,16 @@ class RelatedMixin(object):
                 if 'add' in kwargs['doing']:
                     _dict2 = relatedClass.checkRelatedAddForm(request_post=request_post)
                 _dict['uuid'] = _dict2['uuid']
-                print('=================')
                 print('dict 2', _dict2)
-
                 print(_dict2.get('pk') is None)
-                print('=================')
                 _dict['pk'] = _dict2['pk']
                 _dict['form'] = _dict2['form']
+                print('_dict[form] ', _dict['form'].is_valid())
                 if _dict['form'].is_valid():
+                    print('1')
                     _dict['valid'] = True
                 else:
+                    print('2')
                     _dict['valid'] = False
                 related_form_dict[x.module_name] = _dict
         return related_form_dict

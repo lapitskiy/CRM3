@@ -26,7 +26,7 @@ class OrdersHomeView(RelatedMixin, ListView):
     paginate_by = 10
     template_name = 'orders/orders_list.html'
     context_object_name = 'orders'
-    related_module_name = 'orders'
+    related_module_name = 'orders' #mixin
 
 
     def get_queryset(self):
@@ -157,7 +157,12 @@ class OrderAddView(RelatedMixin, TemplateView):
         #        if not related_isValid_dict[x.module_name]['form'].is_valid():
         #            valid = False
 
-        if formOne.is_valid() and not False in related_isValid_dict:
+        tag = True # проверка связанных данных
+        for k, v in related_isValid_dict.items():
+            if not v['valid']: tag = False
+            form_list.append(v['form'])
+
+        if formOne.is_valid() and tag:
             related_uuid = {shortuuid.uuid() : ''}
             form_one = formOne.save(commit=False)
             #print('form.cleaned_data', form_update.cleaned_data['category'])
@@ -167,6 +172,7 @@ class OrderAddView(RelatedMixin, TemplateView):
             form_one.related_uuid = related_uuid
             form_one.related_user = request.user
             form_one.save()
+            print('related_isValid_dict ', related_isValid_dict)
             for k, v  in related_isValid_dict.items():
                 form_from_dict = related_isValid_dict[k]['form']
                 form_add = form_from_dict.save(commit=False)
@@ -258,11 +264,13 @@ def ajax_request(request):
     model = request.GET.get('model')
     print('model ', model)
     if model:
-        if model == 'service':
+        if 'service' in model:
             service = request.GET.get('one_form-service', None)
             print('service ', service)
-            qry = Service.objects.filter(Q(name__icontains=service))
-            print('qry inst', qry.values())
+            qry = Service.objects.filter(Q(name__icontains=service)).values()
+            qry_list = [entry for entry in qry]
+            print('qry inst', qry_list)
+
             if not qry or service == '':
                 response = {
                     'is_taken': '',
@@ -270,11 +278,12 @@ def ajax_request(request):
                 }
             else:
                 response = {
-                    'is_taken': qry,
+                    'is_taken': qry_list,
                     'is_exist' : True,
                 }
             return JsonResponse(response)
-        if model == 'device':
+
+        if 'device' in model:
             device = request.GET.get('one_form-device', None)
             print('device', device)
             #qry = Device.objects.filter(Q(name__icontains=device)).values_list('name', flat=True)
@@ -293,6 +302,32 @@ def ajax_request(request):
                 }
             print('response ', response)
             return JsonResponse(response)
+
+    """Check ajax RELATED"""
+    related = request.GET.get('related')
+    data = request.GET.get('data')
+    print('request.GET ', request.GET)
+    print('related ', related)
+    print('texgt ', request.GET.get('clients-phone'))
+    print('data ', data)
+
+    if related and data:
+        formPath = related + '.related'
+        appRelated = importlib.import_module(formPath)
+        related_class = appRelated.AppRelated()
+        qry_list = related_class.getAjaxRelatedList(data=request.GET[data])
+        print('qry inst ', qry_list)
+        if not qry_list:
+            response = {
+                'is_taken': '',
+                'is_exist': False,
+            }
+        else:
+            response = {
+                'is_taken': qry_list,
+                'is_exist' : True,
+            }
+        return JsonResponse(response)
 
 class OrderEditView(RelatedMixin, TemplateView):
     template_name = 'orders/order_edit.html'

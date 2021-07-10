@@ -11,7 +11,7 @@ class AppRelated(object):
     def checkUpdate(self, **kwargs):
         if kwargs['request_post']['clients-phone']:
             try:
-                Clients.objects.get(phone=kwargs['request_post']['clients-phone'])
+                Clients.objects.get(id=kwargs['request_post']['clients-phone'])
                 return True
             except ObjectDoesNotExist:
                 return False
@@ -36,16 +36,27 @@ class AppRelated(object):
     def checkRelatedAddForm(self, **kwargs):
         context= {}
         request_post = kwargs['request_post']
+        #print('request clients-phone checkRelatedAddForm: ', request_post['clients-phone'])
+        #print('checkUpdate ', self.checkUpdate(request_post=request_post))
         if self.checkUpdate(request_post=request_post):
-            get_client = Clients.objects.get(phone=request_post['clients-phone'])
+            get_client = Clients.objects.get(id=request_post['clients-phone'])
+            #print('get clinet: ', get_client)
+            print('CLIENTS IF request_post ', request_post)
             related_form = RelatedAddForm(request_post, prefix=self.prefix, instance=get_client)
+            #print('related_form: ', related_form)
             context['uuid'] = get_client.related_uuid
             context['pk'] = get_client.pk
         else:
+            print('CLIENTS ELSE request_post ', request_post)
             related_form = RelatedAddForm(request_post, prefix=self.prefix)
             related_form.prefix = self.prefix
+            if related_form.is_valid():
+                print('phone valid')
+            else:
+                print('phone not valid')
             context['uuid'] = ''
             context['pk'] = ''
+        print('Related - Client')
         context['form'] = related_form
         return context
 
@@ -73,3 +84,9 @@ class AppRelated(object):
             changeUuid.pop(k)
             get_client.related_uuid = changeUuid
             get_client.save()
+
+    def getAjaxRelatedList(self, **kwargs):
+        if kwargs['data']:
+            print('kwargs data', kwargs['data'])
+            qry = Clients.objects.filter(Q(phone__icontains=kwargs['data'])).values()
+            return [entry for entry in qry]
