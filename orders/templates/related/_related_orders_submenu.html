@@ -5,12 +5,16 @@
     <a href="?relateddata={'orders' : {'category': 'simple'}}" class="list-group-item list-group-item-action">Заказы в ремонт</a><br>
     <form action="" method="get">
         {% csrf_token %}
-        <input type="hidden" name="relateddata" value="{'orders' : {'category': 'filter'}}">
-        <div class="input-group mb-3">
-            <input type="text" class="form-control" placeholder="Поиск" aria-label="Поиск" name="filter" aria-describedby="button-addon2">
+        <input type="hidden" name="relateddata" value="{'orders' : {'category': 'date'}}">
+
+                <div class="input-group mb-3">
+                    <input class="form-control" type="date" id="date" name="date">
             <button type="submit" class="btn btn-outline-secondary" id="button-addon2">Искать</button>
         </div>
-        <input class="form-control" type="date" id="date" name="date">
+        <div class="input-group mb-3">
+                    <input class="form-control" type="date" id="date2" name="date2">
+            <button type="submit" class="btn btn-outline-secondary" id="button-addon2">Искать</button>
+        </div>
     </form>
 </div>
 <br>

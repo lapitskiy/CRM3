@@ -161,8 +161,9 @@ class RelatedMixin(object):
     # [RU] получает relateddata передаваемое в get запросе приложения и
     # [RU] обрабатывает его в соотвествии с правилами плагина и отдает список
     def relatedPostGetData(self, **kwargs):
+        request_get = kwargs['request_get']
         related_dict = {}
-        if kwargs['relateddata']:
+        if request_get['relateddata']:
             related = self.checkRelated()
             if related:
                 for x in related:
@@ -171,7 +172,7 @@ class RelatedMixin(object):
                     getrelatedClass = getattr(imp_related, 'AppRelated')
                     relatedClass = getrelatedClass()
                     _dict['module'] = x.module_name
-                    _dict['relateddata'] = self.dictUuidToList(relatedClass.linkGetReleatedData(relateddata=kwargs['relateddata']))
+                    _dict['relateddata'] = self.dictUuidToList(relatedClass.linkGetReleatedData(request_get=request_get))
                     related_dict[x.module_name] = _dict
                 return related_dict
         return related_dict

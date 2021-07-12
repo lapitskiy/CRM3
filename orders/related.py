@@ -2,6 +2,7 @@ from .models import Orders
 from django.core.exceptions import ObjectDoesNotExist
 from django.db.models import Q
 from plugins.utils import RelatedMixin
+import ast
 
 
 class AppRelated():
@@ -39,9 +40,11 @@ class AppRelated():
         return 'related/_related_orders_submenu.html'
 
     def linkGetReleatedData(self, **kwargs):
+        request_get = kwargs['request_get']
+        relateddata = ast.literal_eval(request_get['relateddata'])
         uudi_filter_related_list = []
-        if kwargs['relateddata']:
-            getdata = kwargs['relateddata']
+        if relateddata:
+            getdata = relateddata
             if getdata['orders']:
                 _dict = getdata['orders']
                 #print('dict ', _dict)
@@ -66,8 +69,21 @@ class AppRelated():
                         for z in related_result:
                             uudi_filter_related_list.append(z.related_uuid)
                     return uudi_filter_related_list
-                if _dict['category'] == 'filter':
-                    related_result = Orders.objects.filter(category__category='simple')
+                if _dict['category'] == 'date':
+                    print('TYT DATE', request_get['date'])
+                    print('TYT DATE 2', request_get['date2'])
+                    date__range = ["2011-01-01", "2011-01-31"]
+                    if request_get['date'] and request_get['date2']:
+                        print('DVE DATE')
+                        related_result = Orders.objects.filter(created_at__range=[request_get['date'],request_get['date2']])
+                        #(Q(created_at__lte=request_get['date']) & Q(created_at__gte=request.POST['start_date'])
+                    if request_get['date'] and not request_get['date2']:
+                        print('TOLKO DATE 1')
+                        related_result = Orders.objects.filter(Q(created_at__icontains=request_get['date']))
+                    if not request_get['date'] and request_get['date2']:
+                        print('TOLKO DATE 2')
+                        related_result = Orders.objects.filter(Q(created_at__icontains=request_get['date2']))
+
                     uudi_filter_related_list = []
                     if related_result:
                         for z in related_result:

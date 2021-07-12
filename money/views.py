@@ -1,7 +1,6 @@
 from django.views.generic import ListView
 from .models import Money
 from decimal import Decimal
-import ast
 from plugins.utils import RelatedMixin
 from django.db.models import Q
 
@@ -24,10 +23,8 @@ class MoneyHomeView(RelatedMixin, ListView):
 
     def getQuery(self):
         if self.request.GET.get('relateddata'):
-            date_get = ast.literal_eval(self.request.GET.get('relateddata'))
+            relatedListUuid = self.relatedPostGetData(request_get=self.request.GET)
             # нужно вернуть uuid по relateddata и сформировать query по Money.object
-            print('filter', self.request.GET)
-            relatedListUuid = self.relatedPostGetData(relateddata=date_get)
             print('relatedListUuid', relatedListUuid)
             valuelist = []
             for k, v in relatedListUuid.items():

@@ -19,19 +19,20 @@ class ListTextWidget(forms.Select):
             return formats.localize_input(value)
         return str(value)
 
-class ChoiceTxtField(forms.ModelChoiceField):
+#class ChoiceTxtField(forms.ModelChoiceField):
+#    widget=ListTextWidget()
+
+class PhoneInputField(forms.CharField):
     widget=ListTextWidget()
 
 class RelatedAddForm(forms.ModelForm):
-    #char_field_with_list = forms.CharField(required=True)
-    #queryset = Clients.objects.order_by('-id')
+    phone = PhoneInputField()
 
-    #query = Clients.objects.order_by('-phone')[:1]
-    #pieceOfQuery = copy.copy(queryset)
-    #phone = ChoiceTxtField(queryset=pieceOfQuery)
-    #query = list(query)
-    #phone = ChoiceTxtField(queryset=Clients.objects.filter(phone__in=query))
-    phone = ChoiceTxtField(queryset=Clients.objects.order_by('-phone'))
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields['phone'].choices = Clients.objects.order_by('-phone').values_list('phone')
+
+    #phone = ChoiceTxtField(queryset=Clients.objects.order_by('-phone'))
 
     class Meta:
         model = Clients
