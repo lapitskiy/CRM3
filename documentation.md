@@ -41,6 +41,12 @@ pluginName/template/pluginName/sidebar_orders_tags.html
 pluginName/templatetags//sidebar_orders_tags.py 
 рекомендованый файл tag.py
 
+utils.py - файл методов сязанных данных и миксинов
+
+apps/related.py - файл приложения с обязательными связанными методами
+
+templates/related/_related.html - связанные html файлы 
+
 install.py - обязательный файл с настройками приложения
 
 def get_related_data() - связанные данные которые отдает приложение

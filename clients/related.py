@@ -11,9 +11,11 @@ class AppRelated(object):
     def checkUpdate(self, **kwargs):
         if kwargs['request_post']['clients-phone']:
             try:
-                Clients.objects.get(id=kwargs['request_post']['clients-phone'])
+                Clients.objects.get(phone=kwargs['request_post']['clients-phone'])
+                print('checkUpdate TRUE')
                 return True
             except ObjectDoesNotExist:
+                print('checkUpdate False')
                 return False
         return False
 
@@ -39,7 +41,7 @@ class AppRelated(object):
         #print('request clients-phone checkRelatedAddForm: ', request_post['clients-phone'])
         #print('checkUpdate ', self.checkUpdate(request_post=request_post))
         if self.checkUpdate(request_post=request_post):
-            get_client = Clients.objects.get(id=request_post['clients-phone'])
+            get_client = Clients.objects.get(phone=request_post['clients-phone'])
             #print('get clinet: ', get_client)
             print('CLIENTS IF request_post ', request_post)
             related_form = RelatedAddForm(request_post, prefix=self.prefix, instance=get_client)
