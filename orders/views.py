@@ -115,6 +115,8 @@ class OrdersHomeView(RelatedMixin, ListView):
 
         if self.request.GET.get('category'):
             return Orders.objects.filter(category__category=self.request.GET.get('category'))
+        if self.request.GET.get('status'):
+            return Orders.objects.filter(status=self.request.GET.get('status'))
         return Orders.objects.all()
 
 class OrderAddView(RelatedMixin, TemplateView):

@@ -45,7 +45,7 @@
 {% endblock javascript %}
 <br>
 <input id="ajax_phone_{{ widget.name }}" list="{{ widget.name }}"
-    {% if widget.value != None %} name="{{ widget.name }}" value="+7" {% endif %}
+    {% if widget.value != None %} name="{{ widget.name }}" value="{{ widget.value}}" {% endif %}
     {% include "django/forms/widgets/attrs.html" %} autocomplete="off">
     <span class="badge rounded-pill bg-warning text-dark" id="ajax-{{ widget.name }}" name="ajax-{{ widget.name }}"></span>
 
