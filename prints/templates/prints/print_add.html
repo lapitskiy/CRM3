@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+
+{% block title %}{{ title }} - {{ block.super }}{% endblock %}
+{% block sidebar %}
+{% include 'include/_sidebar_prints.html' %}
+{% endblock %}
+
+{% block content %}
+
+
+{% block javascript %}
+
+{% endblock javascript %}
+
+ <h3>
+    {% if tag == 'simple' %}
+        Обычный заказ
+    {% endif %}
+    </h3>
+    <form action="{% url 'print_add'%}?category={{ tag }}" method="post">
+        {% csrf_token %}
+        {% for x in forms %}
+            {{ x.as_p }}
+        {% endfor %}
+        {{ formOne.non_field_errors }}
+        {{ formOne }}
+        <button type="submit" class="btn btn-primary btn-block">Добавить form</button>
+    </form>
+
+
+
+{% endblock %}

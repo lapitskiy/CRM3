@@ -126,8 +126,8 @@ class OrderAddView(RelatedMixin, TemplateView):
     def get(self, request, *args, **kwargs):
         context = super().get_context_data(**kwargs)
         related = self.checkRelated()
+        form_list = []
         if related:
-            form_list = []
             for x in related:
                 formPath = x.module_name + '.forms'
                 app_form = importlib.import_module(formPath)

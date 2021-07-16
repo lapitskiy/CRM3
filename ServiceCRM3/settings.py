@@ -144,3 +144,23 @@ INTERNAL_IPS = ['127.0.0.1',]
 
 
 
+#
+# TINYMCE
+#
+STATIC_JS_DIR = os.path.join(STATIC_ROOT, "js")
+TINYMCE_JS_ROOT = os.path.join(STATIC_JS_DIR, "tiny_mce")
+TINYMCE_JS_URL = os.path.join(TINYMCE_JS_ROOT, "tiny_mce.js")
+TINYMCE_SPELLCHECKER = True
+TINYMCE_COMPRESSOR = True
+TINYMCE_DEFAULT_CONFIG = {
+    "theme": "silver",
+    "height": 500,
+    "menubar": False,
+    "plugins": "advlist,autolink,lists,link,image,charmap,print,preview,anchor,"
+    "searchreplace,visualblocks,code,fullscreen,insertdatetime,media,table,paste,"
+    "code,help,wordcount",
+    "toolbar": "undo redo | formatselect | "
+    "bold italic backcolor | alignleft aligncenter "
+    "alignright alignjustify | bullist numlist outdent indent | "
+    "removeformat | help",
+}
