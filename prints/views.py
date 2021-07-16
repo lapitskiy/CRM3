@@ -1,4 +1,4 @@
-from django.views.generic import ListView, DetailView, CreateView
+from django.views.generic import ListView
 from .models import Prints
 
 class PrintsHomeView(ListView):

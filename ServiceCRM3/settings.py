@@ -42,6 +42,7 @@ INSTALLED_APPS = [
     'plugins.apps.PluginsConfig',
     'users.apps.UsersConfig',
     'debug_toolbar',
+    'tinymce',
 ]
 INSTALLED_APPS += settings_plugin.INSTALLED_APPS_ADD
 
