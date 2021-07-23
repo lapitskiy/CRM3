@@ -42,7 +42,8 @@ INSTALLED_APPS = [
     'plugins.apps.PluginsConfig',
     'users.apps.UsersConfig',
     'debug_toolbar',
-    'tinymce',
+    'ckeditor',
+    'ckeditor_uploader',
 ]
 INSTALLED_APPS += settings_plugin.INSTALLED_APPS_ADD
 
@@ -145,22 +146,12 @@ INTERNAL_IPS = ['127.0.0.1',]
 
 
 #
-# TINYMCE
+# CKEDITOR
 #
-STATIC_JS_DIR = os.path.join(STATIC_ROOT, "js")
-TINYMCE_JS_ROOT = os.path.join(STATIC_JS_DIR, "tiny_mce")
-TINYMCE_JS_URL = os.path.join(TINYMCE_JS_ROOT, "tiny_mce.js")
-TINYMCE_SPELLCHECKER = True
-TINYMCE_COMPRESSOR = True
-TINYMCE_DEFAULT_CONFIG = {
-    "theme": "silver",
-    "height": 500,
-    "menubar": False,
-    "plugins": "advlist,autolink,lists,link,image,charmap,print,preview,anchor,"
-    "searchreplace,visualblocks,code,fullscreen,insertdatetime,media,table,paste,"
-    "code,help,wordcount",
-    "toolbar": "undo redo | formatselect | "
-    "bold italic backcolor | alignleft aligncenter "
-    "alignright alignjustify | bullist numlist outdent indent | "
-    "removeformat | help",
+CKEDITOR_UPLOAD_PATH = "media/uploads/"
+
+CKEDITOR_CONFIGS = {
+    'default': {
+        'toolbar': 'full',
+    },
 }

@@ -18,9 +18,11 @@
                     <div class="tab-pane fade show" id="id-list-{{ item.pk }}" role="tabpanel" aria-labelledby="list-{{ item.pk }}">
                         <div class="shadow p-3 mb-5 bg-body rounded">
                             Номер: {{ item.pk }}<br>
-                            Имя: {{ item.name }}<br>
-                            Телефон: {{ item.phone }}<br>
-                            Комментарий: {{ item.comment }}<br>
+                            Название формы: {{ item.name }}<br>
+                            Вид формы: {{ item.contentform|safe }}<br>
+                            <div class="d-flex justify-content-end">
+                                <a href="edit/{{ item.pk }}"><button type="button" class="btn btn-secondary">Редактировать</button></a>
+                            </div><br>
                         </div>
                     </div>
                 {% endfor %}

@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+
+{% block title %}{{ title }} - {{ block.super }}{% endblock %}
+{% block sidebar %}
+{% include 'include/_sidebar_prints.html' %}
+{% endblock %}
+
+{% block content %}
+
+    <form action="{% url 'print_edit' print_id %}" method="post">
+        {% csrf_token %}
+        {{ formOne.non_field_errors }}
+        {{ formOne.media }}
+        {{ formOne.as_p }}
+        <button type="submit" class="btn btn-primary btn-block">Сохранить</button>
+    </form>
+
+{% endblock %}

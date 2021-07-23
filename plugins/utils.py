@@ -176,3 +176,25 @@ class RelatedMixin(object):
                     related_dict[x.module_name] = _dict
                 return related_dict
         return related_dict
+
+    # [RU] отдает dict с названием связанных плагинов и списком его доступных полей для вывода
+    # [RU] пример работы плагина, это вывод перменных для вывода в печатных формах плагина prints
+    def relatedGetAllFieldsFromModel(self, **kwargs):
+        related_dict = {}
+        related = self.checkRelated()
+        if related:
+            for x in related:
+                print('x: ', x.related_class_name)
+                _dict= {}
+                _list= []
+                modelPath = x.module_name + '.models'
+                app_model = importlib.import_module(modelPath)
+                Cls = getattr(app_model, x.related_class_name)
+                _dict['module'] = x.module_name
+
+                for field in Cls._meta.__dict__.get('fields'):
+                    _list.append(field.__str__())
+                _dict['fields'] = _list
+                related_dict[x.module_name] = _dict
+            return related_dict
+        return related_dict

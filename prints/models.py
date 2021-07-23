@@ -2,13 +2,13 @@ from django.db import models
 from django.urls import reverse
 from django.core.validators import RegexValidator
 from django.db.models import Q
-from tinymce.models import HTMLField
+from ckeditor_uploader.fields import RichTextUploadingField
 
 # Create your models here.
 class Prints(models.Model):
-    name = models.CharField(max_length=150, blank=True, verbose_name='Nazvanie')
-    contentform = HTMLField()
-    related_uuid = models.JSONField(blank=True)
+    name = models.CharField(max_length=150, blank=True, verbose_name='Название')
+    contentform = RichTextUploadingField()
+    related_uuid = models.JSONField(blank=True, null=True)
 
     def get_absolute_url(self):
         return reverse('view_prints', kwargs={'pk': self.pk})
@@ -31,6 +31,6 @@ class Prints(models.Model):
         return self.pk
 
     class Meta:
-        verbose_name = 'Клиент'
-        verbose_name_plural = 'Клиенты'
+        verbose_name = 'Форма'
+        verbose_name_plural = 'Формы'
         ordering = ['-pk']

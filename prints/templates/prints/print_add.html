@@ -1,5 +1,7 @@
 {% extends "base.html" %}
-
+{% load static %}
+<script type="text/javascript" src="{% static "ckeditor/ckeditor-init.js" %}"></script>
+<script type="text/javascript" src="{% static "ckeditor/ckeditor/ckeditor.js" %}"></script>
 {% block title %}{{ title }} - {{ block.super }}{% endblock %}
 {% block sidebar %}
 {% include 'include/_sidebar_prints.html' %}
@@ -13,9 +15,7 @@
 {% endblock javascript %}
 
  <h3>
-    {% if tag == 'simple' %}
-        Обычный заказ
-    {% endif %}
+     Создание печатной формы
     </h3>
     <form action="{% url 'print_add'%}?category={{ tag }}" method="post">
         {% csrf_token %}
@@ -23,10 +23,9 @@
             {{ x.as_p }}
         {% endfor %}
         {{ formOne.non_field_errors }}
+        {{ formOne.media }}
         {{ formOne }}
-        <button type="submit" class="btn btn-primary btn-block">Добавить form</button>
+        <button type="submit" class="btn btn-primary btn-block">Добавить</button>
     </form>
-
-
 
 {% endblock %}
