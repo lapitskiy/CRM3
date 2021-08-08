@@ -22,12 +22,11 @@ class PrintAddView(RelatedMixin, TemplateView):
 
     def get(self, request, *args, **kwargs):
         context = super().get_context_data(**kwargs)
-        var_dict = self.relatedGetAllFieldsFromModel() #RelatedMixin
-        print('filed all: ', var_dict)
         formOne = self.getForm()
         formOne.prefix = 'one_form'
         context.update({'formOne': formOne})
         context.update({'tag': self.getVar()})
+        context.update({'fields': self.relatedGetAllFieldsFromModel()})
         return self.render_to_response(context)
 
 
@@ -69,6 +68,7 @@ class PrintAddView(RelatedMixin, TemplateView):
 
 class PrintEditView(RelatedMixin, TemplateView):
     template_name = 'prints/print_edit.html'
+    related_module_name = 'prints' #relatedmixin module
 
     def get(self, request, *args, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -76,6 +76,7 @@ class PrintEditView(RelatedMixin, TemplateView):
         formOne = SimplePrintAddForm(instance=get_print)
         formOne.prefix = 'one_form'
         context.update({'formOne': formOne})
+        context.update({'fields': self.relatedGetAllFieldsFromModel()})
         return self.render_to_response(context)
 
     def post(self, request, *args, **kwargs):

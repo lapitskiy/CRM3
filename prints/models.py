@@ -14,11 +14,12 @@ class Prints(models.Model):
         return reverse('view_prints', kwargs={'pk': self.pk})
 
     def get_related_data(self):
+        pass
+        return data
+
+    def get_related_html(self):
         data = {
-            'module_name': 'Prints',
-            'Имя': self.name,
-            'content': self.contentform,
-            'related_uuid': self.related_uuid,
+            'Печать': 'Button here',
             }
         return data
 

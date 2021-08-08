@@ -14,7 +14,7 @@
 
 {% endblock javascript %}
 
- <h3>
+    <h3>
      Создание печатной формы
     </h3>
     <form action="{% url 'print_add'%}?category={{ tag }}" method="post">
@@ -27,5 +27,25 @@
         {{ formOne }}
         <button type="submit" class="btn btn-primary btn-block">Добавить</button>
     </form>
+<br><br>
+     <h4>
+     Cвязанные данные
+    </h4>
+    <hr>
+    {% for key, value in fields.items %}
+        {% for k2, v2 in value.items %}
+            {% if k2 == 'module'%}
+                   Модуль: {{ v2 }}<br>
+            {% endif %}
+            {% if k2 == 'fields'%}
+                Связанные поля:
+                {% for v_list in v2 %}
+                    <span class="badge rounded-pill bg-dark">{{ v_list }}</span>
+                {% endfor %}
+            {% endif %}
+        {% endfor %}
+        <hr>
+    {% endfor %}
+
 
 {% endblock %}
