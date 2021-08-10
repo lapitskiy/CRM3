@@ -1,9 +1,10 @@
-from .forms import RelatedAddForm
+#from .forms import RelatedAddForm
 from .models import Prints
 from django.db.models import Q
 
 class AppRelated(object):
     prefix = 'prints'
+    related_format = 'menu'
 
     def checkUpdate(self, **kwargs):
         return False

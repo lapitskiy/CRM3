@@ -13,8 +13,13 @@ class Prints(models.Model):
     def get_absolute_url(self):
         return reverse('view_prints', kwargs={'pk': self.pk})
 
+    @property
     def get_related_data(self):
-        pass
+        data = {
+            'related_use': 'menu',
+            'module_name': 'Печать',
+            'link': '../prints/prints_form/?uuid=',
+            }
         return data
 
     def get_related_html(self):
@@ -29,7 +34,7 @@ class Prints(models.Model):
 
 
     def __str__(self):
-        return self.pk
+        return str(self.pk)
 
     class Meta:
         verbose_name = 'Форма'

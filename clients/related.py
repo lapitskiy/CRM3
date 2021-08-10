@@ -6,6 +6,7 @@ from django.db.models import Q
 
 class AppRelated(object):
     prefix = 'clients'
+    related_format = 'data'
 
     # если переменная имеет возможность иметь несколько uuid на одну запись, тогда здесь идет обрабтока такой возможности
     def checkUpdate(self, **kwargs):

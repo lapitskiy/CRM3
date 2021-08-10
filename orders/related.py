@@ -8,6 +8,7 @@ import ast
 class AppRelated():
     prefix = 'orders'
     related_module_name = 'orders'
+    related_format = 'data'
 
     # если переменная имеет возможность иметь несколько uuid на одну запись, тогда здесь идет обрабтока такой возможности
     def checkUpdate(self, **kwargs):

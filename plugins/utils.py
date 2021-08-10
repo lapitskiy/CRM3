@@ -6,6 +6,7 @@ from django.db.models import Q
 class RelatedMixin(object):
     related_module_name = ''
 
+
     # [RU] возвращает все связанные приложения
     # [EN] list related apps
     def checkRelated(self):
@@ -42,20 +43,34 @@ class RelatedMixin(object):
         related = self.checkRelated()
         if related:
             for x in related:
+                print('======= ')
                 modelPath = x.module_name + '.models'
-                app_model = importlib.import_module(modelPath)
-                cls = getattr(app_model, x.related_class_name)
+                imp_model = importlib.import_module(modelPath)
+                cls_model = getattr(imp_model, x.related_class_name)
+                relatedPath = x.module_name + '.related'
+                imp_related = importlib.import_module(relatedPath)
+                cls_related = getattr(imp_related, 'AppRelated')
+                print('cls ', cls_related.related_format)
                 for r in kwargs['page']:
                     for key_uuid, value_uuid in r.related_uuid.items():
                         try:
-                            cls2 = cls.objects.get(Q(related_uuid__icontains=key_uuid))
-                            related_get = cls2.get_related_data()
-                            related_get['related_uuid'] = key_uuid
-                            data_related_list.append(related_get)
+                            # доедлать, с класса related.py, вставить проверку на if и отдавать связаные данные для menu
+                            if cls_related.related_format == 'data':
+                                cls2 = cls_model.objects.get(Q(related_uuid__icontains=key_uuid))
+                                related_get = cls2.get_related_data()
+                                related_get['related_uuid'] = key_uuid
+                                data_related_list.append(related_get)
+                            if cls_related.related_format == 'menu':
+                                print('cls_model ', cls_model)
+                                cls_related2 = cls_model()
+                                related_get = cls_related2.get_related_data
+                                related_get['related_uuid'] = key_uuid
+                                print('related_get ', str(related_get))
+                                data_related_list.append(related_get)
                         except ObjectDoesNotExist:
                             pass
+        print('======= ')
         return data_related_list
-
 
     # return uuid related list for search query
     def getUuidListFilterRelated(self, search_query):

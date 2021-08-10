@@ -18,6 +18,7 @@ class Clients(models.Model):
 
     def get_related_data(self):
         data = {
+            'related_use': 'data',
             'module_name': 'Контакт',
             'Имя': self.name,
             'Телефон': self.phone,

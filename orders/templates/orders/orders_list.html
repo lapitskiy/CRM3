@@ -36,12 +36,13 @@
                             </div>
                             {% for related_item in related_list %}
                                 {% for order_uuid_key, order_uuid_value in item.related_uuid.items %}
-                                    {% if related_item.related_uuid and order_uuid_key == related_item.related_uuid %}
+
+                                    {% if related_item.related_uuid and order_uuid_key == related_item.related_uuid and related_item.related_use == 'data' %}
                                         <div class="card border-light" >
                                             <div class="card-header">{{ related_item.module_name }}</div>
                                             <div class="card-body">
                                                 {% for key, value in related_item.items %}
-                                                    {% if key != 'related_uuid' and key != 'module_name' %}
+                                                    {% if key != 'related_uuid' and key != 'module_name' and key != 'related_use' %}
                                                         {{ key }}: {{ value }}<br>
                                                     {% endif %}
                                                 {% endfor %}
@@ -54,7 +55,21 @@
                 <div class="card border-light" >
                                             <div class="card-header">Дополнительные возможности</div>
                                             <div class="card-body">
-                                                тут
+                            {% for related_item in related_list %}
+                                {% for order_uuid_key, order_uuid_value in item.related_uuid.items %}
+                                    {% if related_item.related_uuid and order_uuid_key == related_item.related_uuid %}
+                                                {% for key, value in related_item.items %}
+                                                    {% if key == 'related_use' and value == 'menu' %}
+                                                        <a target="_blank" href=" {{ related_item.link }}{{ related_item.related_uuid }}">{{ related_item.module_name }}</a><br>
+                                                    {% endif %}
+                                                {% endfor %}
+
+
+
+                                    {% endif %}
+                                {% endfor %}
+                            {% endfor %}
+
                                             </div>
                                         </div>
 

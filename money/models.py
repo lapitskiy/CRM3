@@ -16,6 +16,7 @@ class Money(models.Model):
 
     def get_related_data(self):
         data = {
+            'related_use': 'data',
             'module_name': 'Стоимость',
             'Сумма': self.money,
             'Предоплата': self.prepayment,
