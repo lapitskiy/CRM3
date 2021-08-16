@@ -18,7 +18,7 @@ class Prints(models.Model):
         data = {
             'related_use': 'menu',
             'module_name': 'Печать',
-            'link': '../prints/prints_form/?uuid=',
+            'link': '../prints/form/?uuid=',
             }
         return data
 

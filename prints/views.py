@@ -10,11 +10,22 @@ class PrintsHomeView(ListView):
     paginate_by = 2
     template_name = 'prints/prints_list.html'
     context_object_name = 'prints'
+    related_module_name = 'prints'  # mixin
 
     def get_context_data(self, *, object_list=None, **kwargs):
         context = super().get_context_data(**kwargs)
         context['title'] = 'Все печатные'
         return context
+
+class PrintFormView(RelatedMixin, TemplateView):
+    template_name = 'prints/prints_form.html'
+    context_object_name = 'prints'
+    related_module_name = 'prints'
+
+    def get(self, request, *args, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['printform'] = self.getDataListRelated(uuid=self.request.GET.get('uuid'), one='uuid', data='full')
+        return self.render_to_response(context)
 
 class PrintAddView(RelatedMixin, TemplateView):
     template_name = 'prints/print_add.html'

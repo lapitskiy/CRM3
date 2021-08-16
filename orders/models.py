@@ -19,6 +19,21 @@ class Orders(models.Model):
     def get_absolute_url(self):
         return reverse('view_orders', kwargs={'pk': self.pk})
 
+    def get_related_data(self):
+        data = {
+            'related_use': 'data',
+            'module_name': 'Orders',
+            'Серийный': self.serial,
+            'Комментарий': self.comment,
+            'Создан': self.created_at,
+            'Статус': self.status,
+            'Услуга': self.service,
+            'Устройство': self.device,
+            'Категория': self.category,
+            'related_uuid': self.related_uuid,
+            }
+        return data
+
     def __str__(self):
         return str(self.pk)
 
