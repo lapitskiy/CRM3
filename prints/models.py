@@ -19,6 +19,7 @@ class Prints(models.Model):
             'related_use': 'menu',
             'module_name': 'Печать',
             'link': '../prints/form/?uuid=',
+            'form': self.pk
             }
         return data
 

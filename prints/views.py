@@ -24,8 +24,23 @@ class PrintFormView(RelatedMixin, TemplateView):
 
     def get(self, request, *args, **kwargs):
         context = super().get_context_data(**kwargs)
-        context['printform'] = self.getDataListRelated(uuid=self.request.GET.get('uuid'), one='uuid', data='full')
+
+        if self.request.GET.get('form'):
+            pass
+        else:
+            print_form = Prints.objects.first()
+
+        related_data = self.getDataListRelated(uuid=self.request.GET.get('uuid'), one='uuid', data='full')
+        context['printform'] = self.getPrintForm(content=print_form.contentform, related=related_data)
+        print('printform ', context['printform'])
+        context['formnumber'] = print_form.pk
         return self.render_to_response(context)
+
+    def getPrintForm(self, **kwargs):
+        if 'content' in kwargs:
+            return kwargs['content']
+
+
 
 class PrintAddView(RelatedMixin, TemplateView):
     template_name = 'prints/print_add.html'

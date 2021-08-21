@@ -4,5 +4,19 @@
     {% include 'include/_sidebar_prints.html' %}
 {% endblock %}
 {% block content %}
-{{ printform }}
+    Форма {{ formnumber }}<br><br>
+
+    <a href="#" class="action-print">Распечатать</a>
+
+<script>
+$(function($){
+	$(".action-print").click(function(){
+		window.print();
+		return false;
+	});
+});
+</script>
+    <br><br>
+
+{{ printform|safe }}
 {% endblock %}
