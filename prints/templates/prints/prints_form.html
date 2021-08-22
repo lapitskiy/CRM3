@@ -1,8 +1,20 @@
 {% extends "base.html" %}
+{% load static %}
 {% block title %}{{ title }} - {{ block.super }}{% endblock %}
+{% block link %}
+<link href="{% static 'css/print_style.css' %}" rel="stylesheet">
+{% endblock %}
+
+
 {% block sidebar %}
     {% include 'include/_sidebar_prints.html' %}
 {% endblock %}
+
+@media print {
+#viewing_panel {
+    -webkit-print-color-adjust: exact;
+}
+
 {% block content %}
     Форма {{ formnumber }}<br><br>
 
@@ -18,5 +30,5 @@ $(function($){
 </script>
     <br><br>
 
-{{ printform|safe }}
+<div class="print_block">{{ printform|safe }}</div>
 {% endblock %}

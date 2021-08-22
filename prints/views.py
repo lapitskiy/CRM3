@@ -4,6 +4,7 @@ from django.urls import reverse_lazy
 from .models import Prints
 from plugins.utils import RelatedMixin
 from .forms import SimplePrintAddForm
+import re
 
 class PrintsHomeView(ListView):
     model = Prints
@@ -37,8 +38,12 @@ class PrintFormView(RelatedMixin, TemplateView):
         return self.render_to_response(context)
 
     def getPrintForm(self, **kwargs):
-        if 'content' in kwargs:
-            return kwargs['content']
+        if 'content' in kwargs and 'related' in kwargs:
+            list_related = re.findall(r'[a-zA-Z0-9]+\.[a-zA-Z0-9]+\.[a-zA-Z0-9]+', kwargs['content'])
+            for x in list_related:
+                list_split = x.split('.')
+                get_obj = list_split[1]
+            return
 
 
 
