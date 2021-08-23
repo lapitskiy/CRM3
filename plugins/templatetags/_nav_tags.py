@@ -15,6 +15,5 @@ def navigation(context):
                 dictt = {key: settings_plugin.PLUGIN_CFG[key]}
                 tag.update(dictt)
     context['nav'] = tag
-    print('MENU', tag)
     return context
 

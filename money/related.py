@@ -15,6 +15,9 @@ class AppRelated(object):
     def checkConvert(self, **kwargs):
         return False
 
+    def submenuImportRelated(self, **kwargs):
+        pass
+
     def checkRelatedAddForm(self, **kwargs):
         context = {}
         request_post = kwargs['request_post']

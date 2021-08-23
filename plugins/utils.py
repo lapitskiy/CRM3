@@ -55,7 +55,10 @@ class RelatedMixin(object):
                 cls_related = getattr(imp_related, 'AppRelated')
                 if 'one' in kwargs:
                     if kwargs['one'] == 'uuid':
-                        cls2 = cls_model.objects.get(Q(related_uuid__icontains=kwargs['uuid']))
+                        try:
+                            cls2 = cls_model.objects.get(Q(related_uuid__icontains=kwargs['uuid']))
+                        except cls_model.DoesNotExist:
+                            return ''
                         related_get = {}
                         if 'data' in kwargs:
                             if kwargs['data'] == 'full':
@@ -87,6 +90,20 @@ class RelatedMixin(object):
                                 pass
         print('======= ')
         return data_related_list
+
+    # [EN] return obj
+    # [RU] возвращает объект на основе строк класса и app
+    def getModelFromStr(self, **kwargs):
+        if 'cls' in kwargs and 'app' in kwargs and 'uuid' in kwargs:
+            modelPath = kwargs['app'] + '.models'
+            imp_model = importlib.import_module(modelPath)
+            cls_model = getattr(imp_model, kwargs['cls'])
+            try:
+                cls2 = cls_model.objects.get(Q(related_uuid__icontains=kwargs['uuid']))
+                return cls2
+            except cls_model.DoesNotExist:  # тоже самое с cls2.DoesNotExist:
+                return False
+        return False
 
     # return uuid related list for search query
     def getUuidListFilterRelated(self, search_query):
@@ -164,8 +181,10 @@ class RelatedMixin(object):
                 getrelatedClass = getattr(imp_related, 'AppRelated')
                 relatedClass = getrelatedClass()
                 _dict['module'] = x.module_name
+                print('rmodule ', x.module_name)
                 _dict['submenu_import'] = relatedClass.submenuImportRelated()
-                related_form_dict[x.module_name] = _dict
+                if _dict['submenu_import'] is not None:
+                    related_form_dict[x.module_name] = _dict
         return related_form_dict
 
     # [RU] получает relateddata передаваемое в get запросе приложения и

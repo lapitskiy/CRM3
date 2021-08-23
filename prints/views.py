@@ -33,17 +33,29 @@ class PrintFormView(RelatedMixin, TemplateView):
 
         related_data = self.getDataListRelated(uuid=self.request.GET.get('uuid'), one='uuid', data='full')
         context['printform'] = self.getPrintForm(content=print_form.contentform, related=related_data)
-        print('printform ', context['printform'])
         context['formnumber'] = print_form.pk
         return self.render_to_response(context)
 
     def getPrintForm(self, **kwargs):
+        after_text = ''
         if 'content' in kwargs and 'related' in kwargs:
-            list_related = re.findall(r'[a-zA-Z0-9]+\.[a-zA-Z0-9]+\.[a-zA-Z0-9]+', kwargs['content'])
+            #list_related = re.findall(r'[a-zA-Z0-9]+\.[a-zA-Z0-9]+\.[a-zA-Z0-9]+', kwargs['content'])
+            after_text = kwargs['content']
+            list_related = [f.group(0) for f in re.finditer('(\w+(\.\w+)+)', kwargs['content'])]
             for x in list_related:
+                print('x ', x)
                 list_split = x.split('.')
-                get_obj = list_split[1]
-            return
+                print('list_split ', list_split)
+                get_obj = self.getModelFromStr(uuid=self.request.GET.get('uuid'), app=list_split[0], cls=list_split[1])
+                print('split 2: ', list_split[2])
+                print('get_obj: ', get_obj)
+                if get_obj:
+                    get_name = getattr(get_obj, list_split[2])
+                    after_text = after_text.replace(x, str(get_name))
+                else:
+                    after_text = after_text.replace(x, 'не указано')
+
+        return after_text
 
 
 

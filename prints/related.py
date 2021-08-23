@@ -51,3 +51,6 @@ class AppRelated(object):
 
     def deleteRelatedMultipleUuid(self, **kwargs):
         pass
+
+    def submenuImportRelated(self, **kwargs):
+        pass

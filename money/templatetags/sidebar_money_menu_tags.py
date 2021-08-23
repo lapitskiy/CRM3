@@ -8,6 +8,7 @@ def show_menu():
     RelatedMoney = RelatedMixin()
     RelatedMoney.related_module_name = 'money'
     related_submenu = RelatedMoney.relatedImportSubmenu()
+    print('related_submenu ', related_submenu)
     context = {'relatedmenu': related_submenu}
     print('submenu', context)
     return context
