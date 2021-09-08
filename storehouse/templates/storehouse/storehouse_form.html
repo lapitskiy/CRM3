@@ -1,0 +1,34 @@
+{% extends "base.html" %}
+{% load static %}
+{% block title %}{{ title }} - {{ block.super }}{% endblock %}
+{% block link %}
+<link href="{% static 'css/print_style.css' %}" rel="stylesheet">
+{% endblock %}
+
+
+{% block sidebar %}
+    {% include 'include/_sidebar_prints.html' %}
+{% endblock %}
+
+@media print {
+#viewing_panel {
+    -webkit-print-color-adjust: exact;
+}
+
+{% block content %}
+    Форма {{ formnumber }}<br><br>
+
+    <a href="#" class="action-print">Распечатать</a>
+
+<script>
+$(function($){
+	$(".action-print").click(function(){
+		window.print();
+		return false;
+	});
+});
+</script>
+    <br><br>
+
+<div class="print_block">{{ printform|safe }}</div>
+{% endblock %}

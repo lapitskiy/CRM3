@@ -12,3 +12,6 @@ class SimplePrintAddForm(forms.ModelForm):
         widgets = {
             'name': forms.TextInput(attrs={'class': 'form-control', 'autocomplete':'off'}),
         }
+
+class RelatedAddForm:
+    pass

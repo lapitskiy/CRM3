@@ -85,18 +85,16 @@ def impliment(moduleName):
     content = re.sub(r'(PLUGIN_URLS = )\{.*\}', r'\1' + str(dictt), content)
     with open('plugins/settings_plugin.py', 'w', encoding="utf-8") as file:
         file.write(content    )
-    print('TYT5')
     settings.INSTALLED_APPS += (app_module.INSTALLED_APPS_NAME,)
-    print('TYT6')
     apps.app_configs = OrderedDict()
-    print('TYT7')
     apps.apps_ready = apps.models_ready = apps.loading = apps.ready = False
-    print('TYT8')
     #apps.ready = False
     apps.clear_cache()
-    print('TYT9')
     print('sett:', settings.INSTALLED_APPS)
-    apps.populate(settings.INSTALLED_APPS)
+    try:
+        apps.populate(settings.INSTALLED_APPS)
+    except django.core.exceptions.ImproperlyConfigured:
+        print(' Application labels arent unique - duplicates')
     print('APPS INSTALL ADD')
         #from django.utils import autoreload
         #print('MAKE RELODA')

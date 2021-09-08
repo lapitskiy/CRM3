@@ -201,6 +201,7 @@ class RelatedMixin(object):
                     getrelatedClass = getattr(imp_related, 'AppRelated')
                     relatedClass = getrelatedClass()
                     _dict['module'] = x.module_name
+
                     _dict['relateddata'] = self.dictUuidToList(relatedClass.linkGetReleatedData(request_get=request_get))
                     related_dict[x.module_name] = _dict
                 return related_dict

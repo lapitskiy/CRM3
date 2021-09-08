@@ -32,16 +32,14 @@ plugin/templatetags/install_tags.py
 
 Создание плагина
 -
-pluginName/template/include/_sidebar_orders.html 
+pluginName/template/include/_sidebar_appsName.html 
 рекомендованый файл сайдбара
 
-pluginName/template/pluginName/sidebar_orders_tags.html 
+pluginName/template/pluginName/sidebar_appsName_tags.html 
 рекомендованый файл tag.html
 
-pluginName/templatetags//sidebar_orders_tags.py 
+pluginName/templatetags//sidebar_appsName_tags.py 
 рекомендованый файл tag.py
-
-utils.py - файл методов сязанных данных и миксинов
 
 apps/related.py - файл приложения с обязательными связанными методами
 
@@ -84,13 +82,12 @@ related
 - пример вывода связанных данных в виде форм или данных можно посмотреть в файле views приложения orders
 - relatedMixin (plugins.utils) класс с методами для вызова связанных данных, который использует общую логику для всех приложений. Получение связанных данных и обработка, вывод связанного меню (пример в приложении money)
 
-utils.py
+plugins/utils.py (часть ядра)
 -
 - методы в приложении plugins, которые позволяют взаимодействовать приложениям между собой через связанные данные 
+- utils.py - файл методов сязанных данных и миксинов
 
 install.py
 -
 - данные нового приложения для инсталляции в crm3
-
-
         
