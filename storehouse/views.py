@@ -1,10 +1,13 @@
 from django.views.generic import ListView, TemplateView
-from .models import Storehouses
+from .models import Storehouses, Category
 from plugins.utils import RelatedMixin
-from .forms import StorehouseAddForm
+from .forms import StorehouseAddForm, StorehouseAddCategoryForm
 from django.core.paginator import Paginator
 from django.core.paginator import EmptyPage
 from django.core.paginator import PageNotAnInteger
+from django.http import HttpResponse, HttpResponseRedirect, JsonResponse
+from django.urls import reverse_lazy
+from django.shortcuts import get_object_or_404
 
 class StorehouseHomeView(ListView):
     model = Storehouses
@@ -18,9 +21,8 @@ class StorehouseHomeView(ListView):
         context['title'] = 'Все склады'
         return context
 
-
-class StorehouseAddView(RelatedMixin, TemplateView):
-    template_name = 'storehouse/storehouse_add.html'
+class StorehouseSettingsAddView(RelatedMixin, TemplateView):
+    template_name = 'storehouse/settings/storehouse_settings_add.html'
     related_module_name = 'storehouse' #relatedmixin module
 
     def get(self, request, *args, **kwargs):
@@ -38,28 +40,32 @@ class StorehouseAddView(RelatedMixin, TemplateView):
         if formOne.is_valid():
             form_one = formOne.save(commit=False)
             form_one.save()
-            return HttpResponseRedirect(reverse_lazy('prints_home'))
+            return HttpResponseRedirect(reverse_lazy('storehouse_settings'))
         else:
-            print('NotValid')
+            print('NotValid tyt')
+            print('formOne: ', formOne)
             return self.form_invalid(formOne, **kwargs)
 
     def getPostForm(self, req):
-        category_filter = self.request.GET.get('category')
+        category_filter = self.request.GET.get('choose')
         if category_filter:
-            if category_filter == 'simple':
-                return SimplePrintAddForm(req, prefix='one_form')
+            if category_filter == 'category':
+                return StorehouseAddCategoryForm(req, prefix='one_form')
+        return StorehouseAddForm(req, prefix='one_form')
 
     def getForm(self):
-        category_filter = self.request.GET.get('category')
+        category_filter = self.request.GET.get('choose')
         if category_filter:
-            if category_filter == 'simple':
-                return SimplePrintAddForm
+            if category_filter == 'category':
+                return StorehouseAddCategoryForm
+        return StorehouseAddForm
 
     def getVar(self):
         category_filter = self.request.GET.get('category')
         if category_filter:
             tag = category_filter
-        return tag
+            return tag
+        return ''
 
     def form_invalid(self, formOne, **kwargs):
         context = self.get_context_data()
@@ -80,7 +86,8 @@ class StorehouseSettingsView(RelatedMixin, ListView):
     def get_context_data(self, *, object_list=None, **kwargs):
         context = super().get_context_data(**kwargs)
         context['title'] = 'Настройки'
-        context['filter'] = self.requestGet('filter')
+        context['show'] = self.requestGet('show')
+        context['model'] = self.requestGet('model')
         # filter
         list_orders = self.getQuery()
         #paginator
@@ -93,11 +100,6 @@ class StorehouseSettingsView(RelatedMixin, ListView):
             orders_page = paginator.page(page)
         except EmptyPage:
             orders_page = paginator.page(paginator.num_pages)
-
-        if self.request.GET.get('model'):
-            context.update({'model': self.request.GET.get('model')})
-        else:
-            context.update({'model': 'service'})
         return context
 
     def post(self, request, *args, **kwargs):
@@ -110,11 +112,82 @@ class StorehouseSettingsView(RelatedMixin, ListView):
             return ''
 
     def getQuery(self):
-        pass
+        if self.requestGet('show'):
+            if self.request.GET.get('show') == 'category':
+                return Category.objects.all()
+            if self.request.GET.get('show') == 'storehouse':
+                return Storehouses.objects.all()
         return ''
 
     def requestGet(self, req):
         if self.request.GET.get(req):
-            return self.request.GET.get('filter')
+            return self.request.GET.get(req)
         else:
-            return ''
+            return False
+
+class StorehouseSettingsEditView(TemplateView):
+    template_name = 'storehouse/settings/storehouse_settings_edit.html'
+
+    def get(self, request, *args, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['tag'] = self.requestGet('tag')
+        context['id'] = self.requestGet('id')
+        context['show'] = self.requestGet('show')
+        if self.requestGet('tag') and self.requestGet('id'):
+            if self.request.GET.get('tag') == 'delete':
+                get_object_or_404(Category, pk=int(context['id'])).delete()
+                return HttpResponseRedirect(reverse_lazy('storehouse_settings') + '?show=' + context['show'])
+            if self.request.GET.get('tag') == 'edit':
+                formEdit = self.getForm()
+                formEdit.prefix = 'edit_form'
+                context.update({'formEdit': formEdit})
+                context.update({'id': self.request.GET.get('id')})
+        return self.render_to_response(context)
+
+    def post(self, request, *args, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['tag'] = self.requestGet('tag')
+        context['id'] = self.requestGet('id')
+        context['show'] = self.requestGet('show')
+        formEdit = self.getPostForm()
+        if formEdit.is_valid():
+            formEdit.save()
+            return HttpResponseRedirect(reverse_lazy('storehouse_settings') + '?show=' + context['show'])
+        else:
+            return self.form_invalid(formEdit, **kwargs)
+
+    def form_invalid(self, formEdit, **kwargs):
+        context = self.get_context_data()
+        formEdit.prefix = 'edit_form'
+        context.update({'formEdit': formEdit})
+        context.update({'model': self.request.GET.get('model')})
+        context.update({'id': self.request.GET.get('id')})
+        return self.render_to_response(context)
+
+    def getForm(self):
+        getmodel = self.request.GET.get('show')
+        if getmodel:
+            if getmodel == 'category':
+                get_id = Category.objects.get(pk=self.request.GET.get('id'))
+                return StorehouseAddCategoryForm(instance=get_id)
+            if getmodel == 'storehouse':
+                get_id = Storehouses.objects.get(pk=self.request.GET.get('id'))
+                return StorehouseAddForm(instance=get_id)
+
+    def getPostForm(self):
+        getedit = self.request.GET.get('show')
+        if getedit:
+            if getedit == 'category':
+                print('---',self.request.GET.get('id'))
+                get_id = Category.objects.get(pk=self.request.GET.get('id'))
+                return StorehouseAddCategoryForm(self.request.POST, prefix='edit_form', instance=get_id)
+            if getedit == 'storehouse':
+                print('---',self.request.GET.get('id'))
+                get_id = Storehouses.objects.get(pk=self.request.GET.get('id'))
+                return StorehouseAddForm(self.request.POST, prefix='edit_form', instance=get_id)
+
+    def requestGet(self, req):
+        if self.request.GET.get(req):
+            return self.request.GET.get(req)
+        else:
+            return False

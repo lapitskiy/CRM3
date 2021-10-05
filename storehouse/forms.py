@@ -1,21 +1,25 @@
 from django import forms
 from .models import Storehouses, Category
+import re
+from django.core.exceptions import ValidationError, ObjectDoesNotExist
 
 #forms
 class StorehouseAddForm(forms.ModelForm):
     class Meta:
         model = Storehouses
-        fields = ['name','address','address','phone','category',]
+        fields = ['name','address','phone','category',]
         widgets = {
             'name': forms.TextInput(attrs={'class': 'form-control', 'autocomplete': 'off'}),
+            'address': forms.TextInput(attrs={'class': 'form-control', 'autocomplete': 'off'}),
+            'phone': forms.TextInput(attrs={'class': 'form-control', 'autocomplete': 'off'}),
+            'category': forms.Select(attrs={'class': 'form-control', 'autocomplete': 'on'}),
+
         }
 
     def clean_name(self):
         name = self.cleaned_data['name']
         if re.match(r'\d', name):
             raise ValidationError('Название не должно начинаться с цифры')
-        if not name[0].isupper():
-            raise ValidationError('Название не должно начинаться с маленькой буквы')
         return name
 
 class StorehouseAddCategoryForm(forms.ModelForm):
@@ -30,6 +34,4 @@ class StorehouseAddCategoryForm(forms.ModelForm):
         name = self.cleaned_data['name']
         if re.match(r'\d', name):
             raise ValidationError('Название не должно начинаться с цифры')
-        if not name[0].isupper():
-            raise ValidationError('Название не должно начинаться с маленькой буквы')
         return name

@@ -6,8 +6,7 @@
 {% endblock %}
 
 {% block content %}
-
-    <form action="{% url 'settings_edit'%}?model={{ model }}&id={{ id }}" method="post">
+    <form action="{% url 'storehouse_settings_edit'%}?show={{ show }}&tag=edit&id={{ id }}" method="post">
         {% csrf_token %}
         {{ formEdit.non_field_errors }}
         {{ formEdit.as_p }}

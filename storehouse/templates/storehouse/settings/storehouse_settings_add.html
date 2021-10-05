@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+{% load static %}
+<script type="text/javascript" src="{% static "ckeditor/ckeditor-init.js" %}"></script>
+<script type="text/javascript" src="{% static "ckeditor/ckeditor/ckeditor.js" %}"></script>
+{% block title %}{{ title }} - {{ block.super }}{% endblock %}
+{% block sidebar %}
+{% include 'include/_sidebar_settings_storehouse.html' %}
+{% endblock %}
+
+{% block content %}
+
+
+{% block javascript %}
+
+{% endblock javascript %}
+
+    <h3>
+     Создание
+    </h3>
+    <form action="" method="post">
+        {% csrf_token %}
+        {{ formOne.non_field_errors }}
+        {{ formOne }}
+        <button type="submit" class="btn btn-primary btn-block">Добавить</button>
+    </form>
+<br><br>
+{% endblock %}

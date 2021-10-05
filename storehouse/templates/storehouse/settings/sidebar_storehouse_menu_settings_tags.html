@@ -1,5 +1,12 @@
+<h5>Отделения</h5>
+<div class="list-group">
+    <a href="{% url 'storehouse_settings'%}?show=storehouse" class="list-group-item list-group-item-action">Все отделения</a>
+    <a href="{% url 'storehouse_settings_add'%}?choose=store" class="list-group-item list-group-item-action">Добавить</a>
+</div>
+<br>
 <h5>Категории</h5>
 <div class="list-group">
-    <a href="{% url 'storehouse_add'%}" class="list-group-item list-group-item-action">Добавить</a>
+    <a href="{% url 'storehouse_settings'%}?show=category" class="list-group-item list-group-item-action">Все категории</a>
+    <a href="{% url 'storehouse_settings_add'%}?choose=category" class="list-group-item list-group-item-action">Добавить</a>
 </div>
 <br>
