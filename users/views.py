@@ -3,6 +3,22 @@ from django.contrib import messages
 from django.shortcuts import render, redirect
 from .forms import UserRegisterForm, UserLoginForm
 from django.contrib.auth import login, logout
+from django.views.generic import ListView, TemplateView
+from plugins.utils import RelatedMixin
+from django.contrib.auth.decorators import permission_required
+
+
+class UserHomeView(RelatedMixin, TemplateView):
+    template_name = 'users/users_index.html'
+    related_module_name = 'users' #relatedmixin module
+
+    def get(self, request, *args, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['title'] = 'Пользователи'
+        return self.render_to_response(context)
+
+
+UsersHomeViewPermit = permission_required('users.view', raise_exception=True)(UserHomeView.as_view())
 
 
 def register(request):

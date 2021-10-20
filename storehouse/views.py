@@ -8,6 +8,8 @@ from django.core.paginator import PageNotAnInteger
 from django.http import HttpResponse, HttpResponseRedirect, JsonResponse
 from django.urls import reverse_lazy
 from django.shortcuts import get_object_or_404
+from django.contrib.auth.decorators import permission_required
+
 
 class StorehouseHomeView(ListView):
     model = Storehouses
@@ -20,6 +22,8 @@ class StorehouseHomeView(ListView):
         context = super().get_context_data(**kwargs)
         context['title'] = 'Все склады'
         return context
+
+StorehouseHomeViewPermit = permission_required('storehouse.view', raise_exception=True)(StorehouseHomeView.as_view())
 
 class StorehouseSettingsAddView(RelatedMixin, TemplateView):
     template_name = 'storehouse/settings/storehouse_settings_add.html'

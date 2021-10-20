@@ -1,0 +1,64 @@
+{% extends "base.html" %}
+{% block title %}{{ title }} - {{ block.super }}{% endblock %}
+{% block sidebar %}
+    {% include 'include/_sidebar_users.html' %}
+{% endblock %}
+{% block content %}
+    <div class="row">
+        <div class="col-4">
+            <div class="list-group" id="list-tab" role="tablist">
+                {% for item in page_obj %}
+                    <a class="list-group-item list-group-item-action" id="list-{{ item.pk }}" data-bs-toggle="list" href="#id-list-{{ item.pk }}" role="tab" aria-controls="home">{{ item.name }} {{ item.phone }}</a>
+                {% endfor %}
+            </div>
+        </div>
+        <div class="col-8">
+            <div class="tab-content" id="nav-tabContent">
+                {% for item in page_obj %}
+                    <div class="tab-pane fade show" id="id-list-{{ item.pk }}" role="tabpanel" aria-labelledby="list-{{ item.pk }}">
+                        <div class="shadow p-3 mb-5 bg-body rounded">
+                            Номер: {{ item.pk }}<br>
+                            Название формы: {{ item.name }}<br>
+                            Вид формы: {{ item.contentform|safe }}<br>
+                            <div class="d-flex justify-content-end">
+                                <a href="edit/{{ item.pk }}"><button type="button" class="btn btn-secondary">Редактировать</button></a>
+                            </div><br>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+    <br><br>
+    <nav aria-label="...">
+        <ul class="pagination">
+            {% if page_obj.has_previous %}
+                <li class="page-item">
+                    <a class="page-link" href="?page=1">&laquo; В начало</a>
+                </li>
+                <li class="page-item">
+                    <a class="page-link" href="?page={{ page_obj.previous_page_number }}">Предудущая</a>
+                </li>
+            {% endif %}
+            {% for p in page_obj.paginator.page_range %}
+                {% if page_obj.number == p %}
+                    <li class="page-item active" aria-current="page">
+                        <span class="page-link">{{ p }}</span>
+                    </li>
+                {% elif p > page_obj.number|add:-3 and p < page_obj.number|add:3 %}
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ p }}">{{ p }}</a>
+                    </li>
+                {% endif %}
+            {% endfor %}
+            {% if page_obj.has_next %}
+                <li class="page-item">
+                    <a class="page-link" href="?page={{ page_obj.next_page_number }}">Следующая</a>
+                </li>
+                <li class="page-item">
+                    <a class="page-link" href="?page={{ page_obj.paginator.num_pages }}"> В конец &raquo;</a>
+                </li>
+            {% endif %}
+        </ul>
+    </nav>
+{% endblock %}
