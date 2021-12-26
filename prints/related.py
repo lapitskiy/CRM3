@@ -6,6 +6,12 @@ class AppRelated(object):
     prefix = 'prints'
     related_format = 'menu'
 
+    # если это связанный объект, который не имеет формы или не требует обновления, то возврщает True и пропускается в
+    # utils checkRelatedIsValidDict, как не требующий добавления для проверки форимы и обновления текущей
+    def passEditUpdate(self, **kwargs):
+        return True
+
+    # если переменная имеет возможность иметь несколько uuid на одну запись, тогда здесь идет обрабтока такой возможности
     def checkUpdate(self, **kwargs):
         return False
 
@@ -16,6 +22,7 @@ class AppRelated(object):
         return False
 
     def checkRelatedAddForm(self, **kwargs):
+
         context = {}
         request_post = kwargs['request_post']
         if self.checkUpdate(request_post=request_post):
@@ -35,6 +42,7 @@ class AppRelated(object):
         return context
 
     def checkRelatedEditForm(self, **kwargs):
+
         context= {}
         request_post = kwargs['request_post']
         if self.checkUpdate(request_post=request_post):

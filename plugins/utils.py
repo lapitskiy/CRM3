@@ -144,9 +144,14 @@ class RelatedMixin(object):
                 imp_related = importlib.import_module(x.module_name + '.related')
                 getrelatedClass = getattr(imp_related, 'AppRelated')
                 relatedClass = getrelatedClass()
+
+                print('=================')
+                if relatedClass.passEditUpdate():
+                    continue
+
                 _dict['module'] = x.module_name
                 _dict['update'] = relatedClass.checkUpdate(request_post=request_post)
-                print('=================')
+
                 if 'uuid' in kwargs:
                     _dict['convert'] = relatedClass.checkConvert(uuid=self.dictUuidToList(kwargs['uuid']),
                                                              request_post=request_post)
@@ -155,16 +160,11 @@ class RelatedMixin(object):
                 if 'add' in kwargs['doing']:
                     _dict2 = relatedClass.checkRelatedAddForm(request_post=request_post)
                 _dict['uuid'] = _dict2['uuid']
-                print('dict 2', _dict2)
-                print(_dict2.get('pk') is None)
                 _dict['pk'] = _dict2['pk']
                 _dict['form'] = _dict2['form']
-                print('_dict[form] ', _dict['form'].is_valid())
                 if _dict['form'].is_valid():
-                    print('1')
                     _dict['valid'] = True
                 else:
-                    print('2')
                     _dict['valid'] = False
                 related_form_dict[x.module_name] = _dict
         return related_form_dict

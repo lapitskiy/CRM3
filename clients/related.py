@@ -20,6 +20,11 @@ class AppRelated(object):
                 return False
         return False
 
+    # если это связанный объект, который не имеет формы или не требует обновления, то возврщает True и пропускается в
+    # utils checkRelatedIsValidDict, как не требующий добавления для проверки форимы и обновления текущей
+    def passEditUpdate(self, **kwargs):
+        return False
+
     # если это не создание новой модели, а изминение старой на другую уже существующую, тогда мы должены произвести смену
     # uuid мужду этими моделями
     # return False or dict uudi convert

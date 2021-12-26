@@ -29,6 +29,7 @@ class OrdersHomeView(RelatedMixin, ListView):
     related_module_name = 'orders' #mixin
 
 
+
     def get_queryset(self):
         return self.getQuery()
 
