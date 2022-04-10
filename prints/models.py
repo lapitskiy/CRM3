@@ -16,7 +16,7 @@ class Prints(models.Model):
     @property
     def get_related_data(self):
         data = {
-            'related_use': 'menu',
+            'related_use': 'link',
             'module_name': 'Печать',
             'link': '../prints/form/?uuid=',
             'form': self.pk

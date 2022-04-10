@@ -6,7 +6,7 @@ from django.db.models import Q
 
 class AppRelated(object):
     prefix = 'clients'
-    related_format = 'data'
+    related_format = 'form'
 
     # если переменная имеет возможность иметь несколько uuid на одну запись, тогда здесь идет обрабтока такой возможности
     def checkUpdate(self, **kwargs):
@@ -27,6 +27,8 @@ class AppRelated(object):
 
     # если это не создание новой модели, а изминение старой на другую уже существующую, тогда мы должены произвести смену
     # uuid мужду этими моделями
+    # по сути это select форма, и если мы редактируем заказ, чтобы была возможность проверить, есть ли уже такой select
+    # и если есть, просто связать заказ и уже существую модель
     # return False or dict uudi convert
     def checkConvert(self, **kwargs):
         if kwargs['uuid']:

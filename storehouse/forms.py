@@ -1,5 +1,5 @@
 from django import forms
-from .models import Storehouses, Category
+from .models import Storehouses, StoreRelated, Category
 import re
 from django.core.exceptions import ValidationError, ObjectDoesNotExist
 
@@ -13,7 +13,6 @@ class StorehouseAddForm(forms.ModelForm):
             'address': forms.TextInput(attrs={'class': 'form-control', 'autocomplete': 'off'}),
             'phone': forms.TextInput(attrs={'class': 'form-control', 'autocomplete': 'off'}),
             'category': forms.Select(attrs={'class': 'form-control', 'autocomplete': 'on'}),
-
         }
 
     def clean_name(self):
@@ -35,3 +34,16 @@ class StorehouseAddCategoryForm(forms.ModelForm):
         if re.match(r'\d', name):
             raise ValidationError('Название не должно начинаться с цифры')
         return name
+
+# если формы нет, как например в модуле prints, ставиться pass
+class RelatedAddForm(forms.ModelForm):
+
+    class Meta:
+        model = StoreRelated
+        fields = ['store']
+        widgets = {
+            'store': forms.HiddenInput(),
+            'name': forms.Select(attrs={'class': 'form-control', 'autocomplete':'on'}),
+        }
+        labels = {
+        }

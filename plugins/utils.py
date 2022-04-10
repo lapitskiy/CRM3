@@ -46,7 +46,7 @@ class RelatedMixin(object):
 
         if related:
             for x in related:
-                print('======= ')
+                print('======= utils.py getDataListRelated')
                 modelPath = x.module_name + '.models'
                 imp_model = importlib.import_module(modelPath)
                 cls_model = getattr(imp_model, x.related_class_name)
@@ -63,7 +63,6 @@ class RelatedMixin(object):
                         if 'data' in kwargs:
                             if kwargs['data'] == 'full':
                                 related_get[x.module_name] = cls2.__dict__
-                                print('dict tyt zz')
                         else:
                             related_get = cls2.get_related_data()
 
@@ -74,21 +73,31 @@ class RelatedMixin(object):
                         for key_uuid, value_uuid in r.related_uuid.items():
                             try:
                                 # доедлать, с класса related.py, вставить проверку на if и отдавать связаные данные для menu
-                                if cls_related.related_format == 'data':
+                                if cls_related.related_format == 'form':
                                     cls2 = cls_model.objects.get(Q(related_uuid__icontains=key_uuid))
                                     related_get = cls2.get_related_data()
                                     related_get['related_uuid'] = key_uuid
                                     data_related_list.append(related_get)
-                                if cls_related.related_format == 'menu':
-                                    print('cls_model ', cls_model)
+                                if cls_related.related_format == 'link':
+                                    print('cls_model link', cls_model)
                                     cls_related2 = cls_model()
                                     related_get = cls_related2.get_related_data
                                     related_get['related_uuid'] = key_uuid
-                                    print('related_get ', str(related_get))
+                                    #print('related_get ', str(related_get))
+                                    data_related_list.append(related_get)
+                                if cls_related.related_format == 'select':
+                                    #print('cls_model select ', cls_model)
+                                    cls_related3 = cls_model.objects.get(Q(related_uuid__icontains=key_uuid))
+                                    related_get = cls_related3.get_related_data
+                                    #print('tyt 333 ky uuid', key_uuid)
+                                    #print('related_get select', str(related_get))
+                                    related_get['related_uuid'] = key_uuid
+                                    #print('related_get ', str(related_get))
                                     data_related_list.append(related_get)
                             except ObjectDoesNotExist:
                                 pass
-        print('======= ')
+        print('======= data_related_list')
+        print(data_related_list)
         return data_related_list
 
     # [EN] return obj

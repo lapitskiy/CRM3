@@ -13,5 +13,6 @@ class SimplePrintAddForm(forms.ModelForm):
             'name': forms.TextInput(attrs={'class': 'form-control', 'autocomplete':'off'}),
         }
 
+
 class RelatedAddForm:
     pass

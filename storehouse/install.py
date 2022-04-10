@@ -1,5 +1,6 @@
 # файл удаляется после установки
 MODULE_NAME = 'storehouse'
+MODULE_CLASS_NAME = 'Storehouses'
 
 INSTALLED_APPS_NAME = 'storehouse.apps.StorehouseConfig'
 
