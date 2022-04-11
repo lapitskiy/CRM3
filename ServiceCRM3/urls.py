@@ -18,6 +18,7 @@ from django.conf.urls.static import static
 from django.contrib import admin
 from django.urls import path, include
 from plugins import settings_plugin
+from django.contrib.staticfiles.urls import staticfiles_urlpatterns
 
 
 urlpatterns = [
@@ -29,6 +30,7 @@ urlpatterns = [
     ]
 for key, value in settings_plugin.PLUGIN_URLS.items():
     urlpatterns.append(path(value['path'], include(value['include'])))
+urlpatterns += staticfiles_urlpatterns()
 
 
 
