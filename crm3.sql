@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Хост: 127.0.0.1:3306
--- Время создания: Апр 11 2022 г., 15:43
+-- Время создания: Апр 11 2022 г., 15:59
 -- Версия сервера: 10.3.22-MariaDB
 -- Версия PHP: 7.1.33
 
@@ -172,7 +172,7 @@ CREATE TABLE `auth_user` (
 --
 
 INSERT INTO `auth_user` (`id`, `password`, `last_login`, `is_superuser`, `username`, `first_name`, `last_name`, `email`, `is_staff`, `is_active`, `date_joined`) VALUES
-(2, 'pbkdf2_sha256$216000$1ZxOy3mNVDuW$crghWULGbbD7BQg7KbllMAkQg0Y7d3QdsPrH7SKlQ7c=', '2022-04-11 12:39:09.509925', 1, 'lapitsky', '', '', 'lapithome@gmail.com', 1, 1, '2022-04-11 11:49:27.132342');
+(1, 'pbkdf2_sha256$216000$1ZxOy3mNVDuW$crghWULGbbD7BQg7KbllMAkQg0Y7d3QdsPrH7SKlQ7c=', '2022-04-11 12:43:58.932479', 1, 'lapitsky', '', '', 'lapithome@gmail.com', 1, 1, '2022-04-11 11:49:27.132342');
 
 -- --------------------------------------------------------
 
@@ -377,7 +377,6 @@ CREATE TABLE `django_session` (
 
 INSERT INTO `django_session` (`session_key`, `session_data`, `expire_date`) VALUES
 ('1xc2y675xr4l10pdd0hpd7bm2v4h0tzv', '.eJxVjMEOwiAQRP-FsyFlKVA9evcbyMIuUjWQlPZk_Hdp0oMeZ96beQuP25r91njxM4mLUOL02wWMTy47oAeWe5WxlnWZg9wVedAmb5X4dT3cv4OMLff1BGQwgR05pfNITpMF05NyMaqgTQxKB8XQPQvgJm0ZB4cuDkQmWRCfL-PkN84:1n1Vpg:TseBO_oNEnOLcaxDvm8AXf3b31YHp-HrSK8gezrqJOg', '2022-01-09 15:53:12.552071'),
-('1z111z74qxzxp9womniamt5wzjag5jvf', '.eJxVjDsOwjAQBe_iGlmbjfGHkj5nsLzrNQkgR4qTCnF3iJQC2jcz76Vi2tYxbk2WOGV1UahOvxslfkjdQb6neps1z3VdJtK7og_a9DBneV4P9-9gTG381h2A8yYXZtebgtYhUS8pswfsHAUIRbiYznIPEjyCFaQMZxMK-2JJvT_gQzgC:1ndtK1:Tp8vPdjBltarmiSuwcCa3i4hwkjLUplzP9krYEKl-Sg', '2022-04-25 12:39:09.769940'),
 ('5hcqecqpo18zj9523m2w6pazpmnt6hyk', '.eJxVjMEOwiAQRP-FsyFlKVA9evcbyMIuUjWQlPZk_Hdp0oMeZ96beQuP25r91njxM4mLUOL02wWMTy47oAeWe5WxlnWZg9wVedAmb5X4dT3cv4OMLff1BGQwgR05pfNITpMF05NyMaqgTQxKB8XQPQvgJm0ZB4cuDkQmWRCfL-PkN84:1lOpFK:HUBeTgt3Y3VZSC267yPjVg0ai1TjF2iJf9BQP4yV2BA', '2021-04-06 22:11:30.201150'),
 ('5nk05i0fbfzk2sqzlvm0w95qkf45dqp7', '.eJxVjMEOwiAQRP-FsyFlKVA9evcbyMIuUjWQlPZk_Hdp0oMeZ96beQuP25r91njxM4mLUOL02wWMTy47oAeWe5WxlnWZg9wVedAmb5X4dT3cv4OMLff1BGQwgR05pfNITpMF05NyMaqgTQxKB8XQPQvgJm0ZB4cuDkQmWRCfL-PkN84:1labEB:n95kby68kmMZ_rvGrr29lRAoOacvaxeLeHOd3CRbJ3A', '2021-05-09 09:38:59.212766'),
 ('azq7dttx74af6pp3vf8hb64lk36h1pyo', '.eJxVjMEOwiAQRP-FsyFlKVA9evcbyMIuUjWQlPZk_Hdp0oMeZ96beQuP25r91njxM4mLUOL02wWMTy47oAeWe5WxlnWZg9wVedAmb5X4dT3cv4OMLff1BGQwgR05pfNITpMF05NyMaqgTQxKB8XQPQvgJm0ZB4cuDkQmWRCfL-PkN84:1lFOc6:AQBWBL_ecvEYfyF1KoJHrWcRVNIEiO_L_EQeVxj8p2M', '2021-03-11 21:56:02.001024'),
@@ -385,6 +384,7 @@ INSERT INTO `django_session` (`session_key`, `session_data`, `expire_date`) VALU
 ('brd5okkuhreq4i1a31d59txpg8381tgc', '.eJxVjMEOwiAQRP-FsyFlKVA9evcbyMIuUjWQlPZk_Hdp0oMeZ96beQuP25r91njxM4mLUOL02wWMTy47oAeWe5WxlnWZg9wVedAmb5X4dT3cv4OMLff1BGQwgR05pfNITpMF05NyMaqgTQxKB8XQPQvgJm0ZB4cuDkQmWRCfL-PkN84:1mIfEl:Q0oDXggNcB6d-kpJg_a1teeYmo7YRngPxdATBj5aDtI', '2021-09-07 22:49:43.239452'),
 ('e2xwzql9u3db766q9otvsgrkmpn7kx0t', '.eJxVjMEOwiAQRP-FsyFlKVA9evcbyMIuUjWQlPZk_Hdp0oMeZ96beQuP25r91njxM4mLUOL02wWMTy47oAeWe5WxlnWZg9wVedAmb5X4dT3cv4OMLff1BGQwgR05pfNITpMF05NyMaqgTQxKB8XQPQvgJm0ZB4cuDkQmWRCfL-PkN84:1mNjQi:3fC_wmyQ7zU1_Vc2vz35CtACgyB2YbF3UM1ddHJXnHQ', '2021-09-21 22:19:00.729361'),
 ('erxsqn94c511k682j6webta3s11bm3q6', '.eJxVjMEOwiAQRP-FsyFlKVA9evcbyMIuUjWQlPZk_Hdp0oMeZ96beQuP25r91njxM4mLUOL02wWMTy47oAeWe5WxlnWZg9wVedAmb5X4dT3cv4OMLff1BGQwgR05pfNITpMF05NyMaqgTQxKB8XQPQvgJm0ZB4cuDkQmWRCfL-PkN84:1mJNSM:WCtHGXw2HKd7xI1ATmP09hQd1rbJ-1vi6asdvz_eg2o', '2021-09-09 22:02:42.449706'),
+('ev9zuznpm2m5kpr0jw4yirddcys9lch7', '.eJxVjDsOwjAQBe_iGlmbjfGHkj5nsLzrNQkgR4qTCnF3iJQC2jcz76Vi2tYxbk2WOGV1UahOvxslfkjdQb6neps1z3VdJtK7og_a9DBneV4P9-9gTG381h2A8yYXZtebgtYhUS8pswfsHAUIRbiYznIPEjyCFaQMZxMK-2JJvT_gQzgC:1ndtOh:ZMbOsugDhQ78G25WEdBWO8hYQfdgFe_AKAViYtx90E0', '2022-04-25 12:43:59.138491'),
 ('fuzzrg7mwvjvwa1eq6tjfxshlgflul6j', '.eJxVjMEOwiAQRP-FsyFlKVA9evcbyMIuUjWQlPZk_Hdp0oMeZ96beQuP25r91njxM4mLUOL02wWMTy47oAeWe5WxlnWZg9wVedAmb5X4dT3cv4OMLff1BGQwgR05pfNITpMF05NyMaqgTQxKB8XQPQvgJm0ZB4cuDkQmWRCfL-PkN84:1lz4AJ:yG4j5xU0keiGctVeyAwar9tHXsfeR56BkNXgjRWKSlA', '2021-07-15 21:24:07.333482'),
 ('fz8lxbep2hhp9ayz3uk1ow8kcrltb08v', '.eJxVjMEOwiAQRP-FsyFlKVA9evcbyMIuUjWQlPZk_Hdp0oMeZ96beQuP25r91njxM4mLUOL02wWMTy47oAeWe5WxlnWZg9wVedAmb5X4dT3cv4OMLff1BGQwgR05pfNITpMF05NyMaqgTQxKB8XQPQvgJm0ZB4cuDkQmWRCfL-PkN84:1m4Unf:fqkelLyJs9mFhPUJC-GLq4nrgmJFrydKlCcj83WF41o', '2021-07-30 20:51:11.198337'),
 ('i18t942ojrw4sbmjocbei25k70s7p8q0', '.eJxVjMEOwiAQRP-FsyFlKVA9evcbyMIuUjWQlPZk_Hdp0oMeZ96beQuP25r91njxM4mLUOL02wWMTy47oAeWe5WxlnWZg9wVedAmb5X4dT3cv4OMLff1BGQwgR05pfNITpMF05NyMaqgTQxKB8XQPQvgJm0ZB4cuDkQmWRCfL-PkN84:1m4St3:pW0Nzwj7yqEXSQZho8qrTC0qs-And8PuN-7jA6x6Vlc', '2021-07-30 18:48:37.984758'),
