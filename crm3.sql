@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Хост: 127.0.0.1:3306
--- Время создания: Апр 11 2022 г., 15:24
+-- Время создания: Апр 11 2022 г., 15:40
 -- Версия сервера: 10.3.22-MariaDB
 -- Версия PHP: 7.1.33
 
@@ -172,7 +172,7 @@ CREATE TABLE `auth_user` (
 --
 
 INSERT INTO `auth_user` (`id`, `password`, `last_login`, `is_superuser`, `username`, `first_name`, `last_name`, `email`, `is_staff`, `is_active`, `date_joined`) VALUES
-(2, 'pbkdf2_sha256$216000$1ZxOy3mNVDuW$crghWULGbbD7BQg7KbllMAkQg0Y7d3QdsPrH7SKlQ7c=', '2022-04-11 11:49:40.420102', 1, 'lapitsky', '', '', 'lapithome@gmail.com', 1, 1, '2022-04-11 11:49:27.132342');
+(2, 'pbkdf2_sha256$216000$1ZxOy3mNVDuW$crghWULGbbD7BQg7KbllMAkQg0Y7d3QdsPrH7SKlQ7c=', '2022-04-11 12:39:09.509925', 1, 'lapitsky', '', '', 'lapithome@gmail.com', 1, 1, '2022-04-11 11:49:27.132342');
 
 -- --------------------------------------------------------
 
@@ -197,64 +197,6 @@ CREATE TABLE `auth_user_user_permissions` (
   `user_id` int(11) NOT NULL,
   `permission_id` int(11) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-
---
--- Дамп данных таблицы `auth_user_user_permissions`
---
-
-INSERT INTO `auth_user_user_permissions` (`id`, `user_id`, `permission_id`) VALUES
-(1, 1, 1),
-(2, 1, 2),
-(3, 1, 3),
-(4, 1, 4),
-(5, 1, 5),
-(6, 1, 6),
-(7, 1, 7),
-(8, 1, 8),
-(9, 1, 9),
-(10, 1, 10),
-(11, 1, 11),
-(12, 1, 12),
-(13, 1, 13),
-(14, 1, 14),
-(15, 1, 15),
-(16, 1, 16),
-(17, 1, 17),
-(18, 1, 18),
-(19, 1, 19),
-(20, 1, 20),
-(21, 1, 21),
-(22, 1, 22),
-(23, 1, 23),
-(24, 1, 24),
-(25, 1, 25),
-(26, 1, 26),
-(27, 1, 27),
-(28, 1, 28),
-(29, 1, 29),
-(30, 1, 30),
-(31, 1, 31),
-(32, 1, 32),
-(33, 1, 33),
-(34, 1, 34),
-(35, 1, 35),
-(36, 1, 36),
-(37, 1, 37),
-(38, 1, 38),
-(39, 1, 39),
-(40, 1, 40),
-(41, 1, 41),
-(42, 1, 42),
-(43, 1, 43),
-(44, 1, 44),
-(45, 1, 53),
-(46, 1, 54),
-(47, 1, 55),
-(48, 1, 56),
-(49, 1, 57),
-(50, 1, 58),
-(51, 1, 59),
-(52, 1, 60);
 
 -- --------------------------------------------------------
 
@@ -568,13 +510,13 @@ CREATE TABLE `django_session` (
 
 INSERT INTO `django_session` (`session_key`, `session_data`, `expire_date`) VALUES
 ('1xc2y675xr4l10pdd0hpd7bm2v4h0tzv', '.eJxVjMEOwiAQRP-FsyFlKVA9evcbyMIuUjWQlPZk_Hdp0oMeZ96beQuP25r91njxM4mLUOL02wWMTy47oAeWe5WxlnWZg9wVedAmb5X4dT3cv4OMLff1BGQwgR05pfNITpMF05NyMaqgTQxKB8XQPQvgJm0ZB4cuDkQmWRCfL-PkN84:1n1Vpg:TseBO_oNEnOLcaxDvm8AXf3b31YHp-HrSK8gezrqJOg', '2022-01-09 15:53:12.552071'),
+('1z111z74qxzxp9womniamt5wzjag5jvf', '.eJxVjDsOwjAQBe_iGlmbjfGHkj5nsLzrNQkgR4qTCnF3iJQC2jcz76Vi2tYxbk2WOGV1UahOvxslfkjdQb6neps1z3VdJtK7og_a9DBneV4P9-9gTG381h2A8yYXZtebgtYhUS8pswfsHAUIRbiYznIPEjyCFaQMZxMK-2JJvT_gQzgC:1ndtK1:Tp8vPdjBltarmiSuwcCa3i4hwkjLUplzP9krYEKl-Sg', '2022-04-25 12:39:09.769940'),
 ('5hcqecqpo18zj9523m2w6pazpmnt6hyk', '.eJxVjMEOwiAQRP-FsyFlKVA9evcbyMIuUjWQlPZk_Hdp0oMeZ96beQuP25r91njxM4mLUOL02wWMTy47oAeWe5WxlnWZg9wVedAmb5X4dT3cv4OMLff1BGQwgR05pfNITpMF05NyMaqgTQxKB8XQPQvgJm0ZB4cuDkQmWRCfL-PkN84:1lOpFK:HUBeTgt3Y3VZSC267yPjVg0ai1TjF2iJf9BQP4yV2BA', '2021-04-06 22:11:30.201150'),
 ('5nk05i0fbfzk2sqzlvm0w95qkf45dqp7', '.eJxVjMEOwiAQRP-FsyFlKVA9evcbyMIuUjWQlPZk_Hdp0oMeZ96beQuP25r91njxM4mLUOL02wWMTy47oAeWe5WxlnWZg9wVedAmb5X4dT3cv4OMLff1BGQwgR05pfNITpMF05NyMaqgTQxKB8XQPQvgJm0ZB4cuDkQmWRCfL-PkN84:1labEB:n95kby68kmMZ_rvGrr29lRAoOacvaxeLeHOd3CRbJ3A', '2021-05-09 09:38:59.212766'),
 ('azq7dttx74af6pp3vf8hb64lk36h1pyo', '.eJxVjMEOwiAQRP-FsyFlKVA9evcbyMIuUjWQlPZk_Hdp0oMeZ96beQuP25r91njxM4mLUOL02wWMTy47oAeWe5WxlnWZg9wVedAmb5X4dT3cv4OMLff1BGQwgR05pfNITpMF05NyMaqgTQxKB8XQPQvgJm0ZB4cuDkQmWRCfL-PkN84:1lFOc6:AQBWBL_ecvEYfyF1KoJHrWcRVNIEiO_L_EQeVxj8p2M', '2021-03-11 21:56:02.001024'),
 ('bbhyhc2sqdxqgpwkd8dljmr0pj92j115', '.eJxVjMEOwiAQRP-FsyFlKVA9evcbyMIuUjWQlPZk_Hdp0oMeZ96beQuP25r91njxM4mLUOL02wWMTy47oAeWe5WxlnWZg9wVedAmb5X4dT3cv4OMLff1BGQwgR05pfNITpMF05NyMaqgTQxKB8XQPQvgJm0ZB4cuDkQmWRCfL-PkN84:1llhRK:vilKjRHUgnSvihWwmRAiWaPVw3kB1-0X51XPWVcl63k', '2021-06-09 00:30:26.470989'),
 ('brd5okkuhreq4i1a31d59txpg8381tgc', '.eJxVjMEOwiAQRP-FsyFlKVA9evcbyMIuUjWQlPZk_Hdp0oMeZ96beQuP25r91njxM4mLUOL02wWMTy47oAeWe5WxlnWZg9wVedAmb5X4dT3cv4OMLff1BGQwgR05pfNITpMF05NyMaqgTQxKB8XQPQvgJm0ZB4cuDkQmWRCfL-PkN84:1mIfEl:Q0oDXggNcB6d-kpJg_a1teeYmo7YRngPxdATBj5aDtI', '2021-09-07 22:49:43.239452'),
 ('e2xwzql9u3db766q9otvsgrkmpn7kx0t', '.eJxVjMEOwiAQRP-FsyFlKVA9evcbyMIuUjWQlPZk_Hdp0oMeZ96beQuP25r91njxM4mLUOL02wWMTy47oAeWe5WxlnWZg9wVedAmb5X4dT3cv4OMLff1BGQwgR05pfNITpMF05NyMaqgTQxKB8XQPQvgJm0ZB4cuDkQmWRCfL-PkN84:1mNjQi:3fC_wmyQ7zU1_Vc2vz35CtACgyB2YbF3UM1ddHJXnHQ', '2021-09-21 22:19:00.729361'),
-('e8uu7vm8bei62wzhjoocamlsyzqakfcg', '.eJxVjDsOwjAQBe_iGlmbjfGHkj5nsLzrNQkgR4qTCnF3iJQC2jcz76Vi2tYxbk2WOGV1UahOvxslfkjdQb6neps1z3VdJtK7og_a9DBneV4P9-9gTG381h2A8yYXZtebgtYhUS8pswfsHAUIRbiYznIPEjyCFaQMZxMK-2JJvT_gQzgC:1ndsY8:LqRbh478yHSKFVl4Ijv1uH7a8WX23SnBaI93IE5uW5A', '2022-04-25 11:49:40.594112'),
 ('erxsqn94c511k682j6webta3s11bm3q6', '.eJxVjMEOwiAQRP-FsyFlKVA9evcbyMIuUjWQlPZk_Hdp0oMeZ96beQuP25r91njxM4mLUOL02wWMTy47oAeWe5WxlnWZg9wVedAmb5X4dT3cv4OMLff1BGQwgR05pfNITpMF05NyMaqgTQxKB8XQPQvgJm0ZB4cuDkQmWRCfL-PkN84:1mJNSM:WCtHGXw2HKd7xI1ATmP09hQd1rbJ-1vi6asdvz_eg2o', '2021-09-09 22:02:42.449706'),
 ('fuzzrg7mwvjvwa1eq6tjfxshlgflul6j', '.eJxVjMEOwiAQRP-FsyFlKVA9evcbyMIuUjWQlPZk_Hdp0oMeZ96beQuP25r91njxM4mLUOL02wWMTy47oAeWe5WxlnWZg9wVedAmb5X4dT3cv4OMLff1BGQwgR05pfNITpMF05NyMaqgTQxKB8XQPQvgJm0ZB4cuDkQmWRCfL-PkN84:1lz4AJ:yG4j5xU0keiGctVeyAwar9tHXsfeR56BkNXgjRWKSlA', '2021-07-15 21:24:07.333482'),
 ('fz8lxbep2hhp9ayz3uk1ow8kcrltb08v', '.eJxVjMEOwiAQRP-FsyFlKVA9evcbyMIuUjWQlPZk_Hdp0oMeZ96beQuP25r91njxM4mLUOL02wWMTy47oAeWe5WxlnWZg9wVedAmb5X4dT3cv4OMLff1BGQwgR05pfNITpMF05NyMaqgTQxKB8XQPQvgJm0ZB4cuDkQmWRCfL-PkN84:1m4Unf:fqkelLyJs9mFhPUJC-GLq4nrgmJFrydKlCcj83WF41o', '2021-07-30 20:51:11.198337'),
