@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Хост: 127.0.0.1:3306
--- Время создания: Апр 11 2022 г., 03:01
+-- Время создания: Апр 11 2022 г., 15:24
 -- Версия сервера: 10.3.22-MariaDB
 -- Версия PHP: 7.1.33
 
@@ -20,6 +20,171 @@ SET time_zone = "+00:00";
 --
 -- База данных: `crm3`
 --
+
+-- --------------------------------------------------------
+
+--
+-- Структура таблицы `auth_group`
+--
+
+CREATE TABLE `auth_group` (
+  `id` int(11) NOT NULL,
+  `name` varchar(150) NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+-- --------------------------------------------------------
+
+--
+-- Структура таблицы `auth_group_permissions`
+--
+
+CREATE TABLE `auth_group_permissions` (
+  `id` int(11) NOT NULL,
+  `group_id` int(11) NOT NULL,
+  `permission_id` int(11) NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+-- --------------------------------------------------------
+
+--
+-- Структура таблицы `auth_permission`
+--
+
+CREATE TABLE `auth_permission` (
+  `id` int(11) NOT NULL,
+  `name` varchar(255) NOT NULL,
+  `content_type_id` int(11) NOT NULL,
+  `codename` varchar(100) NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+--
+-- Дамп данных таблицы `auth_permission`
+--
+
+INSERT INTO `auth_permission` (`id`, `name`, `content_type_id`, `codename`) VALUES
+(33, 'Can add log entry', 1, 'add_logentry'),
+(34, 'Can change log entry', 1, 'change_logentry'),
+(35, 'Can delete log entry', 1, 'delete_logentry'),
+(36, 'Can view log entry', 1, 'view_logentry'),
+(37, 'Can add permission', 2, 'add_permission'),
+(38, 'Can change permission', 2, 'change_permission'),
+(39, 'Can delete permission', 2, 'delete_permission'),
+(40, 'Can view permission', 2, 'view_permission'),
+(41, 'Can add group', 3, 'add_group'),
+(42, 'Can change group', 3, 'change_group'),
+(43, 'Can delete group', 3, 'delete_group'),
+(44, 'Can view group', 3, 'view_group'),
+(45, 'Can add user', 4, 'add_user'),
+(46, 'Can change user', 4, 'change_user'),
+(47, 'Can delete user', 4, 'delete_user'),
+(48, 'Can view user', 4, 'view_user'),
+(49, 'Can add content type', 5, 'add_contenttype'),
+(50, 'Can change content type', 5, 'change_contenttype'),
+(51, 'Can delete content type', 5, 'delete_contenttype'),
+(52, 'Can view content type', 5, 'view_contenttype'),
+(53, 'Can add session', 6, 'add_session'),
+(54, 'Can change session', 6, 'change_session'),
+(55, 'Can delete session', 6, 'delete_session'),
+(56, 'Can view session', 6, 'view_session'),
+(57, 'Can add Новость', 7, 'add_news'),
+(58, 'Can change Новость', 7, 'change_news'),
+(59, 'Can delete Новость', 7, 'delete_news'),
+(60, 'Can view Новость', 7, 'view_news'),
+(61, 'Can add Категория', 8, 'add_category'),
+(62, 'Can change Категория', 8, 'change_category'),
+(63, 'Can delete Категория', 8, 'delete_category'),
+(64, 'Can view Категория', 8, 'view_category'),
+(65, 'Can add Плагин', 11, 'add_plugins'),
+(66, 'Can change Плагин', 11, 'change_plugins'),
+(67, 'Can delete Плагин', 11, 'delete_plugins'),
+(68, 'Can view Плагин', 11, 'view_plugins'),
+(69, 'Can add Категория', 9, 'add_pluginscategory'),
+(70, 'Can change Категория', 9, 'change_pluginscategory'),
+(71, 'Can delete Категория', 9, 'delete_pluginscategory'),
+(72, 'Can view Категория', 9, 'view_pluginscategory'),
+(73, 'Can add Категория', 18, 'add_category'),
+(74, 'Can change Категория', 18, 'change_category'),
+(75, 'Can delete Категория', 18, 'delete_category'),
+(76, 'Can view Категория', 18, 'view_category'),
+(77, 'Can add Устройство', 24, 'add_device'),
+(78, 'Can change Устройство', 24, 'change_device'),
+(79, 'Can delete Устройство', 24, 'delete_device'),
+(80, 'Can view Устройство', 24, 'view_device'),
+(81, 'Can add Услуга', 16, 'add_service'),
+(82, 'Can change Услуга', 16, 'change_service'),
+(83, 'Can delete Услуга', 16, 'delete_service'),
+(84, 'Can view Услуга', 16, 'view_service'),
+(85, 'Can add Статус', 15, 'add_status'),
+(86, 'Can change Статус', 15, 'change_status'),
+(87, 'Can delete Статус', 15, 'delete_status'),
+(88, 'Can view Статус', 15, 'view_status'),
+(89, 'Can add Заказ', 14, 'add_orders'),
+(90, 'Can change Заказ', 14, 'change_orders'),
+(91, 'Can delete Заказ', 14, 'delete_orders'),
+(92, 'Can view Заказ', 14, 'view_orders'),
+(93, 'Can add Клиент', 20, 'add_clients'),
+(94, 'Can change Клиент', 20, 'change_clients'),
+(95, 'Can delete Клиент', 20, 'delete_clients'),
+(96, 'Can view Клиент', 20, 'view_clients'),
+(97, 'Can add Деньги', 23, 'add_money'),
+(98, 'Can change Деньги', 23, 'change_money'),
+(99, 'Can delete Деньги', 23, 'delete_money'),
+(100, 'Can view Деньги', 23, 'view_money'),
+(101, 'Can add Форма', 25, 'add_prints'),
+(102, 'Can change Форма', 25, 'change_prints'),
+(103, 'Can delete Форма', 25, 'delete_prints'),
+(104, 'Can view Форма', 25, 'view_prints'),
+(105, 'Can add Категория', 26, 'add_category'),
+(106, 'Can change Категория', 26, 'change_category'),
+(107, 'Can delete Категория', 26, 'delete_category'),
+(108, 'Can view Категория', 26, 'view_category'),
+(109, 'Can add Отделения', 27, 'add_storehouses'),
+(110, 'Can change Отделения', 27, 'change_storehouses'),
+(111, 'Can delete Отделения', 27, 'delete_storehouses'),
+(112, 'Can view Отделения', 27, 'view_storehouses'),
+(113, 'Can add Связанные отделения', 28, 'add_storerelated'),
+(114, 'Can change Связанные отделения', 28, 'change_storerelated'),
+(115, 'Can delete Связанные отделения', 28, 'delete_storerelated'),
+(116, 'Can view Связанные отделения', 28, 'view_storerelated');
+
+-- --------------------------------------------------------
+
+--
+-- Структура таблицы `auth_user`
+--
+
+CREATE TABLE `auth_user` (
+  `id` int(11) NOT NULL,
+  `password` varchar(128) NOT NULL,
+  `last_login` datetime(6) DEFAULT NULL,
+  `is_superuser` tinyint(1) NOT NULL,
+  `username` varchar(150) NOT NULL,
+  `first_name` varchar(150) NOT NULL,
+  `last_name` varchar(150) NOT NULL,
+  `email` varchar(254) NOT NULL,
+  `is_staff` tinyint(1) NOT NULL,
+  `is_active` tinyint(1) NOT NULL,
+  `date_joined` datetime(6) NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+--
+-- Дамп данных таблицы `auth_user`
+--
+
+INSERT INTO `auth_user` (`id`, `password`, `last_login`, `is_superuser`, `username`, `first_name`, `last_name`, `email`, `is_staff`, `is_active`, `date_joined`) VALUES
+(2, 'pbkdf2_sha256$216000$1ZxOy3mNVDuW$crghWULGbbD7BQg7KbllMAkQg0Y7d3QdsPrH7SKlQ7c=', '2022-04-11 11:49:40.420102', 1, 'lapitsky', '', '', 'lapithome@gmail.com', 1, 1, '2022-04-11 11:49:27.132342');
+
+-- --------------------------------------------------------
+
+--
+-- Структура таблицы `auth_user_groups`
+--
+
+CREATE TABLE `auth_user_groups` (
+  `id` int(11) NOT NULL,
+  `user_id` int(11) NOT NULL,
+  `group_id` int(11) NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 -- --------------------------------------------------------
 
@@ -382,7 +547,8 @@ INSERT INTO `django_migrations` (`id`, `app`, `name`, `applied`) VALUES
 (74, 'prints', '0003_auto_20210723_0251', '2021-07-22 23:51:51.235514'),
 (75, 'storehouse', '0001_initial', '2021-09-07 22:39:33.953897'),
 (76, 'storehouse', '0002_auto_20210922_1910', '2021-09-22 16:10:46.054467'),
-(77, 'storehouse', '0003_auto_20220108_1414', '2022-01-08 11:14:30.910112');
+(77, 'storehouse', '0003_auto_20220108_1414', '2022-01-08 11:14:30.910112'),
+(78, 'storehouse', '0004_auto_20220411_1416', '2022-04-11 11:16:26.238042');
 
 -- --------------------------------------------------------
 
@@ -408,6 +574,7 @@ INSERT INTO `django_session` (`session_key`, `session_data`, `expire_date`) VALU
 ('bbhyhc2sqdxqgpwkd8dljmr0pj92j115', '.eJxVjMEOwiAQRP-FsyFlKVA9evcbyMIuUjWQlPZk_Hdp0oMeZ96beQuP25r91njxM4mLUOL02wWMTy47oAeWe5WxlnWZg9wVedAmb5X4dT3cv4OMLff1BGQwgR05pfNITpMF05NyMaqgTQxKB8XQPQvgJm0ZB4cuDkQmWRCfL-PkN84:1llhRK:vilKjRHUgnSvihWwmRAiWaPVw3kB1-0X51XPWVcl63k', '2021-06-09 00:30:26.470989'),
 ('brd5okkuhreq4i1a31d59txpg8381tgc', '.eJxVjMEOwiAQRP-FsyFlKVA9evcbyMIuUjWQlPZk_Hdp0oMeZ96beQuP25r91njxM4mLUOL02wWMTy47oAeWe5WxlnWZg9wVedAmb5X4dT3cv4OMLff1BGQwgR05pfNITpMF05NyMaqgTQxKB8XQPQvgJm0ZB4cuDkQmWRCfL-PkN84:1mIfEl:Q0oDXggNcB6d-kpJg_a1teeYmo7YRngPxdATBj5aDtI', '2021-09-07 22:49:43.239452'),
 ('e2xwzql9u3db766q9otvsgrkmpn7kx0t', '.eJxVjMEOwiAQRP-FsyFlKVA9evcbyMIuUjWQlPZk_Hdp0oMeZ96beQuP25r91njxM4mLUOL02wWMTy47oAeWe5WxlnWZg9wVedAmb5X4dT3cv4OMLff1BGQwgR05pfNITpMF05NyMaqgTQxKB8XQPQvgJm0ZB4cuDkQmWRCfL-PkN84:1mNjQi:3fC_wmyQ7zU1_Vc2vz35CtACgyB2YbF3UM1ddHJXnHQ', '2021-09-21 22:19:00.729361'),
+('e8uu7vm8bei62wzhjoocamlsyzqakfcg', '.eJxVjDsOwjAQBe_iGlmbjfGHkj5nsLzrNQkgR4qTCnF3iJQC2jcz76Vi2tYxbk2WOGV1UahOvxslfkjdQb6neps1z3VdJtK7og_a9DBneV4P9-9gTG381h2A8yYXZtebgtYhUS8pswfsHAUIRbiYznIPEjyCFaQMZxMK-2JJvT_gQzgC:1ndsY8:LqRbh478yHSKFVl4Ijv1uH7a8WX23SnBaI93IE5uW5A', '2022-04-25 11:49:40.594112'),
 ('erxsqn94c511k682j6webta3s11bm3q6', '.eJxVjMEOwiAQRP-FsyFlKVA9evcbyMIuUjWQlPZk_Hdp0oMeZ96beQuP25r91njxM4mLUOL02wWMTy47oAeWe5WxlnWZg9wVedAmb5X4dT3cv4OMLff1BGQwgR05pfNITpMF05NyMaqgTQxKB8XQPQvgJm0ZB4cuDkQmWRCfL-PkN84:1mJNSM:WCtHGXw2HKd7xI1ATmP09hQd1rbJ-1vi6asdvz_eg2o', '2021-09-09 22:02:42.449706'),
 ('fuzzrg7mwvjvwa1eq6tjfxshlgflul6j', '.eJxVjMEOwiAQRP-FsyFlKVA9evcbyMIuUjWQlPZk_Hdp0oMeZ96beQuP25r91njxM4mLUOL02wWMTy47oAeWe5WxlnWZg9wVedAmb5X4dT3cv4OMLff1BGQwgR05pfNITpMF05NyMaqgTQxKB8XQPQvgJm0ZB4cuDkQmWRCfL-PkN84:1lz4AJ:yG4j5xU0keiGctVeyAwar9tHXsfeR56BkNXgjRWKSlA', '2021-07-15 21:24:07.333482'),
 ('fz8lxbep2hhp9ayz3uk1ow8kcrltb08v', '.eJxVjMEOwiAQRP-FsyFlKVA9evcbyMIuUjWQlPZk_Hdp0oMeZ96beQuP25r91njxM4mLUOL02wWMTy47oAeWe5WxlnWZg9wVedAmb5X4dT3cv4OMLff1BGQwgR05pfNITpMF05NyMaqgTQxKB8XQPQvgJm0ZB4cuDkQmWRCfL-PkN84:1m4Unf:fqkelLyJs9mFhPUJC-GLq4nrgmJFrydKlCcj83WF41o', '2021-07-30 20:51:11.198337'),
@@ -820,6 +987,43 @@ INSERT INTO `storehouse_storerelated` (`id`, `related_uuid`, `store_id`) VALUES
 --
 
 --
+-- Индексы таблицы `auth_group`
+--
+ALTER TABLE `auth_group`
+  ADD PRIMARY KEY (`id`),
+  ADD UNIQUE KEY `name` (`name`);
+
+--
+-- Индексы таблицы `auth_group_permissions`
+--
+ALTER TABLE `auth_group_permissions`
+  ADD PRIMARY KEY (`id`),
+  ADD UNIQUE KEY `auth_group_permissions_group_id_permission_id_0cd325b0_uniq` (`group_id`,`permission_id`),
+  ADD KEY `auth_group_permissio_permission_id_84c5c92e_fk_auth_perm` (`permission_id`);
+
+--
+-- Индексы таблицы `auth_permission`
+--
+ALTER TABLE `auth_permission`
+  ADD PRIMARY KEY (`id`),
+  ADD UNIQUE KEY `auth_permission_content_type_id_codename_01ab375a_uniq` (`content_type_id`,`codename`);
+
+--
+-- Индексы таблицы `auth_user`
+--
+ALTER TABLE `auth_user`
+  ADD PRIMARY KEY (`id`),
+  ADD UNIQUE KEY `username` (`username`);
+
+--
+-- Индексы таблицы `auth_user_groups`
+--
+ALTER TABLE `auth_user_groups`
+  ADD PRIMARY KEY (`id`),
+  ADD UNIQUE KEY `auth_user_groups_user_id_group_id_94350c0c_uniq` (`user_id`,`group_id`),
+  ADD KEY `auth_user_groups_group_id_97559544_fk_auth_group_id` (`group_id`);
+
+--
 -- Индексы таблицы `auth_user_user_permissions`
 --
 ALTER TABLE `auth_user_user_permissions`
@@ -977,6 +1181,36 @@ ALTER TABLE `storehouse_storerelated`
 --
 
 --
+-- AUTO_INCREMENT для таблицы `auth_group`
+--
+ALTER TABLE `auth_group`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+
+--
+-- AUTO_INCREMENT для таблицы `auth_group_permissions`
+--
+ALTER TABLE `auth_group_permissions`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+
+--
+-- AUTO_INCREMENT для таблицы `auth_permission`
+--
+ALTER TABLE `auth_permission`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=117;
+
+--
+-- AUTO_INCREMENT для таблицы `auth_user`
+--
+ALTER TABLE `auth_user`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
+
+--
+-- AUTO_INCREMENT для таблицы `auth_user_groups`
+--
+ALTER TABLE `auth_user_groups`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+
+--
 -- AUTO_INCREMENT для таблицы `auth_user_user_permissions`
 --
 ALTER TABLE `auth_user_user_permissions`
@@ -1004,7 +1238,7 @@ ALTER TABLE `django_content_type`
 -- AUTO_INCREMENT для таблицы `django_migrations`
 --
 ALTER TABLE `django_migrations`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=78;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=79;
 
 --
 -- AUTO_INCREMENT для таблицы `money_money`
@@ -1099,6 +1333,19 @@ ALTER TABLE `storehouse_storerelated`
 --
 -- Ограничения внешнего ключа сохраненных таблиц
 --
+
+--
+-- Ограничения внешнего ключа таблицы `auth_permission`
+--
+ALTER TABLE `auth_permission`
+  ADD CONSTRAINT `auth_permission_content_type_id_2f476e4b_fk_django_co` FOREIGN KEY (`content_type_id`) REFERENCES `django_content_type` (`id`);
+
+--
+-- Ограничения внешнего ключа таблицы `auth_user_groups`
+--
+ALTER TABLE `auth_user_groups`
+  ADD CONSTRAINT `auth_user_groups_group_id_97559544_fk_auth_group_id` FOREIGN KEY (`group_id`) REFERENCES `auth_group` (`id`),
+  ADD CONSTRAINT `auth_user_groups_user_id_6a12ed8b_fk_auth_user_id` FOREIGN KEY (`user_id`) REFERENCES `auth_user` (`id`);
 
 --
 -- Ограничения внешнего ключа таблицы `auth_user_user_permissions`
