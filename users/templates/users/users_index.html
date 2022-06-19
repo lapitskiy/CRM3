@@ -4,11 +4,20 @@
     {% include 'include/_sidebar_users.html' %}
 {% endblock %}
 {% block content %}
+
+
+{% for dict_item in page_obj %}
+   {% for key, value in dict_item.items %}
+      <h1>Key: {{key}}</h1>
+      <h2>Value: {{value}}</h2>
+   {% endfor %}
+{% endfor %}
+
     <div class="row">
         <div class="col-4">
             <div class="list-group" id="list-tab" role="tablist">
                 {% for item in page_obj %}
-                    <a class="list-group-item list-group-item-action" id="list-{{ item.pk }}" data-bs-toggle="list" href="#id-list-{{ item.pk }}" role="tab" aria-controls="home">{{ item.name }} {{ item.phone }}</a>
+                    <a class="list-group-item list-group-item-action" id="list-{{ item.pk }}" data-bs-toggle="list" href="#id-list-{{ item.pk }}" role="tab" aria-controls="home">{{ item.username }} {{ item.phone }}</a>
                 {% endfor %}
             </div>
         </div>
@@ -18,8 +27,10 @@
                     <div class="tab-pane fade show" id="id-list-{{ item.pk }}" role="tabpanel" aria-labelledby="list-{{ item.pk }}">
                         <div class="shadow p-3 mb-5 bg-body rounded">
                             Номер: {{ item.pk }}<br>
-                            Название формы: {{ item.name }}<br>
-                            Вид формы: {{ item.contentform|safe }}<br>
+                            login: {{ item.username }}<br>
+                            email: {{ item.email }}<br>
+                            Имя: {{ item.first_name }}<br>
+                            Группа: {{ item.groups}}<br>
                             <div class="d-flex justify-content-end">
                                 <a href="edit/{{ item.pk }}"><button type="button" class="btn btn-secondary">Редактировать</button></a>
                             </div><br>

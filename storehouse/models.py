@@ -30,14 +30,14 @@ class StoreRelated(models.Model):
 
     @property
     def get_related_data(self):
-        print('tyt 222')
+        #print('tyt 222')
         data = {
             'related_use': 'text',
             'module_name': 'Отделения',
             'related_text': 'Отделение '+self.store.name,
             'related_uuid': self.related_uuid,
             }
-        print('storehouses data related: ', data)
+        #print('storehouses data related: ', data)
         return data
 
     def get_related_filter(self, **kwargs):
@@ -59,7 +59,9 @@ class Storehouses(models.Model):
     address = models.CharField(max_length=200, blank=True, verbose_name='Адрес')
     phone = models.CharField(validators=[validate_phone_number], unique=True, max_length=17, verbose_name='Телефон')
     category = models.ForeignKey('Category', default=1, on_delete=models.PROTECT, verbose_name='Категория', related_name='get_category')
+    user_permission = models.ManyToManyField(User)
     related_user = models.ForeignKey(User, related_name='storehouse_user', null=True, blank=True, on_delete=models.PROTECT, verbose_name='Owner')
+
 
 
     def get_absolute_url(self):

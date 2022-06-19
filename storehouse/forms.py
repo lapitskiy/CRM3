@@ -35,6 +35,12 @@ class StorehouseAddCategoryForm(forms.ModelForm):
             raise ValidationError('Название не должно начинаться с цифры')
         return name
 
+#forms
+class StorehouseUserEditForm(forms.ModelForm):
+    class Meta:
+        model = Storehouses
+        fields = ['user_permission',]
+
 # если формы нет, как например в модуле prints, ставиться pass
 class RelatedAddForm(forms.ModelForm):
 

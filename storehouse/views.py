@@ -1,7 +1,7 @@
 from django.views.generic import ListView, TemplateView
 from .models import Storehouses, Category
 from plugins.utils import RelatedMixin
-from .forms import StorehouseAddForm, StorehouseAddCategoryForm
+from .forms import StorehouseAddForm, StorehouseAddCategoryForm, StorehouseUserEditForm
 from django.core.paginator import Paginator
 from django.core.paginator import EmptyPage
 from django.core.paginator import PageNotAnInteger
@@ -9,6 +9,7 @@ from django.http import HttpResponse, HttpResponseRedirect, JsonResponse
 from django.urls import reverse_lazy
 from django.shortcuts import get_object_or_404
 from django.contrib.auth.decorators import permission_required
+from django.contrib.auth.models import User, Permission
 
 
 class StorehouseHomeView(ListView):
@@ -195,3 +196,106 @@ class StorehouseSettingsEditView(TemplateView):
             return self.request.GET.get(req)
         else:
             return False
+
+'''
+##### filter rules users
+'''
+
+# вывод правил фильтрации для пользователей
+class StorehouseSettingsUsersView(RelatedMixin, ListView):
+    #model = Orders
+    paginate_by = 10
+    template_name = 'storehouse/settings/storehouse_settings_rules.html'
+    #context_object_name = 'user'
+
+    def get_queryset(self):
+        return self.getQuery()
+
+    def get_context_data(self, *, object_list=None, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['title'] = 'Настройки пользователей'
+        context['show'] = self.requestGet('show')
+        # filter
+        list_users = self.getQuery()
+        #paginator
+        paginator = Paginator(list_users, self.paginate_by)
+        page = self.request.GET.get('page')
+        try:
+            orders_page = paginator.page(page)
+        except PageNotAnInteger:
+            page = 1
+            orders_page = paginator.page(page)
+        except EmptyPage:
+            orders_page = paginator.page(paginator.num_pages)
+        print('context ', context)
+        return context
+
+    def requestGet(self, req):
+        if self.request.GET.get(req):
+            return ''
+        else:
+            return ''
+
+    def getQuery(self):
+        if self.requestGet('show'):
+            if self.request.GET.get('show') == 'filter_rules':
+                return Storehouses.objects.all()
+        return ''
+
+    def requestGet(self, req):
+        if self.request.GET.get(req):
+            return self.request.GET.get(req)
+        else:
+            return False
+
+# редактирование правил фильтрации для пользователей
+class StorehouseSettingsUsersEditView(TemplateView):
+    template_name = 'storehouse/settings/storehouse_settings_rules_edit.html'
+
+    def get(self, request, *args, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['tag'] = self.requestGet('tag')
+        context['id'] = self.requestGet('id')
+        context['show'] = self.requestGet('show')
+        if self.requestGet('tag') and self.requestGet('id'):
+            if self.request.GET.get('tag') == 'edit':
+                formEdit = self.getForm()
+                formEdit.prefix = 'edit_form'
+                context.update({'formEdit': formEdit})
+                context.update({'id': self.request.GET.get('id')})
+        return self.render_to_response(context)
+
+    def post(self, request, *args, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['tag'] = self.requestGet('tag')
+        context['id'] = self.requestGet('id')
+        context['show'] = self.requestGet('show')
+        formEdit = self.getPostForm()
+        if formEdit.is_valid():
+            formEdit.save()
+            return HttpResponseRedirect(reverse_lazy('storehouse_settings_users') + '?show=' + context['show'])
+        else:
+            return self.form_invalid(formEdit, **kwargs)
+
+    def form_invalid(self, formEdit, **kwargs):
+        context = self.get_context_data()
+        formEdit.prefix = 'edit_form'
+        context.update({'formEdit': formEdit})
+        context.update({'model': self.request.GET.get('model')})
+        context.update({'id': self.request.GET.get('id')})
+        return self.render_to_response(context)
+
+    def getForm(self):
+        get_id = Storehouses.objects.get(pk=self.request.GET.get('id'))
+        return StorehouseUserEditForm(instance=get_id)
+
+    def getPostForm(self):
+        get_id = Storehouses.objects.get(pk=self.request.GET.get('id'))
+        return StorehouseUserEditForm(self.request.POST, prefix='edit_form', instance=get_id)
+
+    def requestGet(self, req):
+        if self.request.GET.get(req):
+            return self.request.GET.get(req)
+        else:
+            return False
+

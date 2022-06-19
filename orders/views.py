@@ -85,24 +85,28 @@ class OrdersHomeView(RelatedMixin, ListView):
             conds = Q()
             for q in uudi_filter_related_list:
                 conds |= Q(related_uuid__icontains=q)
-            related_query = Orders.objects.filter(conds).values_list('related_uuid', flat=True)
-
-            print('related_query ', list(related_query))
-            if related_query:
-                #conds = Q(related_uuid__in=results_query) | Q(related_uuid__in=related_query)
-                q1 = self.dictUuidToList(list(results_query))
-                print('q1 ', q1)
-                q2 = self.dictUuidToList(list(related_query))
-                print('q2 ', q2)
-                conds = Q()
-                for q in q1:
-                    conds |= Q(related_uuid__icontains=q)
-                for q in q2:
-                    conds |= Q(related_uuid__icontains=q)
-                results_filter_uuid = Orders.objects.filter(conds).values_list('related_uuid')
-                print('results_filter_uuid ', results_filter_uuid)
+            if conds:
+                related_query = Orders.objects.filter(conds).values_list('related_uuid', flat=True)
+                print('related_query ', related_query)
+                #print('related_query ', related_query)
+                #print('############')
+                #print('type: ',type(results_query),'results_query ', results_query)
+                if related_query:
+                    #conds = Q(related_uuid__in=results_query) | Q(related_uuid__in=related_query)
+                    q1 = self.dictUuidToList(list(results_query))
+                    #print('q1 ', q1)
+                    q2 = self.dictUuidToList(list(related_query))
+                    #print('q2 ', q2)
+                    conds = Q()
+                    for q in q1:
+                        conds |= Q(related_uuid__icontains=q)
+                    for q in q2:
+                        conds |= Q(related_uuid__icontains=q)
+                    results_filter_uuid = Orders.objects.filter(conds).values_list('related_uuid')
+                    #print('results_filter_uuid ', results_filter_uuid)
             else:
                 results_filter_uuid = results_query
+
 
         if self.request.GET.get('date') and self.request.GET.get('filter'):
             conds = Q(related_uuid__in=results_date_uuid) | Q(related_uuid__in=results_filter_uuid)
@@ -151,7 +155,7 @@ class OrderAddView(RelatedMixin, TemplateView):
         form_list = []
         valid = True
         related_isValid_dict = self.checkRelatedIsValidDict(self.request.POST, doing='add') # return dict
-        print('related_isValid_dict', related_isValid_dict)
+        #print('related_isValid_dict', related_isValid_dict)
         #related = self.checkRelated()
         #if related:
         #    for x in related:

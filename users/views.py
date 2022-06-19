@@ -6,19 +6,32 @@ from django.contrib.auth import login, logout
 from django.views.generic import ListView, TemplateView
 from plugins.utils import RelatedMixin
 from django.contrib.auth.decorators import permission_required
+from django.contrib.auth.models import User
 
-
-class UserHomeView(RelatedMixin, TemplateView):
+class UserHomeView(RelatedMixin, ListView):
+    model = User
     template_name = 'users/users_index.html'
+    paginate_by = 10
+    context_object_name = 'user'
+    related_module_name = 'users' #relatedmixin module
+
+    def get_context_data(self, *, object_list=None, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['title'] = 'Все пользователи'
+        print('user context: ', context)
+        return context
+
+UsersHomeViewPermit = permission_required('users.view', raise_exception=True)(UserHomeView.as_view())
+
+
+class UsersSettingsView(RelatedMixin, TemplateView):
+    template_name = 'users/users_settings.html'
     related_module_name = 'users' #relatedmixin module
 
     def get(self, request, *args, **kwargs):
         context = super().get_context_data(**kwargs)
-        context['title'] = 'Пользователи'
+        context['title'] = 'Настройки'
         return self.render_to_response(context)
-
-
-UsersHomeViewPermit = permission_required('users.view', raise_exception=True)(UserHomeView.as_view())
 
 
 def register(request):

@@ -1,0 +1,92 @@
+{% extends "base.html" %}
+{% block title %}{{ title }} - {{ block.super }}{% endblock %}
+{% block sidebar %}
+    {% include 'include/_sidebar_settings_storehouse.html' %}
+{% endblock %}
+{% block content %}
+
+
+    {% if show == 'filter_rules' %}
+    <div class="row">
+        <div class="col-4">
+            <div class="list-group" id="list-tab" role="tablist">
+                {% for item in page_obj %}
+                    <a class="list-group-item list-group-item-action" id="list-{{ item.pk }}" data-bs-toggle="list" href="#id-list-{{ item.pk }}" role="tab" aria-controls="home">{{ item.name }}</a>
+                {% endfor %}
+            </div>
+        </div>
+        <div class="col-8">
+            <div class="tab-content" id="nav-tabContent">
+                {% for item in page_obj %}
+                    <div class="tab-pane fade show" id="id-list-{{ item.pk }}" role="tabpanel" aria-labelledby="list-{{ item.pk }}">
+                        <div class="shadow p-3 mb-5 bg-body rounded">
+                            <div class="card border-light" >
+                                <div class="card-header bg-gradient">id склада/точки: <span class="badge rounded-pill bg-info text-dark">{{ item.pk }}</span></div>
+                                <div class="card-body">
+                                    Пользователи: <br/>{% for perm in item.user_permission.all %}{{ perm }}<br/>{% endfor %}
+                                     <br>
+
+
+                                </div>
+
+                            </div>
+                            {% for related_item in related_list %}
+                                {% if related_item.related_uuid and item.related_uuid == related_item.related_uuid %}
+                                    <div class="card border-light" >
+                                        <div class="card-header">{{ related_item.module_name }}</div>
+                                        <div class="card-body">
+                                        {% for key, value in related_item.items %}
+                                            {% if key != 'related_uuid' and key != 'module_name' %}
+                                                {{ key }}: {{ value }}<br>
+                                            {% endif %}
+                                        {% endfor %}
+                                        </div>
+                                        </div>
+                                {% endif %}
+                            {% endfor %}
+                                                    <div class="d-flex justify-content-end">
+                                <a href="edit/?show={{ show }}&tag=edit&id={{ item.pk }}"><button type="button" class="btn btn-secondary">Редактировать</button></a>&nbsp;&nbsp; <a href="edit/?show={{ show }}&tag=delete&id={{ item.pk }}"><button type="button" class="btn btn-danger">Удалить</button></a>
+                            </div><br>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+
+    {% endif %}
+    <br><br>
+    <nav aria-label="...">
+        <ul class="pagination">
+            {% if page_obj.has_previous %}
+                <li class="page-item">
+                    <a class="page-link" href="?page=1&filter={{ filter }}">&laquo; В начало</a>
+                </li>
+                <li class="page-item">
+                    <a class="page-link" href="?page={{ page_obj.previous_page_number }}&filter={{ filter }}">Предудущая</a>
+                </li>
+            {% endif %}
+            {% for p in page_obj.paginator.page_range %}
+                {% if page_obj.number == p %}
+                    <li class="page-item active" aria-current="page">
+                        <span class="page-link">{{ p }}</span>
+                    </li>
+                {% elif p > page_obj.number|add:-3 and p < page_obj.number|add:3 %}
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ p }}&filter={{ filter }}">{{ p }}</a>
+                    </li>
+                {% endif %}
+            {% endfor %}
+            {% if page_obj.has_next %}
+                <li class="page-item">
+                    <a class="page-link" href="?page={{ page_obj.next_page_number }}&filter={{ filter }}">Следующая</a>
+                </li>
+                <li class="page-item">
+                    <a class="page-link" href="?page={{ page_obj.paginator.num_pages }}&filter={{ filter }}"> В конец &raquo;</a>
+                </li>
+            {% endif %}
+        </ul>
+    </nav>
+             <div class="alert alert-secondary" role="alert">Заказы или связанные данные будут показываться только для указанных пользователей
+</div>
+{% endblock %}

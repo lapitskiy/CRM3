@@ -20,18 +20,25 @@ class RelatedMixin(object):
         #print('======')
         #print('uuid ', type(uuid))
         _list = []
+        #print('####################>>>>>>>>>>>>>')
+        #print('uuid type ', type(uuid))
         if type(uuid) == dict:
             for k, v in uuid.items():
                 _list.append(k)
         if type(uuid) == list:
             for x in uuid:
-                #print('x ', x)
+                if type(x) == tuple or type(x) == list:
+                    x = x[0]
+                    #print('', type(x))
+                #print('[utils.py 33] type x: ', x, '; type: ', type(x))
                 for k, v in x.items():
+
                     #print('k ', k)
                     _list.append(k)
         #if type(uuid) == django.db.models.query.QuerySet:
         #    print('zzzz')
         #print('_list ', _list)
+        #print('####################<<<<<<<<<<<<<<')
         return _list
 
     # [EN] return related data from class get_related_data() in app models
@@ -46,7 +53,7 @@ class RelatedMixin(object):
 
         if related:
             for x in related:
-                print('======= utils.py getDataListRelated')
+                #print('======= utils.py getDataListRelated')
                 modelPath = x.module_name + '.models'
                 imp_model = importlib.import_module(modelPath)
                 cls_model = getattr(imp_model, x.related_class_name)
@@ -79,7 +86,7 @@ class RelatedMixin(object):
                                     related_get['related_uuid'] = key_uuid
                                     data_related_list.append(related_get)
                                 if cls_related.related_format == 'link':
-                                    print('cls_model link', cls_model)
+                                    #print('cls_model link', cls_model)
                                     cls_related2 = cls_model()
                                     related_get = cls_related2.get_related_data
                                     related_get['related_uuid'] = key_uuid
@@ -96,8 +103,8 @@ class RelatedMixin(object):
                                     data_related_list.append(related_get)
                             except ObjectDoesNotExist:
                                 pass
-        print('======= data_related_list')
-        print(data_related_list)
+        #print('======= data_related_list')
+        #print(data_related_list)
         return data_related_list
 
     # [EN] return obj
@@ -124,6 +131,9 @@ class RelatedMixin(object):
                 app_model = importlib.import_module(modelPath)
                 cls = getattr(app_model, x.related_class_name)
                 related_result = cls().get_related_filter(search_query=search_query)
+                print('####START ')
+                print('related_result ',x.module_name,' :',related_result)
+                print('####END')
                 if related_result:
                     for z in related_result:
                         uudi_filter_related_list.append(z.related_uuid)

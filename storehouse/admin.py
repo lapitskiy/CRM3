@@ -9,7 +9,7 @@ class StorehousesAdmin(admin.ModelAdmin):
     list_display = ('name','address','phone','category','related_user')
     list_display_links = ('name',)
     list_editable = ('address','phone')
-    fields = ('name','address','phone')
+    #fields = ('name','address','phone')
     save_on_top = True
 
 class StoreRelatedAdmin(admin.ModelAdmin):

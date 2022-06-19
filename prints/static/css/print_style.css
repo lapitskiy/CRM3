@@ -1,9 +1,0 @@
-@media print { /* Стиль для печати */
-body{
-  visibility: hidden;
-}
-/* Блок который нужно отобразить */
-.print_block {
-  visibility: visible;
- }
- }

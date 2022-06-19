@@ -2,18 +2,17 @@
 {% load static %}
 {% block title %}{{ title }} - {{ block.super }}{% endblock %}
 {% block link %}
-<link href="{% static 'css/print_style.css' %}" rel="stylesheet">
+<link href="{% static 'prints/css/print_style.css' %}" rel="stylesheet">
+<link href="{% static 'prints/css/print.min.css' %}" rel="stylesheet" type="text/css">
+<link rel="stylesheet" type="text/css" href="print.css">
 {% endblock %}
+
+<script src="{% static 'prints/js/print.min.js' %}"></script>
 
 
 {% block sidebar %}
     {% include 'include/_sidebar_prints.html' %}
 {% endblock %}
-
-@media print {
-#viewing_panel {
-    -webkit-print-color-adjust: exact;
-}
 
 {% block content %}
     Форма {{ formnumber }}<br><br>
