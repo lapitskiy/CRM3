@@ -165,7 +165,9 @@ class RelatedMixin(object):
                 relatedClass = getrelatedClass()
 
                 print('=================')
-                if relatedClass.passEditUpdate():
+                if 'add' in kwargs['doing'] and relatedClass.passAddUpdate():
+                    continue
+                if 'edit' in kwargs['doing'] and relatedClass.passEditUpdate():
                     continue
 
                 _dict['module'] = x.module_name

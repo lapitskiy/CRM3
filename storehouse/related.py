@@ -13,10 +13,15 @@ class AppRelated(object):
 
     # если это связанный объект, который не имеет формы или не требует обновления, то возврщает True и пропускается в
     # utils checkRelatedIsValidDict, как не требующий добавления для проверки форимы и обновления текущей
+    def passAddUpdate(self, **kwargs):
+        return False
+
+    # если это связанный объект, который не имеет формы или не требует обновления, то возврщает True и пропускается в
+    # utils checkRelatedIsValidDict, как не требующий добавления для проверки форимы и обновления текущей
     # пример prints.related
     # вызывается в utils.checkRelatedIsValidDict
     def passEditUpdate(self, **kwargs):
-        return False
+        return True
 
     # если это не создание новой модели, а изминение старой на другую уже существующую, тогда мы должены произвести смену
     # uuid мужду этими моделями
@@ -49,19 +54,7 @@ class AppRelated(object):
         return context
 
     def checkRelatedEditForm(self, **kwargs):
-        context= {}
-        request_post = kwargs['request_post']
-        if self.checkUpdate(request_post=request_post):
-            context['uuid'] = ''
-            context['pk'] = ''
-        else:
-            get_money = Money.objects.get(Q(related_uuid__icontains=kwargs['uuid'][0]))
-            related_form = RelatedAddForm(request_post, prefix=self.prefix, instance=get_money)
-            related_form.prefix = self.prefix
-            context['pk'] = get_money.pk
-            context['uuid'] = ''
-        context['form'] = related_form
-        return context
+        pass
 
     def deleteRelatedMultipleUuid(self, **kwargs):
         pass

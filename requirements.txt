@@ -1,7 +1,9 @@
-asgiref==3.3.1
+asgiref==3.5.2
+backports.zoneinfo==0.2.1
+bpyutils==0.5.2
 certifi==2020.12.5
 chardet==4.0.0
-Django==3.1.4
+Django==4.0.5
 django-appconf==1.0.4
 django-ckeditor==6.1.0
 django-debug-toolbar==3.2
@@ -15,9 +17,11 @@ mysqlclient==2.0.3
 phonenumbers==8.12.31
 Pillow==8.1.0
 pipreqs==0.4.11
+pipupgrade==1.12.0
 pytz==2020.5
 requests==2.25.1
 shortuuid==1.0.1
 sqlparse==0.4.1
+tzdata==2022.1
 urllib3==1.26.3
 yarg==0.1.9

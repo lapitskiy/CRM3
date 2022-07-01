@@ -8,6 +8,11 @@ class AppRelated(object):
 
     # если это связанный объект, который не имеет формы или не требует обновления, то возврщает True и пропускается в
     # utils checkRelatedIsValidDict, как не требующий добавления для проверки форимы и обновления текущей
+    def passAddUpdate(self, **kwargs):
+        return True
+
+    # если это связанный объект, который не имеет формы или не требует обновления, то возврщает True и пропускается в
+    # utils checkRelatedIsValidDict, как не требующий добавления для проверки форимы и обновления текущей
     def passEditUpdate(self, **kwargs):
         return True
 
@@ -22,40 +27,10 @@ class AppRelated(object):
         return False
 
     def checkRelatedAddForm(self, **kwargs):
-
-        context = {}
-        request_post = kwargs['request_post']
-        if self.checkUpdate(request_post=request_post):
-            context['uuid'] = ''
-            context['pk'] = ''
-        else:
-            related_form = RelatedAddForm(request_post, prefix=self.prefix)
-            related_form.prefix = self.prefix
-            context['uuid'] = ''
-            context['pk'] = '1'
-        if related_form.is_valid():
-            print('print valid')
-        else:
-            print('money not valid')
-        print('pk ', context['pk'])
-        context['form'] = related_form
-        return context
+        pass
 
     def checkRelatedEditForm(self, **kwargs):
-
-        context= {}
-        request_post = kwargs['request_post']
-        if self.checkUpdate(request_post=request_post):
-            context['uuid'] = ''
-            context['pk'] = ''
-        else:
-            get_money = Money.objects.get(Q(related_uuid__icontains=kwargs['uuid'][0]))
-            related_form = RelatedAddForm(request_post, prefix=self.prefix, instance=get_money)
-            related_form.prefix = self.prefix
-            context['pk'] = get_money.pk
-            context['uuid'] = ''
-        context['form'] = related_form
-        return context
+        pass
 
     def deleteRelatedMultipleUuid(self, **kwargs):
         pass
