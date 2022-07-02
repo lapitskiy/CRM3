@@ -11,7 +11,13 @@
     <a href="{% url 'orders_home' %}" class="list-group-item list-group-item-action">Все заказы</a>
 </div>
 <br>
-
+<h5>Категории</h5>
+<div class="list-group">
+    {% for key, value in category_service.items %}
+    <a href="{% url 'orders_home' %}?status={{ key }}" class="list-group-item list-group-item-action">{{ value.title }} <span class="badge rounded-pill bg-dark">{{ value.count }}</span></a>
+    {% endfor %}
+</div>
+<br>
 <h5>Статусы</h5>
 <div class="list-group">
 {% for key, value in status.items %}

@@ -21,13 +21,3 @@ class NewsForm(forms.ModelForm):
         if re.match(r'\d', title):
             raise ValidationError('Название не должно начинаться с цифры')
         return title
-
-    '''
-    title = forms.CharField(max_length=150, label='название', widget=forms.TextInput(attrs={'class':'form-control'}))
-    content = forms.CharField(label='Контент', widget=forms.Textarea(attrs=
-                                                                      {'class':'form-control',
-                                                                       'rows':5
-                                                                       }))
-    is_published = forms.BooleanField(label='опубликовано', initial=True)
-    category = forms.ModelChoiceField(queryset=Category.objects.all(), label='Категория', empty_label='Выбрать', widget=forms.Select(attrs={'class':'form-control'}))
-    '''
