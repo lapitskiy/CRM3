@@ -72,16 +72,16 @@ class Category(models.Model):
         ordering = ['title']
 
 class Category_service(models.Model):
-    title = models.CharField(max_length=150, verbose_name='Наименования категории услуги')
+    name = models.CharField(max_length=150, verbose_name='Наименования категории услуги')
     category = models.CharField(max_length=150, db_index=True, unique=True, verbose_name='Категория')
 
     def __str__(self):
-        return self.title
+        return self.name
 
     class Meta:
         verbose_name = 'Категория услуги'
         verbose_name_plural = 'Категории услуги'
-        ordering = ['title']
+        ordering = ['name']
 
 class Service(models.Model):
     name = models.CharField(max_length=150, db_index=True, unique=True, verbose_name='Наименования услуги')

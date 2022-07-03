@@ -1,7 +1,7 @@
 from django.contrib import admin
 from django.utils.safestring import mark_safe
 
-from .models import Orders, Status, Category, Service, Device
+from .models import Orders, Status, Category, Service, Device, Category_service
 # Register your models here.
 
 class OrdersAdmin(admin.ModelAdmin):
@@ -25,6 +25,11 @@ class CategoryAdmin(admin.ModelAdmin):
     list_display_links = ('id','title', 'category')
     search_fields = ('title',)
 
+class CategoryServiceAdmin(admin.ModelAdmin):
+    list_display = ('id','name', 'category')
+    list_display_links = ('id','name', 'category')
+    search_fields = ('title',)
+
 class ServiceAdmin(admin.ModelAdmin):
     list_display = ('id','name')
     list_display_links = ('id','name')
@@ -38,6 +43,7 @@ class DeviceAdmin(admin.ModelAdmin):
 admin.site.register(Orders, OrdersAdmin)
 admin.site.register(Status, StatusAdmin)
 admin.site.register(Category, CategoryAdmin)
+admin.site.register(Category_service, CategoryServiceAdmin)
 admin.site.register(Service, ServiceAdmin)
 admin.site.register(Device, DeviceAdmin)
 admin.site.site_title = 'Управение заказами'

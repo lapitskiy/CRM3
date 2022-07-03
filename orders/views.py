@@ -2,8 +2,8 @@ from django.shortcuts import render, get_object_or_404, redirect
 from django.http import HttpResponse, HttpResponseRedirect, JsonResponse
 from django.views.generic import ListView, DetailView, CreateView, FormView, TemplateView
 from django.urls import reverse_lazy
-from .forms import SimpleOrderAddForm, FastOrderAddForm, SettingDeviceAddForm, SettingServiceAddForm
-from .models import Orders, Service, Device
+from .forms import SimpleOrderAddForm, FastOrderAddForm, SettingDeviceAddForm, SettingServiceAddForm, SettingCategoryServiceAddForm
+from .models import Orders, Service, Device, Category_service
 
 from plugins.models import Plugins
 import importlib
@@ -492,6 +492,8 @@ class SettingsView(RelatedMixin, ListView):
             context.update({'model': self.request.GET.get('model')})
         else:
             context.update({'model': 'service'})
+        print('context ', context['model'])
+        print('context ', context)
         return context
 
     def post(self, request, *args, **kwargs):
@@ -506,19 +508,21 @@ class SettingsView(RelatedMixin, ListView):
     def getQuery(self):
         model = self.request.GET.get('model')
         filter_q = self.request.GET.get('filter')
-        print('1-2', model)
         if model and not filter_q:
             if model == 'service':
-                print('TYT55')
                 return Service.objects.all()
             if model == 'device':
                 return Device.objects.all()
+            if model == 'category_service':
+                return Category_service.objects.all()
 
         if filter_q and model:
             if model == 'service':
                 return Service.objects.filter(Q(name__icontains=filter_q))
             if model == 'device':
                 return Device.objects.filter(Q(name__icontains=filter_q))
+            if model == 'category_service':
+                return Category_service.objects.all()
         return Service.objects.all()
 
     def requestGet(self, req):
@@ -557,6 +561,8 @@ class SettingsAddView(TemplateView):
                 return SettingServiceAddForm
             if getadd == 'device':
                 return SettingDeviceAddForm
+            if getadd == 'category_service':
+                return SettingCategoryServiceAddForm
 
     def getPostForm(self, req):
         getadd = self.request.GET.get('model')
@@ -565,6 +571,8 @@ class SettingsAddView(TemplateView):
                 return SettingServiceAddForm(req, prefix='add_form')
             if getadd == 'device':
                 return SettingDeviceAddForm(req, prefix='add_form')
+            if getadd == 'category_service':
+                return SettingCategoryServiceAddForm(req, prefix='add_form')
 
 
     def form_invalid(self, formAdd, **kwargs):
@@ -612,6 +620,9 @@ class SettingsEditView(TemplateView):
             if getmodel == 'device':
                 get_id = Device.objects.get(pk=self.request.GET.get('id'))
                 return SettingDeviceAddForm(instance=get_id)
+            if getmodel == 'category_service':
+                get_id = Category_service.objects.get(pk=self.request.GET.get('id'))
+                return SettingCategoryServiceAddForm(instance=get_id)
 
     def getPostForm(self):
         getedit = self.request.GET.get('model')

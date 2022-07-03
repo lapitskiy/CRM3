@@ -19,7 +19,7 @@ def show_menu():
     _dict = {}
     for pk in category_service:
         _dict_for = {}
-        _dict_for['title'] = pk.title
+        _dict_for['name'] = pk.name
         _dict[pk.pk] = _dict_for
     return_dict['category_service'] = _dict
     #print('_dict', _dict)

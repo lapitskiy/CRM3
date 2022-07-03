@@ -1,5 +1,5 @@
 from django import forms
-from .models import Orders, Service, Device
+from .models import Orders, Service, Device, Category_service
 import re
 from django.core.exceptions import ValidationError, ObjectDoesNotExist
 
@@ -86,6 +86,23 @@ class SettingDeviceAddForm(forms.ModelForm):
         fields = ['name']
         widgets = {
             'name': forms.TextInput(attrs={'class': 'form-control', 'autocomplete': 'off'}),
+        }
+
+    def clean_name(self):
+        name = self.cleaned_data['name']
+        if re.match(r'\d', name):
+            raise ValidationError('Название не должно начинаться с цифры')
+        if not name[0].isupper():
+            raise ValidationError('Название не должно начинаться с маленькой буквы')
+        return name
+
+class SettingCategoryServiceAddForm(forms.ModelForm):
+    class Meta:
+        model = Category_service
+        fields = ['name','category']
+        widgets = {
+            'name': forms.TextInput(attrs={'class': 'form-control', 'autocomplete': 'off'}),
+            'category': forms.TextInput(attrs={'class': 'form-control', 'autocomplete': 'off'}),
         }
 
     def clean_name(self):
