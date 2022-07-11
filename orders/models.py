@@ -74,6 +74,7 @@ class Category(models.Model):
 class Category_service(models.Model):
     name = models.CharField(max_length=150, verbose_name='Наименования категории услуги')
     category = models.CharField(max_length=150, db_index=True, unique=True, verbose_name='Категория')
+    used = models.IntegerField(default=0)
 
     def __str__(self):
         return self.name

@@ -5,9 +5,8 @@
 <link href="{% static 'prints/css/print_style.css' %}" rel="stylesheet">
 <link href="{% static 'prints/css/print.min.css' %}" rel="stylesheet" type="text/css">
 <link rel="stylesheet" type="text/css" href="print.css">
-{% endblock %}
-
 <script src="{% static 'prints/js/print.min.js' %}"></script>
+{% endblock %}
 
 
 {% block sidebar %}
@@ -17,17 +16,20 @@
 {% block content %}
     Форма {{ formnumber }}<br><br>
 
-    <a href="#" class="action-print">Распечатать</a>
-
-<script>
-$(function($){
-	$(".action-print").click(function(){
-		window.print();
-		return false;
-	});
-});
+  <input type="button" onclick="printDiv('print-content')" value="Распечатать!"/>
+<br><br>
+<script type="text/javascript">
+    function printDiv(divName) {
+        var printContents = document.getElementById(divName).innerHTML;
+        w=window.open();
+        w.document.write(printContents);
+        w.print();
+        w.close();
+    }
 </script>
-    <br><br>
 
-<div class="print_block">{{ printform|safe }}</div>
+<div id="print-content">
+{{ printform|safe }}
+</div>
+
 {% endblock %}

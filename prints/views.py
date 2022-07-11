@@ -38,10 +38,13 @@ class PrintFormView(RelatedMixin, TemplateView):
 
     def getPrintForm(self, **kwargs):
         after_text = ''
+        print('related ', kwargs['related'])
+        print('print_form.contentform ', kwargs['content'])
         if 'content' in kwargs and 'related' in kwargs:
             #list_related = re.findall(r'[a-zA-Z0-9]+\.[a-zA-Z0-9]+\.[a-zA-Z0-9]+', kwargs['content'])
             after_text = kwargs['content']
-            list_related = [f.group(0) for f in re.finditer('(\w+(\.\w+)+)', kwargs['content'])]
+            list_related = [f.group(0) for f in re.finditer('(?<={{)(.*?)(?=}})', kwargs['content'])]
+
             for x in list_related:
                 print('x ', x)
                 list_split = x.split('.')
@@ -51,9 +54,9 @@ class PrintFormView(RelatedMixin, TemplateView):
                 print('get_obj: ', get_obj)
                 if get_obj:
                     get_name = getattr(get_obj, list_split[2])
-                    after_text = after_text.replace(x, str(get_name))
+                    after_text = after_text.replace('{{'+x+'}}', str(get_name))
                 else:
-                    after_text = after_text.replace(x, 'не указано')
+                    after_text = after_text.replace('{{'+x+'}}', 'не указано')
 
         return after_text
 

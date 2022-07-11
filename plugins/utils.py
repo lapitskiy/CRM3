@@ -112,7 +112,9 @@ class RelatedMixin(object):
     def getModelFromStr(self, **kwargs):
         if 'cls' in kwargs and 'app' in kwargs and 'uuid' in kwargs:
             modelPath = kwargs['app'] + '.models'
+            print('model path ', modelPath)
             imp_model = importlib.import_module(modelPath)
+            print('NO!')
             cls_model = getattr(imp_model, kwargs['cls'])
             try:
                 cls2 = cls_model.objects.get(Q(related_uuid__icontains=kwargs['uuid']))

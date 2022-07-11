@@ -26,7 +26,7 @@ class SimpleOrderAddForm(forms.ModelForm):
 
     class Meta:
         model = Orders
-        fields = ['device', 'serial', 'service', 'status','comment']
+        fields = ['device', 'serial', 'service', 'status', 'comment', 'category_service']
         widgets = {
             #'category': forms.Select(attrs={'class': 'form-control'}),
                 #forms.HiddenInput(),
@@ -34,6 +34,7 @@ class SimpleOrderAddForm(forms.ModelForm):
             #'service': forms.TextInput(attrs={'id':'ajax-service', 'class': 'form-control', 'autocomplete':'off'}),
             'serial': forms.TextInput(attrs={'class': 'form-control', 'autocomplete':'off'}),
             'status': forms.Select(attrs={'class': 'form-control', 'autocomplete':'on'}),
+            'category_service': forms.Select(attrs={'class': 'form-control', 'autocomplete': 'on'}),
             'comment': forms.Textarea(attrs={'class': 'form-control', 'rows': 5}),
         }
 
@@ -56,10 +57,9 @@ class FastOrderAddForm(forms.ModelForm):
 
     class Meta:
         model = Orders
-        fields = ['device', 'serial', 'service', 'comment']
+        fields = ['device', 'serial', 'service']
         widgets = {
             'serial': forms.TextInput(attrs={'class': 'form-control', 'autocomplete':'off'}),
-            'comment': forms.Textarea(attrs={'class': 'form-control', 'rows': 5}),
         }
 
 
