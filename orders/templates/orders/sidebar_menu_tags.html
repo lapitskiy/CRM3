@@ -7,7 +7,7 @@
 <h5>Категории услуг</h5>
 <div class="list-group">
     {% for key, value in category_service.items %}
-    <a href="{% url 'orders_home' %}?status={{ key }}" class="list-group-item list-group-item-action">{{ value.name }} <span class="badge rounded-pill bg-dark">{{ value.count }}</span></a>
+    <a href="{% url 'orders_home' %}?category_service={{ key }}" class="list-group-item list-group-item-action">{{ value.name }} <span class="badge rounded-pill bg-dark">{{ value.count }}</span></a>
     {% endfor %}
 </div>
 <br>
