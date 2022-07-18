@@ -137,6 +137,8 @@ class OrderAddView(RelatedMixin, TemplateView):
                 formPath = x.module_name + '.forms'
                 app_form = importlib.import_module(formPath)
                 related_form = app_form.RelatedAddForm()
+                if 'store' in x.module_name:
+                    print('related form', related_form)
                 related_form.prefix = x.module_name
                 form_list.append(related_form)
         context['forms'] = form_list

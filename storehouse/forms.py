@@ -45,11 +45,11 @@ class StorehouseUserEditForm(forms.ModelForm):
 class RelatedAddForm(forms.ModelForm):
 
     class Meta:
-        model = StoreRelated
-        fields = ['store']
+        model = Storehouses
+        fields = ['name',]
         widgets = {
-            'store': forms.HiddenInput(),
             'name': forms.Select(attrs={'class': 'form-control', 'autocomplete':'on'}),
         }
         labels = {
+            'name': 'Склад'
         }
