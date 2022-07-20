@@ -130,19 +130,7 @@ class OrderAddView(RelatedMixin, TemplateView):
 
     def get(self, request, *args, **kwargs):
         context = super().get_context_data(**kwargs)
-        related = self.checkRelated()
-        form_list = []
-        if related:
-            for x in related:
-                formPath = x.module_name + '.forms'
-                app_form = importlib.import_module(formPath)
-                related_form = app_form.RelatedAddForm()
-                if 'store' in x.module_name:
-                    print('related form', related_form)
-                related_form.prefix = x.module_name
-                form_list.append(related_form)
-        context['forms'] = form_list
-        #context['count_form'] = range(1, tag+1)
+        context['forms'] = self.getRelatedFormList()
         formOne = self.getForm()
         formOne.prefix = 'one_form'
         context.update({'formOne': formOne})

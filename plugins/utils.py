@@ -12,6 +12,25 @@ class RelatedMixin(object):
         related = Plugins.objects.get(module_name=self.related_module_name)
         return related.related.all()
 
+    # [RU] возвращает все связанные формы
+    # [EN] list related forms
+    def getRelatedFormList(self):
+        related = self.checkRelated()
+        form_list = []
+        if related:
+            for x in related:
+                imp_related = importlib.import_module(x.module_name + '.related')
+                getrelatedClass = getattr(imp_related, 'AppRelated')
+                relatedClass = getrelatedClass()
+                if relatedClass.passAddUpdate():
+                    continue
+                formPath = x.module_name + '.forms'
+                app_form = importlib.import_module(formPath)
+                related_form = app_form.RelatedAddForm()
+                related_form.prefix = x.module_name
+                form_list.append(related_form)
+        return form_list
+
     # [RU] переводить dict uuid = {'uuid', ''} в _list = ['uuid',]
     # [RU] переводить list dict uuid = [{'uuid', ''},] в _list = ['uuid',]
     # [RU] бывший getListUuidFromDictKeyRelated
@@ -181,6 +200,7 @@ class RelatedMixin(object):
                     if 'edit' in kwargs['doing']:
                         _dict2 = relatedClass.checkRelatedEditForm(request_post=request_post, uuid=self.dictUuidToList(kwargs['uuid']))
                 if 'add' in kwargs['doing']:
+                    print('relatedClass ' , relatedClass)
                     _dict2 = relatedClass.checkRelatedAddForm(request_post=request_post)
                 _dict['uuid'] = _dict2['uuid']
                 _dict['pk'] = _dict2['pk']

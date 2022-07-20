@@ -14,7 +14,7 @@ class AppRelated(object):
     # если это связанный объект, который не имеет формы или не требует обновления, то возврщает True и пропускается в
     # utils checkRelatedIsValidDict, как не требующий добавления для проверки форимы и обновления текущей
     def passAddUpdate(self, **kwargs):
-        return False
+        return True
 
     # если это связанный объект, который не имеет формы или не требует обновления, то возврщает True и пропускается в
     # utils checkRelatedIsValidDict, как не требующий добавления для проверки форимы и обновления текущей
@@ -32,7 +32,7 @@ class AppRelated(object):
     def checkConvert(self, **kwargs):
         return False
 
-    # проверка, надо ли добавлять форму
+    # проверка, надо ли добавлять форму после отправки данных в виде POST
     def checkRelatedAddForm(self, **kwargs):
         context= {}
         request_post = kwargs['request_post']
