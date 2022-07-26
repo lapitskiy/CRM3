@@ -331,27 +331,8 @@ class OrderEditView(RelatedMixin, TemplateView):
 
     def get(self, request, *args, **kwargs):
         context = super().get_context_data(**kwargs)
-        related = self.checkRelated()
         get_order = Orders.objects.get(pk=context['order_id'])
-        if related:
-            form_list = []
-            print('related ',related)
-            for x in related:
-                formPath = x.module_name + '.forms'
-                modelPath = x.module_name + '.models'
-                app_form = importlib.import_module(formPath)
-                app_model = importlib.import_module(modelPath)
-                cls = getattr(app_model, x.related_class_name)
-                for key_uuid, value_uuid in get_order.related_uuid.items():
-                    try:
-                        get_related = cls.objects.get(Q(related_uuid__icontains=key_uuid))
-                        related_form = app_form.RelatedAddForm(instance=get_related)
-                    except cls.DoesNotExist:
-                        related_form = app_form.RelatedAddForm()
-                related_form.prefix = x.module_name
-                form_list.append(related_form)
-        context['forms'] = form_list
-        print('form 1', context)
+        context['forms'] = self.getRelatedEditFormList(obj=get_order)
         formOne = SimpleOrderAddForm(instance=get_order)
         formOne.prefix = 'one_form'
         context.update({'formOne': formOne})

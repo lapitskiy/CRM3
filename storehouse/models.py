@@ -74,7 +74,7 @@ class Storehouses(models.Model):
 
 
     def __str__(self):
-        return str(self.pk)
+        return str(self.name)
 
     class Meta:
         verbose_name = 'Отделения'

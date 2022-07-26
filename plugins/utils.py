@@ -31,6 +31,35 @@ class RelatedMixin(object):
                 form_list.append(related_form)
         return form_list
 
+    # [RU] возвращает все связанные формы для edit GET
+    # [EN] list related forms
+    def getRelatedEditFormList(self, **kwargs):
+        related = self.checkRelated()
+        form_list = []
+        obj = kwargs['obj']
+        if related:
+            for x in related:
+
+                imp_related = importlib.import_module(x.module_name + '.related')
+                getrelatedClass = getattr(imp_related, 'AppRelated')
+                relatedClass = getrelatedClass()
+                if relatedClass.passEditUpdate():
+                    continue
+                formPath = x.module_name + '.forms'
+                modelPath = x.module_name + '.models'
+                app_form = importlib.import_module(formPath)
+                app_model = importlib.import_module(modelPath)
+                cls = getattr(app_model, x.related_class_name)
+                for key_uuid, value_uuid in obj.related_uuid.items():
+                    try:
+                        get_related = cls.objects.get(Q(related_uuid__icontains=key_uuid))
+                        related_form = app_form.RelatedAddForm(instance=get_related)
+                    except cls.DoesNotExist:
+                        related_form = app_form.RelatedAddForm()
+                related_form.prefix = x.module_name
+                form_list.append(related_form)
+        return form_list
+
     # [RU] переводить dict uuid = {'uuid', ''} в _list = ['uuid',]
     # [RU] переводить list dict uuid = [{'uuid', ''},] в _list = ['uuid',]
     # [RU] бывший getListUuidFromDictKeyRelated
@@ -189,6 +218,7 @@ class RelatedMixin(object):
                 if 'add' in kwargs['doing'] and relatedClass.passAddUpdate():
                     continue
                 if 'edit' in kwargs['doing'] and relatedClass.passEditUpdate():
+                    print('TYT PASS??')
                     continue
 
                 _dict['module'] = x.module_name
