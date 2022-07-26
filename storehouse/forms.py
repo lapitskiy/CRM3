@@ -2,6 +2,7 @@ from django import forms
 from .models import Storehouses, StoreRelated, Category
 import re
 from django.core.exceptions import ValidationError, ObjectDoesNotExist
+from .utils import getStoresListByUser
 
 #forms
 class StorehouseAddForm(forms.ModelForm):
@@ -43,6 +44,10 @@ class StorehouseUserEditForm(forms.ModelForm):
 
 # если формы нет, как например в модуле prints, ставиться pass
 class RelatedAddForm(forms.ModelForm):
+
+    def __init__(self,*args,**kwargs ):
+        super (RelatedAddForm, self).init(*args,**kwargs)
+        self.fields['store'].queryset = getStoresListByUser()
 
     class Meta:
         model = StoreRelated

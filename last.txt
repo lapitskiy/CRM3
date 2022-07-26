@@ -1,0 +1,1 @@
+27.07: остановился на storehouse\utils и forms.py, надо добавить проверку querset через форму
