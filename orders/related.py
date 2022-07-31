@@ -91,3 +91,9 @@ class AppRelated():
                             uudi_filter_related_list.append(z.related_uuid)
                     return uudi_filter_related_list
         return uudi_filter_related_list
+
+    def checkCleanQueryset(self, **kwargs):
+        pass
+
+    def passCleanQueryset(self, **kwargs):
+        return True

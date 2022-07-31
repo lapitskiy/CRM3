@@ -37,3 +37,9 @@ class AppRelated(object):
 
     def submenuImportRelated(self, **kwargs):
         pass
+
+    def checkCleanQueryset(self, **kwargs):
+        pass
+
+    def passCleanQueryset(self, **kwargs):
+        return True

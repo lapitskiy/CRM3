@@ -105,3 +105,9 @@ class AppRelated(object):
             print('kwargs data', kwargs['data'])
             qry = Clients.objects.filter(Q(phone__icontains=kwargs['data'])).values()
             return [entry for entry in qry]
+
+    def checkCleanQueryset(self, **kwargs):
+        pass
+
+    def passCleanQueryset(self, **kwargs):
+        return True

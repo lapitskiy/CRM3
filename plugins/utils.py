@@ -35,6 +35,23 @@ class RelatedMixin(object):
                 form_list.append(related_form)
         return form_list
 
+    # [RU] проверяет связанные данные и выдает финальный чистый queryset. тоесть удаляет записи которые не должны
+    # [RU] показываться конкретному пользователю или по опредленным параметрам указанных в каждом приложнении.
+    # [EN] wait translate
+    def getCleanQueryset(self, **kwargs):
+        related = self.checkRelated()
+        queryset = kwargs['queryset']
+        if related:
+            for x in related:
+                imp_related = importlib.import_module(x.module_name + '.related')
+                getrelatedClass = getattr(imp_related, 'AppRelated')
+                relatedClass = getrelatedClass()
+                if relatedClass.passCleanQueryset():
+                    continue
+                queryset = relatedClass.checkCleanQueryset(queryset=kwargs['queryset'], request=kwargs['request'])
+                print('отрработало ', x.module_name)
+        return queryset
+
     # [RU] возвращает все связанные формы для edit GET
     # [EN] list related forms
     def getRelatedEditFormList(self, **kwargs):

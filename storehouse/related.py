@@ -63,3 +63,19 @@ class AppRelated(object):
 
     def submenuImportRelated(self, **kwargs):
         pass
+
+    def checkCleanQueryset(self, **kwargs):
+        self.request = kwargs['request']
+        print('queryset ', kwargs['queryset'])
+        query_list = kwargs['queryset'].values_list('related_uuid', flat=True)
+        print('query_list ', query_list)
+        for query in kwargs['queryset']:
+            print('query uuid ', query['related_uuid'])
+        if Storehouses.objects.filter(user_permission=self.request.user).exists():
+            print('есть попадание по складу')
+        #if self.request.user in Storehouses.user_permission.all():
+         #   print('есть попадание по складу')
+        return kwargs['queryset']
+
+    def passCleanQueryset(self, **kwargs):
+        return False

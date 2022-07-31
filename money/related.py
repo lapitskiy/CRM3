@@ -65,3 +65,9 @@ class AppRelated(object):
 
     def deleteRelatedMultipleUuid(self, **kwargs):
         pass
+
+    def checkCleanQueryset(self, **kwargs):
+        pass
+
+    def passCleanQueryset(self, **kwargs):
+        return True

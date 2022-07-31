@@ -39,7 +39,8 @@ class OrdersHomeView(RelatedMixin, ListView):
         context['filter'] = self.requestGet('filter')
         context['date'] = self.requestGet('date')
         # filter
-        list_orders = self.getQuery()
+        queryset = self.getQuery()
+        list_orders = self.getCleanQueryset(queryset=queryset, request=self.request)
         #paginator
         paginator = Paginator(list_orders, self.paginate_by)
         page = self.request.GET.get('page')
