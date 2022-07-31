@@ -29,7 +29,8 @@ class RelatedAddForm(forms.ModelForm):
     phone = PhoneInputField()
 
     def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
+        self.request = kwargs.pop('request', None)
+        super(RelatedAddForm, self).__init__(*args, **kwargs)
         self.fields['phone'].choices = Clients.objects.order_by('-phone').values_list('phone')
 
     #phone = ChoiceTxtField(queryset=Clients.objects.order_by('-phone'))

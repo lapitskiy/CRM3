@@ -43,18 +43,20 @@ class StorehouseUserEditForm(forms.ModelForm):
         fields = ['user_permission',]
 
 # если формы нет, как например в модуле prints, ставиться pass
-class RelatedAddForm(forms.ModelForm):
+class RelatedAddForm(forms.Form):
+    #name = forms.ModelChoiceField()
 
-    def __init__(self,*args,**kwargs ):
-        super (RelatedAddForm, self).init(*args,**kwargs)
-        self.fields['store'].queryset = getStoresListByUser()
+    def __init__(self, *args, **kwargs):
+        self.request = kwargs.pop('request', None)
+        super(RelatedAddForm, self).__init__(*args, **kwargs)
+        self.fields['name'].queryset = getStoresListByUser(user=self.request.user)
+        self.fields['name'].label = 'Склад'
 
-    class Meta:
-        model = StoreRelated
-        fields = ['store',]
-        widgets = {
-            'store': forms.Select(attrs={'class': 'form-control', 'autocomplete':'on'}),
-        }
-        labels = {
-            'store': 'Склад'
-        }
+
+    name = forms.ModelChoiceField(widget=forms.Select(attrs={'class': 'form-control', 'autocomplete': 'on'}), queryset=None)
+
+
+
+
+
+

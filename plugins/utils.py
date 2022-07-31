@@ -14,7 +14,7 @@ class RelatedMixin(object):
 
     # [RU] возвращает все связанные формы
     # [EN] list related forms
-    def getRelatedFormList(self):
+    def getRelatedFormList(self, **kwargs):
         related = self.checkRelated()
         form_list = []
         if related:
@@ -26,7 +26,11 @@ class RelatedMixin(object):
                     continue
                 formPath = x.module_name + '.forms'
                 app_form = importlib.import_module(formPath)
-                related_form = app_form.RelatedAddForm()
+
+                req = kwargs['request']
+                print('user: ', req.user)
+                print('module: ', x.module_name)
+                related_form = app_form.RelatedAddForm(request=req)
                 related_form.prefix = x.module_name
                 form_list.append(related_form)
         return form_list
@@ -218,7 +222,6 @@ class RelatedMixin(object):
                 if 'add' in kwargs['doing'] and relatedClass.passAddUpdate():
                     continue
                 if 'edit' in kwargs['doing'] and relatedClass.passEditUpdate():
-                    print('TYT PASS??')
                     continue
 
                 _dict['module'] = x.module_name
@@ -230,8 +233,8 @@ class RelatedMixin(object):
                     if 'edit' in kwargs['doing']:
                         _dict2 = relatedClass.checkRelatedEditForm(request_post=request_post, uuid=self.dictUuidToList(kwargs['uuid']))
                 if 'add' in kwargs['doing']:
-                    print('relatedClass ' , relatedClass)
                     _dict2 = relatedClass.checkRelatedAddForm(request_post=request_post)
+                    print('!self.request ', self.request)
                 _dict['uuid'] = _dict2['uuid']
                 _dict['pk'] = _dict2['pk']
                 _dict['form'] = _dict2['form']

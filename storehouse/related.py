@@ -36,12 +36,14 @@ class AppRelated(object):
     def checkRelatedAddForm(self, **kwargs):
         context= {}
         request_post = kwargs['request_post']
+        request = kwargs['request']
         #print('request clients-phone checkRelatedAddForm: ', request_post['clients-phone'])
         #print('checkUpdate ', self.checkUpdate(request_post=request_post))
         if self.checkUpdate(request_post=request_post):
             pass
         else:
-            related_form = RelatedAddForm(request_post, prefix=self.prefix)
+            print('request', request)
+            related_form = RelatedAddForm(request_post, prefix=self.prefix, request=request)
             related_form.prefix = self.prefix
             if related_form.is_valid():
                 print('sotre valid')
