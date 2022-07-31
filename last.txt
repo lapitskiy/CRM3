@@ -2,3 +2,4 @@
 29.07: надо передать в форму request.user
 https://medium.com/analytics-vidhya/django-how-to-pass-the-user-object-into-form-classes-ee322f02948c
 01.08: создать общий финальный кварисет getCleanQuerySet()
+в storehouse related перевести queryset в value_list, отработать и обратно вернуть итоговый queryset
