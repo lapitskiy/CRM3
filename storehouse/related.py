@@ -1,6 +1,7 @@
 from .forms import RelatedAddForm
-from .models import Storehouses
+from .models import Storehouses, StoreRelated
 from django.db.models import Q
+from django.core.exceptions import ObjectDoesNotExist
 
 class AppRelated(object):
     prefix = 'storehouse'
@@ -65,17 +66,50 @@ class AppRelated(object):
         pass
 
     def checkCleanQueryset(self, **kwargs):
+        data_uuid_related_list = []
         self.request = kwargs['request']
-        print('queryset ', kwargs['queryset'])
-        query_list = kwargs['queryset'].values_list('related_uuid', flat=True)
-        print('query_list ', query_list)
-        for query in kwargs['queryset']:
-            print('query uuid ', query['related_uuid'])
-        if Storehouses.objects.filter(user_permission=self.request.user).exists():
-            print('есть попадание по складу')
+        #result_queryset = []
+        result_queryset = kwargs['queryset']
+        #print('type queryset ', type(kwargs['queryset']))
+        for r in kwargs['queryset']:
+            #print('r ',r.related_uuid)
+            for key_uuid, value_uuid in r.related_uuid.items():
+                #print(f'key {key_uuid} value {value_uuid}')
+                try:
+                    # доедлать, с класса related.py, вставить проверку на if и отдавать связаные данные для menu
+                    currentStore = StoreRelated.objects.get(Q(related_uuid__icontains=key_uuid))
+                    #print('tyt')
+                    if self.request.user in currentStore.store.user_permission.all():
+                        #print('есть попадание по складу - ', currentStore.store.name)
+                        pass
+                    else:
+                        #print('такого склада нет ')
+                        #new_queryset = result_queryset.exclude(Q(related_uuid__icontains=key_uuid))
+                        result_queryset = result_queryset.exclude(pk=r.pk)
+                        #print('new_queryset ', new_queryset)
+                        #result_queryset = new_queryset
+                    data_uuid_related_list.append(key_uuid)
+                except ObjectDoesNotExist:
+                    result_queryset = result_queryset.exclude(pk=r.pk)
+                    pass
+
+        #query_list = kwargs['queryset'].values_list('related_uuid', flat=True)
+        #print('result_queryset ', result_queryset)
+        return result_queryset
+
+
+        #conds = Q()
+        #for q in data_uuid_related_list:
+        #    conds |= Q(related_uuid__icontains=q)
+        #if conds:
+        #    result_query = Orders.objects.filter(conds).values_list('related_uuid', flat=True)
+
+        #for query in kwargs['queryset']:
+        #    print('query uuid ', query['related_uuid'])
+        #if Storehouses.objects.filter(user_permission=self.request.user).exists():
+        #    print('есть попадание по складу')
         #if self.request.user in Storehouses.user_permission.all():
          #   print('есть попадание по складу')
-        return kwargs['queryset']
 
     def passCleanQueryset(self, **kwargs):
         return False

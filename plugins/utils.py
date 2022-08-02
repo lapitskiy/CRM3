@@ -50,6 +50,7 @@ class RelatedMixin(object):
                     continue
                 queryset = relatedClass.checkCleanQueryset(queryset=kwargs['queryset'], request=kwargs['request'])
                 print('отрработало ', x.module_name)
+                print('result_queryset ', queryset)
         return queryset
 
     # [RU] возвращает все связанные формы для edit GET

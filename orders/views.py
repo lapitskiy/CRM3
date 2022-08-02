@@ -31,20 +31,18 @@ class OrdersHomeView(RelatedMixin, ListView):
 
 
     def get_queryset(self):
-        return self.getQuery()
+        queryset = self.getQuery()
+        list_orders = self.getCleanQueryset(queryset=queryset, request=self.request)
+        print('list_orders ', list_orders)
+        return list_orders
 
     def get_context_data(self, *, object_list=None, **kwargs):
         context = super().get_context_data(**kwargs)
         context['title'] = 'Все заказы'
         context['filter'] = self.requestGet('filter')
         context['date'] = self.requestGet('date')
-        # filter
-        queryset = self.getQuery()
-        list_orders = self.getCleanQueryset(queryset=queryset, request=self.request)
-        #paginator
         paginator = Paginator(list_orders, self.paginate_by)
         page = self.request.GET.get('page')
-
         try:
             orders_page = paginator.page(page)
         except PageNotAnInteger:
@@ -53,7 +51,7 @@ class OrdersHomeView(RelatedMixin, ListView):
         except EmptyPage:
             orders_page = paginator.page(paginator.num_pages)
         context['related_list'] = self.getDataListRelated(page=orders_page)
-
+        print('context ', context)
         return context
 
     def post(self, request, *args, **kwargs):
