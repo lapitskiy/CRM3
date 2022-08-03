@@ -37,7 +37,9 @@ class AppRelated(object):
     def checkRelatedAddForm(self, **kwargs):
         context= {}
         request_post = kwargs['request_post']
-        request = kwargs['request']
+
+        if 'request' in kwargs:
+            request = kwargs['request']
         #print('request clients-phone checkRelatedAddForm: ', request_post['clients-phone'])
         #print('checkUpdate ', self.checkUpdate(request_post=request_post))
         if self.checkUpdate(request_post=request_post):

@@ -13,10 +13,8 @@ class AppRelated(object):
         if kwargs['request_post']['clients-phone']:
             try:
                 Clients.objects.get(phone=kwargs['request_post']['clients-phone'])
-                print('checkUpdate TRUE')
                 return True
             except ObjectDoesNotExist:
-                print('checkUpdate False')
                 return False
         return False
 

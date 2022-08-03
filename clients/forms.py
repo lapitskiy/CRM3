@@ -68,6 +68,7 @@ class RelatedAddForm2(forms.ModelForm):
     #char_field_with_list = forms.CharField(required=True)
 
     def __init__(self, *args, **kwargs):
+        self.request = kwargs.pop('request', None)
         #_phone_list = kwargs.pop('data_list', None)
         super(RelatedAddForm, self).__init__(*args, **kwargs)
 

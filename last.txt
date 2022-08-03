@@ -3,3 +3,6 @@
 https://medium.com/analytics-vidhya/django-how-to-pass-the-user-object-into-form-classes-ee322f02948c
 01.08: создать общий финальный кварисет getCleanQuerySet()
 в storehouse related перевести queryset в value_list, отработать и обратно вернуть итоговый queryset
+04.08:
+решить задачку, форма отдает сначала список storehouse, а потом пытается сохранить в storerelated и все через один класс relatedaddform. че делать?
+может можно внутри класса как-то перехватить?

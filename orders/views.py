@@ -41,6 +41,7 @@ class OrdersHomeView(RelatedMixin, ListView):
         context['title'] = 'Все заказы'
         context['filter'] = self.requestGet('filter')
         context['date'] = self.requestGet('date')
+        list_orders = self.get_queryset()
         paginator = Paginator(list_orders, self.paginate_by)
         page = self.request.GET.get('page')
         try:
@@ -143,7 +144,7 @@ class OrderAddView(RelatedMixin, TemplateView):
         #print('formOne', formOne)
         form_list = []
         valid = True
-        related_isValid_dict = self.checkRelatedIsValidDict(self.request.POST, doing='add') # return dict
+        related_isValid_dict = self.checkRelatedIsValidDict(self.request.POST, doing='add', request=self.request) # return dict
         #print('related_isValid_dict', related_isValid_dict)
         #related = self.checkRelated()
         #if related:
@@ -179,10 +180,8 @@ class OrderAddView(RelatedMixin, TemplateView):
                 else:
                    form_add.related_uuid = related_uuid
                 print('form add ', form_add)
-                print('erorr2? ', form_add.related_uuid)
-
                 form_add.save()
-                print('erorr3?')
+                print('form save')
             print('Valid')
             return HttpResponseRedirect(reverse_lazy('orders_home'))
         else:
