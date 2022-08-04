@@ -6,3 +6,6 @@ https://medium.com/analytics-vidhya/django-how-to-pass-the-user-object-into-form
 04.08:
 решить задачку, форма отдает сначала список storehouse, а потом пытается сохранить в storerelated и все через один класс relatedaddform. че делать?
 может можно внутри класса как-то перехватить?
+- https://ru.stackoverflow.com/questions/110804/Передача-данных-из-одной-формы-в-другую
+- чувак с телеги говорит не использовать modelforms
+- form
