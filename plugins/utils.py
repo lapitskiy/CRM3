@@ -218,11 +218,12 @@ class RelatedMixin(object):
             relatedClass = getrelatedClass()
             relatedClass.deleteRelatedMultipleUuid(dictt=dictt)
 
+
     # [RU] отдает dict c формой переданного post для add или edit form, валидация, uuid, данные update
     # ? исползуется в выводе связанных моделуй
     # ? dict['update'] - может ли данный модуль иметь возможность создерать несколько uuid. Например один телефон для многих заказов. Возвращате true false
     # ? how - sting -  add or edit parametr
-    def checkRelatedIsValidDict(self, request_post, **kwargs):
+    def checkRelatedFormDict(self, request_post, **kwargs):
         related = self.checkRelated()
         related_form_dict = {}
         if related:
@@ -238,8 +239,9 @@ class RelatedMixin(object):
                 if 'edit' in kwargs['doing'] and relatedClass.passEditUpdate():
                     continue
 
-                _dict['module'] = x.module_name
+                #_dict['module'] = x.module_name
                 _dict['update'] = relatedClass.checkUpdate(request_post=request_post)
+
 
                 if 'uuid' in kwargs:
                     _dict['convert'] = relatedClass.checkConvert(uuid=self.dictUuidToList(kwargs['uuid']),
@@ -249,15 +251,45 @@ class RelatedMixin(object):
                 if 'add' in kwargs['doing']:
                     _dict2 = relatedClass.checkRelatedAddForm(request_post=request_post, request=kwargs['request'])
                     print('!self.request ', self.request)
+
+
                 _dict['uuid'] = _dict2['uuid']
                 _dict['pk'] = _dict2['pk']
                 _dict['form'] = _dict2['form']
+                _dict['class'] = relatedClass
                 if _dict['form'].is_valid():
                     _dict['valid'] = True
                 else:
                     _dict['valid'] = False
                 related_form_dict[x.module_name] = _dict
-        return related_form_dict
+
+        # помещаем в перменную есть ли общий валид или в какой-то из свазанных форм ест ошибка
+        is_valid_dict = {}
+        is_valid_dict['is_valid'] = True
+        form_list = []
+        for k, v in related_form_dict.items():
+            if not v['valid']: is_valid_dict['is_valid'] = False
+            form_list.append(v['form'])
+        is_valid_dict['form'] = form_list
+        return related_form_dict, is_valid
+
+    # [RU] получает dict из checkRelatedFormDict для сохранения формы в модель, после проверки валидности на этапе checkRelatedFormDict
+    #
+    #
+    #
+    def saveRelatedFormData(self, request, **kwargs):
+        related_form_dict = kwargs['related_dict']
+        related_uuid = kwargs['related_uuid']
+        for k, v in related_form_dict.items():
+            if related_form_dict[k]['update']:
+                update_uuid_dict = related_form_dict[k]['uuid']
+                update_uuid_dict.update(related_uuid)
+                related_form_dict[k]['uuid'] = update_uuid_dict
+            else:
+                related_form_dict[k]['uuid'] = related_uuid
+            relatedClass = related_form_dict[k]['class']
+            relatedClass.saveForm(related_dict=related_form_dict[k])
+        return
 
 
     # [RU] отдает ссылку для import submenu для формирования правильного submenu

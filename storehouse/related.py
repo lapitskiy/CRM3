@@ -115,3 +115,18 @@ class AppRelated(object):
 
     def passCleanQueryset(self, **kwargs):
         return False
+
+    def saveForm(self, **kwargs):
+        related_dict = kwargs['related_dict']
+        form_add = form_from_dict.save(commit=False)
+        print('form add ', form_add)
+        if related_form_dict[k]['update']:
+            update_uuid_dict = related_form_dict[k]['uuid']
+            update_uuid_dict.update(related_uuid)
+            form_add.related_uuid = update_uuid_dict
+        else:
+            print('related_uuid ', related_uuid)
+            form_add.related_uuid = related_uuid
+        form_add.save()
+        print('form save - ', k)
+        return False

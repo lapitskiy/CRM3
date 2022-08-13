@@ -9,3 +9,7 @@ https://medium.com/analytics-vidhya/django-how-to-pass-the-user-object-into-form
 - https://ru.stackoverflow.com/questions/110804/Передача-данных-из-одной-формы-в-другую
 - чувак с телеги говорит не использовать modelforms
 - form
+13.08:
+я обновил функцию сохранения формы
+теперь все спрятано под катопотом у saveRelatedFormData и форма сохранется через класс Related.py в функции saveForm
+в каждом приложении добавить saveform и оформить его соотвественно

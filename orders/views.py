@@ -141,10 +141,7 @@ class OrderAddView(RelatedMixin, TemplateView):
     def post(self, request, *args, **kwargs):
         postCopy = self.ajaxConvert()
         formOne = self.getPostForm(postCopy)
-        #print('formOne', formOne)
-        form_list = []
-        valid = True
-        related_isValid_dict = self.checkRelatedIsValidDict(self.request.POST, doing='add', request=self.request) # return dict
+        related_form_dict, is_valid_related_form_dict = self.checkRelatedFormDict(self.request.POST, doing='add', request=self.request)
         #print('related_isValid_dict', related_isValid_dict)
         #related = self.checkRelated()
         #if related:
@@ -153,40 +150,43 @@ class OrderAddView(RelatedMixin, TemplateView):
                 #form_list.append(related_form)
         #        if not related_isValid_dict[x.module_name]['form'].is_valid():
         #            valid = False
+        #related_is_valid = self.checkRelatedIsValidDict
+        #relatedValid = True # проверка связанных данных
+        #for k, v in related_isValid_dict.items():
+        #    if not v['valid']: relatedValid = False
+        #    form_list.append(v['form'])
 
-        tag = True # проверка связанных данных
-        for k, v in related_isValid_dict.items():
-            if not v['valid']: tag = False
-            form_list.append(v['form'])
-
-        if formOne.is_valid() and tag:
+        if formOne.is_valid() and is_valid_related_dict['is_valid']:
             related_uuid = {shortuuid.uuid() : ''}
             form_one = formOne.save(commit=False)
             #print('form.cleaned_data', form_update.cleaned_data['category'])
-            cat = self.getCategory()
-            print('cat', cat)
             form_one.category_id = self.getCategory()
             form_one.related_uuid = related_uuid
             form_one.related_user = request.user
             form_one.save()
-            print('related_isValid_dict ', related_isValid_dict)
-            for k, v  in related_isValid_dict.items():
-                form_from_dict = related_isValid_dict[k]['form']
+            print('related_isValid_dict ', related_form_dict)
+            #related form model add data
+            self.saveRelatedFormData(related_dict=related_form_dict, request=self.request, related_uuid=related_uuid)
+
+            '''
+            for k, v  in related_form_dict.items():
+                form_from_dict = related_form_dict[k]['form']
                 form_add = form_from_dict.save(commit=False)
-                if related_isValid_dict[k]['update']:
-                   update_uuid_dict = related_isValid_dict[k]['uuid']
+                print('form add ', form_add)
+                if related_form_dict[k]['update']:
+                   update_uuid_dict = related_form_dict[k]['uuid']
                    update_uuid_dict.update(related_uuid)
                    form_add.related_uuid = update_uuid_dict
                 else:
+                   print('related_uuid ', related_uuid)
                    form_add.related_uuid = related_uuid
-                print('form add ', form_add)
                 form_add.save()
                 print('form save')
-            print('Valid')
+            '''
             return HttpResponseRedirect(reverse_lazy('orders_home'))
         else:
-            print('NotValid')
-            return self.form_invalid(formOne, form_list, **kwargs)
+            return self.form_invalid(formOne, is_valid_related_form_dict['related_form'], **kwargs)
+
 
     def ajaxConvert(self):
         postCopy = self.request.POST.copy()
