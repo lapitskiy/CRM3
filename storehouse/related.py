@@ -49,7 +49,7 @@ class AppRelated(object):
             related_form = RelatedAddForm(request_post, prefix=self.prefix, request=request)
             related_form.prefix = self.prefix
             if related_form.is_valid():
-                print('sotre valid')
+                print('store valid ')
             else:
                 print('store not valid')
             context['uuid'] = ''
@@ -118,15 +118,14 @@ class AppRelated(object):
 
     def saveForm(self, **kwargs):
         related_dict = kwargs['related_dict']
-        form_add = form_from_dict.save(commit=False)
-        print('form add ', form_add)
-        if related_form_dict[k]['update']:
-            update_uuid_dict = related_form_dict[k]['uuid']
-            update_uuid_dict.update(related_uuid)
-            form_add.related_uuid = update_uuid_dict
-        else:
-            print('related_uuid ', related_uuid)
-            form_add.related_uuid = related_uuid
-        form_add.save()
-        print('form save - ', k)
-        return False
+        form_from_dict = related_dict['form']
+        #print('form - ', form_from_dict)
+        #form_add = form_from_dict.save(commit=False)
+        #form_add.related_uuid = related_dict['uuid']
+        #print('tyt - ', self.prefix)
+        #form_from_dict.save(related_uuid=related_dict['uuid'])
+        f = StoreRelated(
+            store=form_from_dict.cleaned_data['name'],
+            related_uuid=related_dict['uuid'])
+        f.save()
+        print('form save - ', self.prefix)

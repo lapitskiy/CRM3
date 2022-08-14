@@ -141,7 +141,7 @@ class OrderAddView(RelatedMixin, TemplateView):
     def post(self, request, *args, **kwargs):
         postCopy = self.ajaxConvert()
         formOne = self.getPostForm(postCopy)
-        related_form_dict, is_valid_related_form_dict = self.checkRelatedFormDict(self.request.POST, doing='add', request=self.request)
+        related_form_dict, is_valid_related_dict = self.checkRelatedFormDict(self.request.POST, doing='add', request=self.request)
         #print('related_isValid_dict', related_isValid_dict)
         #related = self.checkRelated()
         #if related:
@@ -164,7 +164,7 @@ class OrderAddView(RelatedMixin, TemplateView):
             form_one.related_uuid = related_uuid
             form_one.related_user = request.user
             form_one.save()
-            print('related_isValid_dict ', related_form_dict)
+            #print('related_isValid_dict ', related_form_dict)
             #related form model add data
             self.saveRelatedFormData(related_dict=related_form_dict, request=self.request, related_uuid=related_uuid)
 
@@ -352,7 +352,7 @@ class OrderEditView(RelatedMixin, TemplateView):
 
 
         relatedValid = True
-        print('related_isValid_dict ', related_isValid_dict)
+        #print('related_isValid_dict ', related_isValid_dict)
         for k, v in related_isValid_dict.items():
             if not related_isValid_dict[k]['valid']:
                 relatedValid = False

@@ -39,12 +39,6 @@ class AppRelated(object):
             related_form.prefix = self.prefix
             context['uuid'] = ''
             context['pk'] = '1'
-        print('Related - Money')
-        if related_form.is_valid():
-            print('money valid')
-        else:
-            print('money not valid')
-        print('pk ', context['pk'])
         context['form'] = related_form
         return context
 
@@ -71,3 +65,11 @@ class AppRelated(object):
 
     def passCleanQueryset(self, **kwargs):
         return True
+
+    def saveForm(self, **kwargs):
+        related_dict = kwargs['related_dict']
+        form_from_dict = related_dict['form']
+        form_add = form_from_dict.save(commit=False)
+        form_add.related_uuid = related_dict['uuid']
+        form_add.save()
+        print('form save - ', self.prefix)

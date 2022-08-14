@@ -54,7 +54,6 @@ class AppRelated(object):
         if self.checkUpdate(request_post=request_post):
             get_client = Clients.objects.get(phone=request_post['clients-phone'])
             #print('get clinet: ', get_client)
-            print('CLIENTS IF request_post ', request_post)
             related_form = RelatedAddForm(request_post, prefix=self.prefix, instance=get_client)
             #print('related_form: ', related_form)
             context['uuid'] = get_client.related_uuid
@@ -63,10 +62,6 @@ class AppRelated(object):
             print('CLIENTS ELSE request_post ', request_post)
             related_form = RelatedAddForm(request_post, prefix=self.prefix)
             related_form.prefix = self.prefix
-            if related_form.is_valid():
-                print('phone valid')
-            else:
-                print('phone not valid')
             context['uuid'] = ''
             context['pk'] = ''
         print('Related - Client')
@@ -116,4 +111,4 @@ class AppRelated(object):
         form_add = form_from_dict.save(commit=False)
         form_add.related_uuid = related_dict['uuid']
         form_add.save()
-        print('form save - ', k)
+        print('form save - ', self.prefix)

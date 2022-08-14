@@ -45,8 +45,6 @@ class StorehouseUserEditForm(forms.ModelForm):
 # если формы нет, как например в модуле prints, ставиться pass
 class RelatedAddForm(forms.Form):
     name = forms.ModelChoiceField(widget=forms.Select(attrs={'class': 'form-control', 'autocomplete': 'on'}), queryset=None)
-    #related_uuid = forms.CharField(widget=forms.HiddenInput(), initial='value', required=False)
-    #name = forms.ModelChoiceField()
 
     def __init__(self, *args, **kwargs):
         self.request = kwargs.pop('request', None)
@@ -54,17 +52,12 @@ class RelatedAddForm(forms.Form):
         self.fields['name'].queryset = getStoresListByUser(user=self.request.user)
         self.fields['name'].label = 'Склад'
 
-
+    '''
     def save(self, **kwargs):
-        #print('self name', self.name)
-        #print('name', name)
-        if 'commit' not in kwargs:
-            data = self.cleaned_data
-            #rec = StoreRelated(store=self.name, related_uuid=related_uuid)
-            #rec.save()
-            StoreRelated.objects.update_or_create(store=name, related_uuid=related_uuid)
-            return data
-
+        related_uuid = kwargs['related_uuid']
+        print('name t', self.name)
+        StoreRelated.objects.update_or_create(store=self.name, related_uuid=related_uuid)
+    '''
 
 
 

@@ -271,7 +271,7 @@ class RelatedMixin(object):
             if not v['valid']: is_valid_dict['is_valid'] = False
             form_list.append(v['form'])
         is_valid_dict['form'] = form_list
-        return related_form_dict, is_valid
+        return related_form_dict, is_valid_dict
 
     # [RU] получает dict из checkRelatedFormDict для сохранения формы в модель, после проверки валидности на этапе checkRelatedFormDict
     #

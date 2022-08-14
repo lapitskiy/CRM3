@@ -43,3 +43,6 @@ class AppRelated(object):
 
     def passCleanQueryset(self, **kwargs):
         return True
+
+    def saveForm(self, **kwargs):
+        pass
