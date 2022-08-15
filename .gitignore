@@ -402,4 +402,4 @@ venv/Lib/site-packages/yarg-0.1.9.dist-info/
 venv/Lib/site-packages/yarg/
 venv/Scripts/__pycache__/
 venv/Scripts/pipreqs.exe
-!/ServiceCRM3/settings.py
+ServiceCRM3/settings.py
