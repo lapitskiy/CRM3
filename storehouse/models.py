@@ -25,7 +25,7 @@ def validate_phone_number(value):
 
 # Create your models here.
 class StoreRelated(models.Model):
-    store = models.ForeignKey('Storehouses', null=True, on_delete=models.PROTECT, verbose_name='Отделение', related_name='get_storehouse')
+    store = models.ForeignKey('Storehouses', null=True, on_delete=models.PROTECT, verbose_name='Отделение', related_name='get_storehouse', blank=False)
     related_uuid = models.JSONField(blank=True, null=True)
 
     @property
