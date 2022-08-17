@@ -11,7 +11,7 @@ class Orders(models.Model):
     status = models.ForeignKey('Status', null=True, on_delete=models.PROTECT, verbose_name='Статус', related_name='get_status')
     service = models.ForeignKey('Service', default=1, on_delete=models.PROTECT, verbose_name='Услуга', related_name='get_service')
     device = models.ForeignKey('Device', default=1, on_delete=models.PROTECT, verbose_name='Устройство', related_name='get_device')
-    category = models.ForeignKey('Category', default=1, on_delete=models.PROTECT, verbose_name='Категория приемки', related_name='get_category')
+    category = models.ForeignKey('Category', default=1, on_delete=models.PROTECT, verbose_name='Категория приемки', related_name='get_category') # fast or simple
     category_service = models.ForeignKey('Category_service', null=True, on_delete=models.PROTECT, verbose_name='Категория услуги', related_name='get_category_service')
     related_uuid = models.JSONField(blank=True) # json dict
     related_user = models.ForeignKey(User, related_name='order_user', null=True, blank=True, on_delete=models.PROTECT, verbose_name='Owner')
@@ -59,6 +59,7 @@ class Status(models.Model):
         verbose_name_plural = 'Статусы'
         ordering = ['title']
 
+# fast or simple
 class Category(models.Model):
     title = models.CharField(max_length=150, verbose_name='Наименования категории')
     category = models.CharField(max_length=150, db_index=True, unique=True, verbose_name='Категория')
@@ -73,19 +74,19 @@ class Category(models.Model):
 
 class Category_service(models.Model):
     name = models.CharField(max_length=150, verbose_name='Наименования категории услуги')
-    category = models.CharField(max_length=150, db_index=True, unique=True, verbose_name='Категория')
     used = models.IntegerField(default=0)
 
     def __str__(self):
         return self.name
 
     class Meta:
-        verbose_name = 'Категория услуги'
+        verbose_name = 'Категории услуги'
         verbose_name_plural = 'Категории услуги'
         ordering = ['name']
 
 class Service(models.Model):
     name = models.CharField(max_length=150, db_index=True, unique=True, verbose_name='Наименования услуги')
+    category_service = models.ForeignKey('Category_service', default=1, on_delete=models.PROTECT, verbose_name='Категория услуги', related_name='get_category_service')
     used = models.IntegerField(default=0)
 
     def __str__(self):
@@ -98,6 +99,7 @@ class Service(models.Model):
 
 class Device(models.Model):
     name = models.CharField(max_length=150, db_index=True, unique=True, verbose_name='Устройство')
+    category_service = models.ForeignKey('Category_service', default=1, on_delete=models.PROTECT, verbose_name='Категория услуги', related_name='get_category_service')
     used = models.IntegerField(default=0)
 
     def __str__(self):

@@ -13,3 +13,5 @@ https://medium.com/analytics-vidhya/django-how-to-pass-the-user-object-into-form
 я обновил функцию сохранения формы
 теперь все спрятано под катопотом у saveRelatedFormData и форма сохранется через класс Related.py в функции saveForm
 в каждом приложении добавить saveform и оформить его соотвественно
+17.08:
+category_service добавил в модели orders, чтобы можно было искать под каждую категорию услуги и устройста

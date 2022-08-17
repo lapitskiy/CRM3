@@ -51,8 +51,10 @@ class RelatedAddForm(forms.Form):
         super(RelatedAddForm, self).__init__(*args, **kwargs)
         self.fields['name'].queryset = getStoresListByUser(user=self.request.user)
         self.fields['name'].label = 'Склад'
-        status_excluded = ['',]
-        self.fields['name'].choices = [(k, v) for k, v in self.fields['name'].choices if k not in status_excluded]
+        if self.fields['name'].widget.choces[0][0] == "":
+            del self.fields['name'].widget.choices[0]
+        #status_excluded = ['',]
+        #self.fields['name'].choices = [(k, v) for k, v in self.fields['name'].choices if k not in status_excluded]
 
     '''
     def save(self, **kwargs):
