@@ -46,10 +46,10 @@ class Orders(models.Model):
 
 
 class Status(models.Model):
-    title = models.CharField(max_length=150, db_index=True, unique=True, verbose_name='Наименования статуса')
+    name = models.CharField(max_length=150, db_index=True, unique=True, verbose_name='Наименования статуса')
 
     def __str__(self):
-        return self.title
+        return self.name
 
     def get_absolute_url(self):
         return reverse('status', kwargs={'status_id': self.pk})
@@ -59,7 +59,6 @@ class Status(models.Model):
         verbose_name_plural = 'Статусы'
         ordering = ['title']
 
-# fast or simple
 class Category(models.Model):
     title = models.CharField(max_length=150, verbose_name='Наименования категории')
     category = models.CharField(max_length=150, db_index=True, unique=True, verbose_name='Категория')
@@ -74,6 +73,7 @@ class Category(models.Model):
 
 class Category_service(models.Model):
     name = models.CharField(max_length=150, verbose_name='Наименования категории услуги')
+    category = models.CharField(max_length=150, db_index=True, unique=True, verbose_name='Категория')
     used = models.IntegerField(default=0)
 
     def __str__(self):
@@ -86,7 +86,6 @@ class Category_service(models.Model):
 
 class Service(models.Model):
     name = models.CharField(max_length=150, db_index=True, unique=True, verbose_name='Наименования услуги')
-    category_service = models.ForeignKey('Category_service', default=1, on_delete=models.PROTECT, verbose_name='Категория услуги', related_name='get_category_service')
     used = models.IntegerField(default=0)
 
     def __str__(self):
@@ -99,7 +98,6 @@ class Service(models.Model):
 
 class Device(models.Model):
     name = models.CharField(max_length=150, db_index=True, unique=True, verbose_name='Устройство')
-    category_service = models.ForeignKey('Category_service', default=1, on_delete=models.PROTECT, verbose_name='Категория услуги', related_name='get_category_service')
     used = models.IntegerField(default=0)
 
     def __str__(self):

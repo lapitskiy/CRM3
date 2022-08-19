@@ -3,7 +3,7 @@ from django.http import HttpResponse, HttpResponseRedirect, JsonResponse
 from django.views.generic import ListView, DetailView, CreateView, FormView, TemplateView
 from django.urls import reverse_lazy
 from .forms import SimpleOrderAddForm, FastOrderAddForm, SettingDeviceAddForm, SettingServiceAddForm, SettingCategoryServiceAddForm
-from .models import Orders, Service, Device, Category_service
+from .models import Orders, Service, Device, Category_service, Status
 
 from plugins.models import Plugins
 import importlib
@@ -484,6 +484,8 @@ class SettingsView(RelatedMixin, ListView):
                 return Device.objects.all()
             if model == 'category_service':
                 return Category_service.objects.all()
+            if model == 'status':
+                return Status.objects.all()
 
         if filter_q and model:
             if model == 'service':
