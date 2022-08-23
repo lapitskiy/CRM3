@@ -46,10 +46,10 @@ class Orders(models.Model):
 
 
 class Status(models.Model):
-    name = models.CharField(max_length=150, db_index=True, unique=True, verbose_name='Наименования статуса')
+    title = models.CharField(max_length=150, db_index=True, unique=True, verbose_name='Наименования статуса')
 
     def __str__(self):
-        return self.name
+        return self.title
 
     def get_absolute_url(self):
         return reverse('status', kwargs={'status_id': self.pk})

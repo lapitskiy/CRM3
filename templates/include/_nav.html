@@ -1,45 +1,67 @@
-  <nav class="navbar navbar-expand-lg navbar-light bg-light">
-      <div class="container-fluid">
-          <a class="navbar-brand" href="{% url 'home' %}">CRM3</a>
-          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
-              <span class="navbar-toggler-icon"></span>
-          </button>
-          <div class="collapse navbar-collapse" id="navbarNavDropdown">
-              <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+<div class="menu menu-sub menu-sub-dropdown menu-column menu-rounded menu-gray-800 menu-state-bg fw-semibold w-200px pb-3" data-kt-menu="true">
+										<!--begin::Menu item-->
+                                        {% if user.is_authenticated %}
 
-                  {% if user.is_authenticated %}
-                  <li class="nav-item">
-                      <a class="nav-link" aria-current="page" href="{% url 'add_news' %}">Новости</a>
-                  </li>
+										<div class="menu-item px-3">
+											<a href="{% url 'add_news' %}" class="menu-link px-3">Новости</a>
+										</div>
+										<!--end::Menu item-->
 
+                                        {% for key, value in nav.items %}
+                                        <!--begin::Menu item-->
+										<div class="menu-item px-3">
+											<a href="{% url value.nav_url %}" class="menu-link px-3">{{value.nav_name}}</a>
+										</div>
+										<!--end::Menu item-->
+                                        {% endfor %}
 
-                  {% for key, value in nav.items %}
+                                        <!--begin::Menu separator-->
+										<div class="separator mb-3 opacity-75"></div>
+										<!--end::Menu separator-->
 
-                      <li class="nav-item">
-                          <a class="nav-link" aria-current="page" href="{% url value.nav_url %}">{{value.nav_name}}</a>
-                          </li>
-                      {% endfor %}
-                      <li class="nav-item dropdown">
-              <a class="nav-link dropdown-toggle" href="#" id="navbarDropdownMenuLink" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                Настройки
-              </a>
-              <ul class="dropdown-menu" aria-labelledby="navbarDropdownMenuLink">
-                <li><a class="dropdown-item" href="{% url 'user_home' %}">Пользователи</a></li>
-                <li><a class="dropdown-item" href="{% url 'view_plugins' %}">Плагины</a></li>
-                <li><a class="dropdown-item" href="{% url 'view_repository' %}">Репозиторий</a></li>
-              </ul>
-            </li>
-              {% else %}
-                      NOT AUTH
+										<!--begin::Menu item-->
+										<div class="menu-item px-3" data-kt-menu-trigger="hover" data-kt-menu-placement="right-start">
+											<a href="#" class="menu-link px-3">Настройки</a>
+                                            <!--begin::Menu sub-->
+                                            <div class="menu-sub menu-sub-dropdown w-175px py-2">
+                                                <!--begin::Menu item-->
+                                                <div class="menu-item">
+                                                    <a href="{% url 'user_home' %}" class="menu-link">
+                                                        <span class="menu-icon">
+                                                            <i class="bi bi-bar-chart fs-3"></i>
+                                                        </span>
+                                                        <span class="menu-title">Пользователи</span>
+                                                    </a>
+                                                </div>
+                                                <!--end::Menu item-->
+
+                                                <!--begin::Menu item-->
+                                                <div class="menu-item">
+                                                    <a href="{% url 'view_plugins' %}" class="menu-link">
+                                                        <span class="menu-icon">
+                                                            <i class="bi bi-bell fs-3"></i>
+                                                        </span>
+                                                        <span class="menu-title">Плагины</span>
+                                                    </a>
+                                                </div>
+                                                <!--end::Menu item-->
+
+                                                <!--begin::Menu item-->
+                                                <div class="menu-item">
+                                                    <a href="{% url 'view_repository' %}" class="menu-link">
+                                                        <span class="menu-icon">
+                                                            <i class="bi bi-calendar-event fs-3"></i>
+                                                        </span>
+                                                        <span class="menu-title">Репозиторий</span>
+                                                    </a>
+                                                </div>
+                                                <!--end::Menu item-->
+                                            </div>
+                                            <!--end::Menu sub-->
+                                            </div>
+										<!--end::Menu item-->
+									    </div>
+                                        {% else %}
+                      Not login
                   {% endif %}
-              </ul>
-          </div>
-          <span class="navbar-text">
- {% if user.is_authenticated %}
-      {{ user.username }} | <a href="{% url 'logout' %}">Выход</a>
- {% else %}
-     <a href="{% url 'register' %}">Register</a> | <a href="{% url 'login' %}">Login</a>
- {% endif %}
-        </span>
-      </div>
-</nav>
+

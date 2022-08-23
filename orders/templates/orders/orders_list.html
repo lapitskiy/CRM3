@@ -5,9 +5,157 @@
 {% endblock %}
 {% block content %}
 
-    <div class="row">
+                            <!--begin::Toolbar-->
+							<div class="toolbar mb-5 mb-lg-7" id="kt_toolbar">
+								<!--begin::Page title-->
+								<div class="page-title d-flex flex-column me-3">
+									<!--begin::Title-->
+									<h1 class="d-flex text-dark fw-bold my-1 fs-3">{{ title }}</h1>
+									<!--end::Title-->
+									<!--begin::Breadcrumb-->
+									<ul class="breadcrumb breadcrumb-dot fw-semibold text-gray-600 fs-7 my-1">
+										<!--begin::Item-->
+										<li class="breadcrumb-item text-gray-600">
+											<a href="/" class="text-gray-600 text-hover-primary">Заказы</a>
+										</li>
+										<!--end::Item-->
+										<!--begin::Item-->
+										<li class="breadcrumb-item text-gray-500">{{ title }}</li>
+										<!--end::Item-->
+									</ul>
+									<!--end::Breadcrumb-->
+								</div>
+								<!--end::Page title-->
+								<!--begin::Actions-->
+								<div class="d-flex align-items-center py-2 py-md-1">
+									<!--begin::Wrapper-->
+									<div class="me-3">
+										<!--begin::Menu-->
+										<a href="#" class="btn btn-light fw-bold" data-kt-menu-trigger="click" data-kt-menu-placement="bottom-end">
+										<!--begin::Svg Icon | path: icons/duotune/general/gen031.svg-->
+										<span class="svg-icon svg-icon-5 svg-icon-gray-500 me-1">
+											<svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+												<path d="M19.0759 3H4.72777C3.95892 3 3.47768 3.83148 3.86067 4.49814L8.56967 12.6949C9.17923 13.7559 9.5 14.9582 9.5 16.1819V19.5072C9.5 20.2189 10.2223 20.7028 10.8805 20.432L13.8805 19.1977C14.2553 19.0435 14.5 18.6783 14.5 18.273V13.8372C14.5 12.8089 14.8171 11.8056 15.408 10.964L19.8943 4.57465C20.3596 3.912 19.8856 3 19.0759 3Z" fill="currentColor" />
+											</svg>
+										</span>
+										<!--end::Svg Icon-->Filter</a>
+										<!--begin::Menu 1-->
+										<div class="menu menu-sub menu-sub-dropdown w-250px w-md-300px" data-kt-menu="true" id="kt_menu_62fe696a6df35">
+											<!--begin::Header-->
+											<div class="px-7 py-5">
+												<div class="fs-5 text-dark fw-bold">Filter Options</div>
+											</div>
+											<!--end::Header-->
+											<!--begin::Menu separator-->
+											<div class="separator border-gray-200"></div>
+											<!--end::Menu separator-->
+											<!--begin::Form-->
+											<div class="px-7 py-5">
+												<!--begin::Input group-->
+												<div class="mb-10">
+													<!--begin::Label-->
+													<label class="form-label fw-semibold">Status:</label>
+													<!--end::Label-->
+													<!--begin::Input-->
+													<div>
+														<select class="form-select form-select-solid" data-kt-select2="true" data-placeholder="Select option" data-dropdown-parent="#kt_menu_62fe696a6df35" data-allow-clear="true">
+															<option></option>
+															<option value="1">Approved</option>
+															<option value="2">Pending</option>
+															<option value="2">In Process</option>
+															<option value="2">Rejected</option>
+														</select>
+													</div>
+													<!--end::Input-->
+												</div>
+												<!--end::Input group-->
+												<!--begin::Input group-->
+												<div class="mb-10">
+													<!--begin::Label-->
+													<label class="form-label fw-semibold">Member Type:</label>
+													<!--end::Label-->
+													<!--begin::Options-->
+													<div class="d-flex">
+														<!--begin::Options-->
+														<label class="form-check form-check-sm form-check-custom form-check-solid me-5">
+															<input class="form-check-input" type="checkbox" value="1" />
+															<span class="form-check-label">Author</span>
+														</label>
+														<!--end::Options-->
+														<!--begin::Options-->
+														<label class="form-check form-check-sm form-check-custom form-check-solid">
+															<input class="form-check-input" type="checkbox" value="2" checked="checked" />
+															<span class="form-check-label">Customer</span>
+														</label>
+														<!--end::Options-->
+													</div>
+													<!--end::Options-->
+												</div>
+												<!--end::Input group-->
+												<!--begin::Input group-->
+												<div class="mb-10">
+													<!--begin::Label-->
+													<label class="form-label fw-semibold">Notifications:</label>
+													<!--end::Label-->
+													<!--begin::Switch-->
+													<div class="form-check form-switch form-switch-sm form-check-custom form-check-solid">
+														<input class="form-check-input" type="checkbox" value="" name="notifications" checked="checked" />
+														<label class="form-check-label">Enabled</label>
+													</div>
+													<!--end::Switch-->
+												</div>
+												<!--end::Input group-->
+												<!--begin::Actions-->
+												<div class="d-flex justify-content-end">
+													<button type="reset" class="btn btn-sm btn-light btn-active-light-primary me-2" data-kt-menu-dismiss="true">Reset</button>
+													<button type="submit" class="btn btn-sm btn-primary" data-kt-menu-dismiss="true">Apply</button>
+												</div>
+												<!--end::Actions-->
+											</div>
+											<!--end::Form-->
+										</div>
+										<!--end::Menu 1-->
+										<!--end::Menu-->
+									</div>
+									<!--end::Wrapper-->
+									<!--begin::Button-->
+									<a href="#" class="btn btn-dark fw-bold" data-bs-toggle="modal" data-bs-target="#kt_modal_create_app" id="kt_toolbar_primary_button">Create</a>
+									<!--end::Button-->
+								</div>
+								<!--end::Actions-->
+							</div>
+							<!--end::Toolbar-->
+
+							<!--begin::Post-->
+							<div class="content flex-column-fluid" id="kt_content">
+								<!--begin::About card-->
+								<div class="card">
+									<!--begin::Body-->
+									<div class="card-body p-5 px-lg-19 py-lg-16">
+										<!--begin::Content main-->
+										<div class="mb-14">
+											<!--begin::Heading-->
+											<div class="mb-15">
+												<!--begin::Title-->
+												<h1 class="fs-2x text-dark mb-6">{{ title }}</h1>
+												<!--end::Title-->
+												<!--begin::Text-->
+												<div class="fs-5 text-gray-600 fw-semibold">В списке заказов для каждого заказа отображается информация</div>
+												<!--end::Text-->
+
+
+
+
+
+											</div>
+											<!--end::Heading-->
+											<!--begin::Body-->
+											<!--begin::ORDERS-->
+											<div class="mb-15">
+
+	   <div class="row">
         <div class="col-4">
-            <div class="list-group" id="list-tab" role="tablist">
+            <div class="list-group list-group-flush" id="list-tab" role="tablist">
                 {% for item in page_obj %}
                     <a class="list-group-item list-group-item-action" id="list-{{ item.pk }}" data-bs-toggle="list" href="#id-list-{{ item.pk }}" role="tab" aria-controls="home">Заказ {{ item.pk }}</a>
                 {% endfor %}
@@ -22,41 +170,44 @@
                     {% else %}
                         <div class="tab-pane fade show" id="id-list-{{ item.pk }}" role="tabpanel" aria-labelledby="list-{{ item.pk }}">
                     {% endif %}
-
-                <div class="shadow p-3 mb-5 bg-body rounded">
-                    <div class="card border-light" >
-                                <div class="card-header bg-gradient">Заказ: <span class="badge rounded-pill bg-info text-dark">{{ item.pk }}</span> | Статус: <span class="badge rounded-pill bg-warning text-dark"> {{ item.status }}</span>  | Дата: <span class="badge rounded-pill bg-dark"> {{ item.created_at }}</span></div>
-                                <div class="card-body">
+<div class="card shadow-sm">
+    <div class="card-header">
+        <h3 class="card-title">Заказ:&nbsp;<b>{{ item.pk }}</b></h3>
+        <div class="card-toolbar">
+            Статус: &nbsp;<span class="badge rounded-pill bg-warning text-dark"> {{ item.status }}</span>
+            &nbsp; Дата: &nbsp;<span class="badge rounded-pill bg-dark"> {{ item.created_at }} </span>&nbsp;&nbsp;
+            <button type="button" class="btn btn-sm btn-light">
+               Редактировать
+            </button>
+        </div>
+    </div>
+    <div class="card-body">
                                     В ремонте устройство: {{ item.device }}<br>
                                     Услуга: {{ item.service }}<br>
                                     Серийный: {{ item.serial }}<br>
                                     Комментарий: {{ item.comment }}<br>
                                     Категория: {{ item.category }}<br>
                                     Приемщик: {{ item.related_user }}<br>
-
-                                </div>
-                            </div>
                             {% for related_item in related_list %}
                                 {% for order_uuid_key, order_uuid_value in item.related_uuid.items %}
 
                                     {% if related_item.related_uuid and order_uuid_key == related_item.related_uuid and related_item.related_use == 'form' %}
-                                        <div class="card border-light" >
-                                            <div class="card-header">{{ related_item.module_name }}</div>
-                                            <div class="card-body">
+                                        <br><b>{{ related_item.module_name }}</b><br>
                                                 {% for key, value in related_item.items %}
                                                     {% if key != 'related_uuid' and key != 'module_name' and key != 'related_use' %}
                                                         {{ key }}: {{ value }}<br>
                                                     {% endif %}
                                                 {% endfor %}
-                                            </div>
-                                        </div>
                                     {% endif %}
                                 {% endfor %}
                             {% endfor %}
 
-                <div class="card border-light" >
-                                            <div class="card-header">Дополнительные данные</div>
-                                            <div class="card-body">
+
+
+
+    </div>
+    <div class="card-footer">
+<b>Дополнительные данные</b><br>
                             {% for related_item in related_list %}
                                 {% for order_uuid_key, order_uuid_value in item.related_uuid.items %}
                                     {% if related_item.related_uuid and order_uuid_key == related_item.related_uuid %}
@@ -75,13 +226,10 @@
                                 {% endfor %}
                             {% endfor %}
 
-                                            </div>
-                                        </div>
+    </div>
+</div>
 
-                                                    <div class="d-flex justify-content-end">
-                                <a href="edit/{{ item.pk }}"><button type="button" class="btn btn-secondary">Редактировать</button></a>
-                            </div><br>
-                        </div>
+
                     </div>
                 {% endfor %}
             </div>
@@ -119,8 +267,62 @@
             {% endif %}
         </ul>
     </nav>
+											</div>
+											<!--end::ORDERS-->
+											<!--end::Body-->
+										</div>
+										<!--end::Content main-->
+									</div>
+									<!--end::Body-->
+								</div>
+								<!--end::About card-->
+							</div>
+							<!--end::Post-->
+							<!--begin::Footer-->
+							<div class="footer py-4 d-flex flex-column flex-md-row flex-stack" id="kt_footer">
+								<!--begin::Copyright-->
+								<div class="text-dark order-2 order-md-1">
+									<span class="text-muted fw-semibold me-1">2022&copy;</span>
+									<a href="/" target="_blank" class="text-gray-800 text-hover-primary">Pipe crm</a>
+								</div>
+								<!--end::Copyright-->
+								<!--begin::Menu-->
+								<ul class="menu menu-gray-600 menu-hover-primary fw-semibold order-1">
+									<li class="menu-item">
+										<a href="https://keenthemes.com" target="_blank" class="menu-link px-2">About</a>
+									</li>
+									<li class="menu-item">
+										<a href="https://devs.keenthemes.com" target="_blank" class="menu-link px-2">Support</a>
+									</li>
+									<li class="menu-item">
+										<a href="https://1.envato.market/EA4JP" target="_blank" class="menu-link px-2">Purchase</a>
+									</li>
+								</ul>
+								<!--end::Menu-->
+							</div>
+							<!--end::Footer-->
 
 
-    TYT
-    {{ related_list }}
+
+
+<!--begin::Accordion-->
+<div class="accordion accordion-icon-toggle" id="kt_accordion_2">
+    <!--begin::Item-->
+    <div class="mb-5">
+        <!--begin::Header-->
+        <div class="accordion-header py-3 d-flex" data-bs-toggle="collapse" data-bs-target="#kt_accordion_2_item_1">
+            <span class="accordion-icon"><span class="svg-icon svg-icon-4"><svg>...</svg></span></span>
+            <h3 class="fs-4 fw-semibold mb-0 ms-4">Related data for coders</h3>
+        </div>
+        <!--end::Header-->
+
+        <!--begin::Body-->
+        <div id="kt_accordion_2_item_1" class="fs-6 collapse show ps-10" data-bs-parent="#kt_accordion_2">
+            {{ related_list }}
+        </div>
+        <!--end::Body-->
+    </div>
+    <!--end::Item-->
+</div>
+<!--end::Accordion-->
 {% endblock %}
