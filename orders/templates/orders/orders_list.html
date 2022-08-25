@@ -177,7 +177,7 @@
             Статус: &nbsp;<span class="badge rounded-pill bg-warning text-dark"> {{ item.status }}</span>
             &nbsp; Дата: &nbsp;<span class="badge rounded-pill bg-dark"> {{ item.created_at }} </span>&nbsp;&nbsp;
             <button type="button" class="btn btn-sm btn-light">
-               Редактировать
+                <a href="edit/{{ item.pk }}">Редактировать</a>
             </button>
         </div>
     </div>
@@ -312,7 +312,7 @@
         <!--begin::Header-->
         <div class="accordion-header py-3 d-flex" data-bs-toggle="collapse" data-bs-target="#kt_accordion_2_item_1">
             <span class="accordion-icon"><span class="svg-icon svg-icon-4"><svg>...</svg></span></span>
-            <h3 class="fs-4 fw-semibold mb-0 ms-4">Related data for coders</h3>
+            <h3 class="fs-4 fw-semibold mb-0 ms-4">Related data</h3>
         </div>
         <!--end::Header-->
 

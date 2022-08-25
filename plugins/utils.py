@@ -210,12 +210,14 @@ class RelatedMixin(object):
 
     # return uuid related list for search query
     def relatedDeleteMultipleUuid(self, **kwargs):
-        if kwargs['dictt']:
+        if 'dictt' in kwargs:
             dictt = kwargs['dictt']
+            print('dictt', dictt)
             dictt['deleteuuid'] = kwargs['deleteUuid']
-            imp_related = importlib.import_module(dictt['module'] + '.related')
-            getrelatedClass = getattr(imp_related, 'AppRelated')
-            relatedClass = getrelatedClass()
+            #imp_related = importlib.import_module(dictt['module'] + '.related')
+            #getrelatedClass = getattr(imp_related, 'AppRelated')
+            #relatedClass = getrelatedClass()
+            relatedClass = dictt['class']
             relatedClass.deleteRelatedMultipleUuid(dictt=dictt)
 
 
