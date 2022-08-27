@@ -2,7 +2,7 @@
 <html lang="en">
 	<!--begin::Head-->
 	<head>
-		<title>{% block title %}CRM3{% endblock %}</title>
+		<title>{% block title %}HUB CRM{% endblock %}</title>
 		<meta charset="utf-8" />
 		<meta name="viewport" content="width=device-width, initial-scale=1" />
 		<link rel="shortcut icon" href="{% static 'assets/media/logos/favicon.ico' %}" />
@@ -59,14 +59,14 @@
 								<!--end::Aside  toggle-->
 								<!--begin::Logo-->
 								<a href="/">
-									<img alt="Logo" src="{% static 'assets/media/logos/default-small.svg' %}" class="h-25px h-lg-30px" />
+									<img alt="Logo" src="{% static 'assets/media/logos/hub.webp' %}" class="h-25px h-lg-30px" />
 								</a>
 								<!--end::Logo-->
 								<!--begin::Nav-->
 								<div class="ms-5 ms-md-10">
 									<!--begin::Toggle-->
 									<button type="button" class="btn btn-flex btn-active-color-white align-items-cenrer justify-content-center justify-content-md-between align-items-lg-cenrer flex-md-content-between bg-white bg-opacity-10 btn-color-gray-600 px-0 ps-md-6 pe-md-5 h-30px w-30px h-md-35px w-md-200px" data-kt-menu-trigger="click" data-kt-menu-placement="bottom-start">
-										<span class="d-none d-md-inline">PIPE crm</span>
+										<span class="d-none d-md-inline">HUB crm</span>
 										<!--begin::Svg Icon | path: icons/duotune/arrows/arr072.svg-->
 										<span class="svg-icon svg-icon-4 ms-md-4 me-0">
 											<svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -629,19 +629,21 @@
 									<!--end::Menu-->
 								</div>
 								<!--end::Theme mode-->
+
 								<!--begin::User-->
+                                {% if user.is_authenticated %}
 								<div class="d-flex align-items-center ms-1" id="kt_header_user_menu_toggle">
 									<!--begin::User info-->
 									<div class="btn btn-flex align-items-center bg-hover-white bg-hover-opacity-10 py-2 px-2 px-md-3" data-kt-menu-trigger="click" data-kt-menu-attach="parent" data-kt-menu-placement="bottom-end">
 										<!--begin::Name-->
 										<div class="d-none d-md-flex flex-column align-items-end justify-content-center me-2 me-md-4">
-											<span class="text-muted fs-8 fw-semibold lh-1 mb-1">Max</span>
-											<span class="text-white fs-8 fw-bold lh-1">UX Designer</span>
+											<span class="text-muted fs-8 fw-semibold lh-1 mb-1">{{ user.username }}</span>
+											<span class="text-white fs-8 fw-bold lh-1">Мастер</span>
 										</div>
 										<!--end::Name-->
 										<!--begin::Symbol-->
 										<div class="symbol symbol-30px symbol-md-40px">
-											<img src="#" alt="image" />
+											<img src="{% static 'assets/media/avatars/blank.png' %}" alt="image" />
 										</div>
 										<!--end::Symbol-->
 									</div>
@@ -653,14 +655,14 @@
 											<div class="menu-content d-flex align-items-center px-3">
 												<!--begin::Avatar-->
 												<div class="symbol symbol-50px me-5">
-													<img alt="Logo" src="#" />
+													<img alt="Logo" src="{% static 'assets/media/avatars/blank.png' %}" />
 												</div>
 												<!--end::Avatar-->
 												<!--begin::Username-->
 												<div class="d-flex flex-column">
-													<div class="fw-bold d-flex align-items-center fs-5">Max Smith
+													<div class="fw-bold d-flex align-items-center fs-5">{{ user.username }}
 													<span class="badge badge-light-success fw-bold fs-8 px-2 py-1 ms-2">Pro</span></div>
-													<a href="#" class="fw-semibold text-muted text-hover-primary fs-7">max@kt.com</a>
+													<a href="#" class="fw-semibold text-muted text-hover-primary fs-7">mail@mail.com</a>
 												</div>
 												<!--end::Username-->
 											</div>
@@ -774,12 +776,15 @@
 										<!--end::Menu item-->
 										<!--begin::Menu item-->
 										<div class="menu-item px-5">
-											<a href="../../demo14/dist/authentication/layouts/corporate/sign-in.html" class="menu-link px-5">Sign Out</a>
+											<a href="{% url 'logout' %}" class="menu-link px-5">Sign Out</a>
 										</div>
 										<!--end::Menu item-->
 									</div>
 									<!--end::User account menu-->
 								</div>
+                                {% else %}
+                                <a href="{% url 'register' %}">Register</a> | <a href="{% url 'login' %}">Login</a>
+                                {% endif %}
 								<!--end::User -->
 							</div>
 							<!--end::Topbar-->

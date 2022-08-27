@@ -57,6 +57,8 @@ def user_login(request):
             return redirect('home')
     else:
         form = UserLoginForm()
+
+    print('form ', form.as_p())
     return render(request, 'users/login.html', {"form": form})
 
 
