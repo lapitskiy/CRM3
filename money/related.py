@@ -73,3 +73,7 @@ class AppRelated(object):
         form_add.related_uuid = related_dict['uuid']
         form_add.save()
         print('form save - ', self.prefix)
+
+    def linkGetReleatedData(self, **kwargs):
+        uudi_filter_related_list = []
+        return uudi_filter_related_list

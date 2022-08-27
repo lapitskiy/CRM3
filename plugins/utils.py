@@ -45,8 +45,6 @@ class RelatedMixin(object):
                 if relatedClass.passCleanQueryset():
                     continue
                 queryset = relatedClass.checkCleanQueryset(queryset=kwargs['queryset'], request=kwargs['request'])
-                print('отрработало ', x.module_name)
-                print('result_queryset ', queryset)
         return queryset
 
     # [RU] возвращает все связанные формы для edit GET
@@ -325,7 +323,7 @@ class RelatedMixin(object):
                     getrelatedClass = getattr(imp_related, 'AppRelated')
                     relatedClass = getrelatedClass()
                     _dict['module'] = x.module_name
-
+                    print('module' , _dict['module'])
                     _dict['relateddata'] = self.dictUuidToList(relatedClass.linkGetReleatedData(request_get=request_get))
                     related_dict[x.module_name] = _dict
                 return related_dict

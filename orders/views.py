@@ -33,7 +33,6 @@ class OrdersHomeView(RelatedMixin, ListView):
     def get_queryset(self):
         queryset = self.getQuery()
         list_orders = self.getCleanQueryset(queryset=queryset, request=self.request)
-        print('list_orders ', list_orders)
         return list_orders
 
     def get_context_data(self, *, object_list=None, **kwargs):
@@ -52,7 +51,6 @@ class OrdersHomeView(RelatedMixin, ListView):
         except EmptyPage:
             orders_page = paginator.page(paginator.num_pages)
         context['related_list'] = self.getDataListRelated(page=orders_page)
-        print('context ', context)
         return context
 
     def post(self, request, *args, **kwargs):
@@ -185,7 +183,7 @@ class OrderAddView(RelatedMixin, TemplateView):
             '''
             return HttpResponseRedirect(reverse_lazy('orders_home'))
         else:
-            return self.form_invalid(formOne, is_valid_related_form_dict['related_form'], **kwargs)
+            return self.form_invalid(formOne, iis_valid_related_dict['form'], **kwargs)
 
 
     def ajaxConvert(self):

@@ -3,6 +3,9 @@ from .models import Money
 from decimal import Decimal
 from plugins.utils import RelatedMixin
 from django.db.models import Q
+from django.core.paginator import Paginator
+from django.core.paginator import EmptyPage
+from django.core.paginator import PageNotAnInteger
 
 class MoneyHomeView(RelatedMixin, ListView):
     model = Money
@@ -18,11 +21,24 @@ class MoneyHomeView(RelatedMixin, ListView):
         context = super().get_context_data(**kwargs)
         context['info'] = self.getInfo(self.getQuery())
         context['title'] = 'Деньги'
+        list_orders = self.get_queryset()
+        paginator = Paginator(list_orders, self.paginate_by)
+        page = self.request.GET.get('page')
+        try:
+            orders_page = paginator.page(page)
+        except PageNotAnInteger:
+            page = 1
+            orders_page = paginator.page(page)
+        except EmptyPage:
+            orders_page = paginator.page(paginator.num_pages)
         #print('context info', context['info'])
         return context
 
     def getQuery(self):
         if self.request.GET.get('relateddata'):
+            if self.request.GET.get('date'):
+                date_get = self.request.GET.get('date')
+
             relatedListUuid = self.relatedPostGetData(request_get=self.request.GET)
             # нужно вернуть uuid по relateddata и сформировать query по Money.object
             print('relatedListUuid', relatedListUuid)

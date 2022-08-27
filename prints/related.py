@@ -46,3 +46,6 @@ class AppRelated(object):
 
     def saveForm(self, **kwargs):
         pass
+
+    def linkGetReleatedData(self, **kwargs):
+        pass

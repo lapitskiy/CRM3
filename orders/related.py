@@ -3,6 +3,7 @@ from django.core.exceptions import ObjectDoesNotExist
 from django.db.models import Q
 from plugins.utils import RelatedMixin
 import ast
+from datetime import datetime, timedelta
 
 
 class AppRelated():
@@ -76,7 +77,9 @@ class AppRelated():
                     date__range = ["2011-01-01", "2011-01-31"]
                     if request_get['date'] and request_get['date2']:
                         print('DVE DATE')
-                        related_result = Orders.objects.filter(created_at__range=[request_get['date'],request_get['date2']])
+                        end_date = datetime.strptime(request_get['date2'], '%Y-%m-%d') + timedelta(days=1)
+                        print('end_date ', end_date)
+                        related_result = Orders.objects.filter(created_at__range=[request_get['date'],end_date])
                         #(Q(created_at__lte=request_get['date']) & Q(created_at__gte=request.POST['start_date'])
                     if request_get['date'] and not request_get['date2']:
                         print('TOLKO DATE 1')
