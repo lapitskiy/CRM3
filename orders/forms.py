@@ -1,7 +1,8 @@
 from django import forms
-from .models import Orders, Service, Device, Category_service
+from .models import Orders, Service, Device, Category_service, Status
 import re
 from django.core.exceptions import ValidationError, ObjectDoesNotExist
+from .utils import getActiveStatus
 
 #fields
 class ListTextWidget(forms.Select):
@@ -23,6 +24,14 @@ class SimpleOrderAddForm(forms.ModelForm):
     #service = forms.ModelChoiceField(queryset=Service.objects.all(), widget=ListTextWidget())
     service = ChoiceTxtField(queryset=Service.objects.order_by('-used'))
     device = ChoiceTxtField(queryset=Device.objects.order_by('-used'))
+
+    def __init__(self, *args, **kwargs):
+        self.request = kwargs.pop('request', None)
+        super(SimpleOrderAddForm, self).__init__(*args, **kwargs)
+        self.fields['status'].queryset = getActiveStatus()
+        status_excluded = ['',]
+        self.fields['status'].choices = [(k, v) for k, v in self.fields['status'].choices if k not in status_excluded]
+        self.fields['category_service'].choices = [(k, v) for k, v in self.fields['category_service'].choices if k not in status_excluded]
 
     class Meta:
         model = Orders
@@ -107,6 +116,26 @@ class SettingCategoryServiceAddForm(forms.ModelForm):
 
     def clean_name(self):
         name = self.cleaned_data['name']
+        if re.match(r'\d', name):
+            raise ValidationError('Название не должно начинаться с цифры')
+        if not name[0].isupper():
+            raise ValidationError('Название не должно начинаться с маленькой буквы')
+        return name
+
+class SettingStatusAddForm(forms.ModelForm):
+    class Meta:
+        model = Status
+        fields = ['title', 'active_creation']
+        widgets = {
+            'title': forms.TextInput(attrs={'class': 'form-control', 'autocomplete': 'off'}),
+            'active_creation': forms.CheckboxInput(),
+        }
+        labels = {
+            'active_creation': 'Активно при создании заказа',
+        }
+
+    def clean_name(self):
+        name = self.cleaned_data['title']
         if re.match(r'\d', name):
             raise ValidationError('Название не должно начинаться с цифры')
         if not name[0].isupper():

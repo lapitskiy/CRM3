@@ -2,7 +2,7 @@ from django.shortcuts import render, get_object_or_404, redirect
 from django.http import HttpResponse, HttpResponseRedirect, JsonResponse
 from django.views.generic import ListView, DetailView, CreateView, FormView, TemplateView
 from django.urls import reverse_lazy
-from .forms import SimpleOrderAddForm, FastOrderAddForm, SettingDeviceAddForm, SettingServiceAddForm, SettingCategoryServiceAddForm
+from .forms import SimpleOrderAddForm, FastOrderAddForm, SettingDeviceAddForm, SettingServiceAddForm, SettingCategoryServiceAddForm, SettingStatusAddForm
 from .models import Orders, Service, Device, Category_service, Status
 
 from plugins.models import Plugins
@@ -13,7 +13,7 @@ from django.core.paginator import EmptyPage
 from django.core.paginator import PageNotAnInteger
 from django.core.exceptions import ObjectDoesNotExist
 from django.db import connection
-from django.db.models import Q
+from django.db.models import Q, F
 from plugins.utils import RelatedMixin
 import json
 from django.forms.models import model_to_dict
@@ -159,6 +159,7 @@ class OrderAddView(RelatedMixin, TemplateView):
             form_one = formOne.save(commit=False)
             #print('form.cleaned_data', form_update.cleaned_data['category'])
             form_one.category_id = self.getCategory()
+            self.increaseUsed(category_service=form_one.category_service)
             form_one.related_uuid = related_uuid
             form_one.related_user = request.user
             form_one.save()
@@ -183,7 +184,7 @@ class OrderAddView(RelatedMixin, TemplateView):
             '''
             return HttpResponseRedirect(reverse_lazy('orders_home'))
         else:
-            return self.form_invalid(formOne, iis_valid_related_dict['form'], **kwargs)
+            return self.form_invalid(formOne, is_valid_related_dict['form'], **kwargs)
 
 
     def ajaxConvert(self):
@@ -202,13 +203,6 @@ class OrderAddView(RelatedMixin, TemplateView):
                 pass
         return postCopy
 
-
-
-
-
-
-        return tag
-
     def getVar(self):
         category_filter = self.request.GET.get('category')
         if category_filter:
@@ -222,6 +216,15 @@ class OrderAddView(RelatedMixin, TemplateView):
         if category_filter == 'simple':
             return 2
         return 1
+
+    def increaseUsed(self, **kwargs):
+        if 'category_service' in kwargs:
+            cat = Category_service.objects.get(name=kwargs['category_service'])
+            cat.used = F('used') + 1
+            cat.save()
+
+
+
 
     def getForm(self):
         category_filter = self.request.GET.get('category')
@@ -534,6 +537,8 @@ class SettingsAddView(TemplateView):
                 return SettingDeviceAddForm
             if getadd == 'category_service':
                 return SettingCategoryServiceAddForm
+            if getadd == 'status':
+                return SettingStatusAddForm
 
     def getPostForm(self, req):
         getadd = self.request.GET.get('model')
@@ -544,6 +549,8 @@ class SettingsAddView(TemplateView):
                 return SettingDeviceAddForm(req, prefix='add_form')
             if getadd == 'category_service':
                 return SettingCategoryServiceAddForm(req, prefix='add_form')
+            if getadd == 'status':
+                return SettingStatusAddForm(req, prefix='add_form')
 
 
     def form_invalid(self, formAdd, **kwargs):
@@ -594,6 +601,9 @@ class SettingsEditView(TemplateView):
             if getmodel == 'category_service':
                 get_id = Category_service.objects.get(pk=self.request.GET.get('id'))
                 return SettingCategoryServiceAddForm(instance=get_id)
+            if getmodel == 'status':
+                get_id = Status.objects.get(pk=self.request.GET.get('id'))
+                return SettingStatusAddForm(instance=get_id)
 
     def getPostForm(self):
         getedit = self.request.GET.get('model')
@@ -604,3 +614,6 @@ class SettingsEditView(TemplateView):
             if getedit == 'device':
                 get_id = Device.objects.get(pk=self.request.GET.get('id'))
                 return SettingDeviceAddForm(self.request.POST, prefix='edit_form', instance=get_id)
+            if getedit == 'status':
+                get_id = Status.objects.get(pk=self.request.GET.get('id'))
+                return SettingStatusAddForm(self.request.POST, prefix='edit_form', instance=get_id)

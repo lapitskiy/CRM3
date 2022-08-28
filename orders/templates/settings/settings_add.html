@@ -10,7 +10,7 @@
     <form action="{% url 'settings_add'%}?model={{ model }}" method="post">
         {% csrf_token %}
         {{ formAdd.non_field_errors }}
-        {{ formAdd }}
+        {{ formAdd.as_p }}
         <button type="submit" class="btn btn-primary btn-block">Добавить</button>
     </form>
 

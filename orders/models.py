@@ -47,6 +47,7 @@ class Orders(models.Model):
 
 class Status(models.Model):
     title = models.CharField(max_length=150, db_index=True, unique=True, verbose_name='Наименования статуса')
+    active_creation = models.BooleanField(default=False)
 
     def __str__(self):
         return self.title
