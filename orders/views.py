@@ -230,9 +230,9 @@ class OrderAddView(RelatedMixin, TemplateView):
         category_filter = self.request.GET.get('category')
         if category_filter:
             if category_filter == 'simple':
-                return SimpleOrderAddForm
+                return SimpleOrderAddForm(request=self.request)
             if category_filter == 'fast':
-                return FastOrderAddForm
+                return FastOrderAddForm(request=self.request)
 
     def getPostForm(self, req):
         category_filter = self.request.GET.get('category')
@@ -617,3 +617,6 @@ class SettingsEditView(TemplateView):
             if getedit == 'status':
                 get_id = Status.objects.get(pk=self.request.GET.get('id'))
                 return SettingStatusAddForm(self.request.POST, prefix='edit_form', instance=get_id)
+            if getedit == 'category_service':
+                get_id = Category_service.objects.get(pk=self.request.GET.get('id'))
+                return SettingCategoryServiceAddForm(self.request.POST, prefix='edit_form', instance=get_id)

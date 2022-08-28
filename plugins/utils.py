@@ -6,9 +6,16 @@ from django.db.models import Q
 class RelatedMixin(object):
     related_module_name = ''
 
-    # [RU] возвращает все связанные приложения
-    # [EN] list related apps
     def checkRelated(self):
+        """Проверка связанных данных
+
+        Функция возвращает все связанные приложения с указанным приложеним в переменной related_module_name.
+        Возвращется ввиде обьекта related = Plugins.objects.get(module_name=self.related_module_name)
+        то есть список из модели manytomany, который потом обычным перебором проверять.
+        Пример в приложении orders в views
+
+        :rtype: object
+        """
         related = Plugins.objects.get(module_name=self.related_module_name)
         return related.related.all()
 

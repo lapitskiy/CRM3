@@ -2,14 +2,13 @@ from django import forms
 from .models import Orders, Service, Device, Category_service, Status
 import re
 from django.core.exceptions import ValidationError, ObjectDoesNotExist
-from .utils import getActiveStatus
+from .utils import getActiveStatus, getCategoryServicePermission
 
 #fields
 class ListTextWidget(forms.Select):
     template_name = 'include/_forms_orders_datalist.html'
 
     def format_value(self, value):
-        # Copied from forms.Input - makes sure value is rendered properly
         if value == '' or value is None:
             return ''
         if self.is_localized:
@@ -29,6 +28,7 @@ class SimpleOrderAddForm(forms.ModelForm):
         self.request = kwargs.pop('request', None)
         super(SimpleOrderAddForm, self).__init__(*args, **kwargs)
         self.fields['status'].queryset = getActiveStatus()
+        self.fields['category_service'].queryset = getCategoryServicePermission(user=self.request.user)
         status_excluded = ['',]
         self.fields['status'].choices = [(k, v) for k, v in self.fields['status'].choices if k not in status_excluded]
         self.fields['category_service'].choices = [(k, v) for k, v in self.fields['category_service'].choices if k not in status_excluded]
@@ -63,6 +63,12 @@ class SimpleOrderAddForm(forms.ModelForm):
 class FastOrderAddForm(forms.ModelForm):
     service = ChoiceTxtField(queryset=Service.objects.all().order_by('-id'))
     device = ChoiceTxtField(queryset=Device.objects.all().order_by('-id'))
+
+
+    def __init__(self, *args, **kwargs):
+        self.request = kwargs.pop('request', None)
+        super(FastOrderAddForm, self).__init__(*args, **kwargs)
+
 
     class Meta:
         model = Orders
@@ -108,7 +114,7 @@ class SettingDeviceAddForm(forms.ModelForm):
 class SettingCategoryServiceAddForm(forms.ModelForm):
     class Meta:
         model = Category_service
-        fields = ['name','category']
+        fields = ['name','category','user_permission']
         widgets = {
             'name': forms.TextInput(attrs={'class': 'form-control', 'autocomplete': 'off'}),
             'category': forms.TextInput(attrs={'class': 'form-control', 'autocomplete': 'off'}),
