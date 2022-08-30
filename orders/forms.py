@@ -68,13 +68,18 @@ class FastOrderAddForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         self.request = kwargs.pop('request', None)
         super(FastOrderAddForm, self).__init__(*args, **kwargs)
+        self.fields['category_service'].queryset = getCategoryServicePermission(user=self.request.user)
+        status_excluded = ['',]
+        self.fields['category_service'].choices = [(k, v) for k, v in self.fields['category_service'].choices if k not in status_excluded]
+
 
 
     class Meta:
         model = Orders
-        fields = ['device', 'serial', 'service']
+        fields = ['device', 'serial', 'service', 'category_service']
         widgets = {
             'serial': forms.TextInput(attrs={'class': 'form-control', 'autocomplete':'off'}),
+            'category_service': forms.Select(attrs={'class': 'form-control', 'autocomplete': 'on'}),
         }
 
 

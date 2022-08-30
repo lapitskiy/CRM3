@@ -161,9 +161,17 @@
                     {% endif %}
 <div class="card shadow-sm">
     <div class="card-header">
-        <h3 class="card-title">Заказ:&nbsp;<b>{{ item.pk }}</b></h3>
+        <h3 class="card-title">
+            {% if item.category.title == "fast" %}
+                Услуга на месте:&nbsp;<br>
+            {% else %}
+                Заказ в ремонт:&nbsp;<br>
+            {% endif %}
+            <b>{{ item.pk }}</b></h3>
         <div class="card-toolbar">
-            Статус: &nbsp;<span class="badge rounded-pill bg-warning text-dark"> {{ item.status }}</span>
+            {% if item.category.title == "simple" %}
+                Статус: &nbsp;<span class="badge rounded-pill bg-warning text-dark"> {{ item.status }}</span>
+            {% endif %}
             &nbsp; Дата: &nbsp;<span class="badge rounded-pill bg-dark"> {{ item.created_at }} </span>&nbsp;&nbsp;
             <button type="button" class="btn btn-sm btn-light">
                 <a href="edit/{{ item.pk }}">Редактировать</a>
@@ -175,8 +183,9 @@
                                     В ремонте: {{ item.device }}<br>
                                     Услуга: {{ item.service }}<br>
                                     Серийный: {{ item.serial }}<br>
-                                    Комментарий: {{ item.comment }}<br>
-                                    Категория: {{ item.category }}<br>
+            {% if item.category.title == "simple" %}
+                    Комментарий: {{ item.comment }}<br>
+                {% endif %}
                                     Приемщик: {{ item.related_user }}<br>
                             {% for related_item in related_list %}
                                 {% for order_uuid_key, order_uuid_value in item.related_uuid.items %}

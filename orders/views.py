@@ -138,7 +138,7 @@ class OrderAddView(RelatedMixin, TemplateView):
 
     def post(self, request, *args, **kwargs):
         postCopy = self.ajaxConvert()
-        formOne = self.getPostForm(postCopy)
+        formOne = self.getPostForm(request=self.request, postcopy=postCopy)
         related_form_dict, is_valid_related_dict = self.checkRelatedFormDict(self.request.POST, doing='add', request=self.request)
         #print('related_isValid_dict', related_isValid_dict)
         #related = self.checkRelated()
@@ -234,13 +234,13 @@ class OrderAddView(RelatedMixin, TemplateView):
             if category_filter == 'fast':
                 return FastOrderAddForm(request=self.request)
 
-    def getPostForm(self, req):
+    def getPostForm(self, **kwargs):
         category_filter = self.request.GET.get('category')
         if category_filter:
             if category_filter == 'simple':
-                return SimpleOrderAddForm(req, prefix='one_form')
+                return SimpleOrderAddForm(kwargs['postcopy'], request=self.request, prefix='one_form')
             if category_filter == 'fast':
-                return FastOrderAddForm(req, prefix='one_form')
+                return FastOrderAddForm(kwargs['postcopy'], request=self.request, prefix='one_form')
 
 
     def form_invalid(self, formOne, form_list, **kwargs):
