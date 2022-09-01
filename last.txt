@@ -15,3 +15,5 @@ https://medium.com/analytics-vidhya/django-how-to-pass-the-user-object-into-form
 в каждом приложении добавить saveform и оформить его соотвественно
 17.08:
 category_service добавил в модели orders, чтобы можно было искать под каждую категорию услуги и устройста
+31.08:
+переписать datalist. убрал value, остался только name в ajax

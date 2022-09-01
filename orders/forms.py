@@ -21,8 +21,8 @@ class ChoiceTxtField(forms.ModelChoiceField):
 #forms
 class SimpleOrderAddForm(forms.ModelForm):
     #service = forms.ModelChoiceField(queryset=Service.objects.all(), widget=ListTextWidget())
-    service = ChoiceTxtField(queryset=Service.objects.order_by('-used'))
-    device = ChoiceTxtField(queryset=Device.objects.order_by('-used'))
+    service = ChoiceTxtField(queryset=Service.objects.order_by('-used')[:5])
+    device = ChoiceTxtField(queryset=Device.objects.order_by('-used')[:5])
 
     def __init__(self, *args, **kwargs):
         self.request = kwargs.pop('request', None)

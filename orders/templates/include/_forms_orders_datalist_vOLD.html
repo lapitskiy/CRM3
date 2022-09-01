@@ -1,9 +1,6 @@
 {% block javascript %}
     <script>
-
     $(document).ready(function () {
-
-
 
             $('#ajax_input_{{ widget.name }}').keyup(function () {
                 console.log('{{ widget.name }}')
@@ -30,8 +27,7 @@
                                     // Создаем новый элемент <option>.
                                     var option = document.createElement('option');
                                     // Устанавливаем значение, используя элементы массива JSON.
-                                    //option.data-value = item.id;
-                                    option.value = item.name;
+                                    option.value = item.id;
                                     option.text = item.name;
                                     console.log(item)
                                     // Добавляем элемент <option> к <datalist>.
@@ -75,19 +71,15 @@
 {% endblock javascript %}
 
 <br>
-
 <input id="ajax_input_{{ widget.name }}" list="{{ widget.name }}" autocomplete="off"
     {% if widget.value != None %} name="{{ widget.name }}" value="{{ widget.value|stringformat:'s' }}"{% endif %}
     {% include "django/forms/widgets/attrs.html" %}>
-    {% for group_name, group_choices, group_index in widget.optgroups %}
-        {% if group_name %}
-            <optgroup label="{{ group_name }}">{% endif %}{% for option in group_choices %}
-                {% include option.template_name with widget=option %}{% endfor %}{% if group_name %}
-        <span class="badge rounded-pill bg-warning text-dark" id="ajax-{{ widget.name }}" name="ajax-{{ widget.name }}"></span>
-            </optgroup>{% endif %}{% endfor %}
-
+    <span class="badge rounded-pill bg-warning text-dark" id="ajax-{{ widget.name }}" name="ajax-{{ widget.name }}"></span>
 
 <datalist id="{{ widget.name }}">
-    <optgroup label="">
-    </optgroup>
+    {% for group_name, group_choices, group_index in widget.optgroups %}
+        {% if group_name %}
+<optgroup label="{{ group_name }}">{% endif %}{% for option in group_choices %}
+  {% include option.template_name with widget=option %}{% endfor %}{% if group_name %}
+</optgroup>{% endif %}{% endfor %}
 </datalist><br>

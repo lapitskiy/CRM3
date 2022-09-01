@@ -160,6 +160,7 @@ class OrderAddView(RelatedMixin, TemplateView):
             #print('form.cleaned_data', form_update.cleaned_data['category'])
             form_one.category_id = self.getCategory()
             self.increaseUsed(category_service=form_one.category_service)
+
             form_one.related_uuid = related_uuid
             form_one.related_user = request.user
             form_one.save()
