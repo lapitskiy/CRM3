@@ -29,7 +29,7 @@ class SimpleOrderAddForm(forms.ModelForm):
         super(SimpleOrderAddForm, self).__init__(*args, **kwargs)
         self.fields['status'].queryset = getActiveStatus()
         self.fields['category_service'].queryset = getCategoryServicePermission(user=self.request.user)
-        status_excluded = ['',]
+        status_excluded = ['','-']
         self.fields['status'].choices = [(k, v) for k, v in self.fields['status'].choices if k not in status_excluded]
         self.fields['category_service'].choices = [(k, v) for k, v in self.fields['category_service'].choices if k not in status_excluded]
         self.fields['service'].choices = [(k, v) for k, v in self.fields['service'].choices if k not in status_excluded]
