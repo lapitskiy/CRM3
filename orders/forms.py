@@ -21,8 +21,8 @@ class ChoiceTxtField(forms.ModelChoiceField):
 #forms
 class SimpleOrderAddForm(forms.ModelForm):
     #service = forms.ModelChoiceField(queryset=Service.objects.all(), widget=ListTextWidget())
-    service = ChoiceTxtField(queryset=Service.objects.order_by('-used')[:5])
-    device = ChoiceTxtField(queryset=Device.objects.order_by('-used')[:5])
+    service = ChoiceTxtField(queryset=Service.objects.order_by('-used'))
+    device = ChoiceTxtField(queryset=Device.objects.order_by('-used'))
 
     def __init__(self, *args, **kwargs):
         self.request = kwargs.pop('request', None)
@@ -32,6 +32,10 @@ class SimpleOrderAddForm(forms.ModelForm):
         status_excluded = ['',]
         self.fields['status'].choices = [(k, v) for k, v in self.fields['status'].choices if k not in status_excluded]
         self.fields['category_service'].choices = [(k, v) for k, v in self.fields['category_service'].choices if k not in status_excluded]
+        self.fields['service'].choices = [(k, v) for k, v in self.fields['service'].choices if k not in status_excluded]
+        self.fields['device'].choices = [(k, v) for k, v in self.fields['device'].choices if k not in status_excluded]
+        self.fields['service'].label = 'Услуга'
+        self.fields['device'].label = 'Устройство'
 
     class Meta:
         model = Orders
@@ -71,6 +75,8 @@ class FastOrderAddForm(forms.ModelForm):
         self.fields['category_service'].queryset = getCategoryServicePermission(user=self.request.user)
         status_excluded = ['',]
         self.fields['category_service'].choices = [(k, v) for k, v in self.fields['category_service'].choices if k not in status_excluded]
+        self.fields['service'].label = 'Услуга'
+        self.fields['device'].label = 'Устройство'
 
 
 

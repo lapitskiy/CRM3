@@ -8,11 +8,11 @@ class Orders(models.Model):
     comment = models.TextField(blank=True, verbose_name='Комментарий')
     created_at = models.DateTimeField(auto_now_add=True, verbose_name='Создан')
     updated_at = models.DateTimeField(auto_now=True, verbose_name='Обновлен')
-    status = models.ForeignKey('Status', null=True, on_delete=models.PROTECT, verbose_name='Статус', related_name='get_status')
-    service = models.ForeignKey('Service', default=1, on_delete=models.PROTECT, verbose_name='Услуга', related_name='get_service')
-    device = models.ForeignKey('Device', default=1, on_delete=models.PROTECT, verbose_name='Устройство', related_name='get_device')
-    category = models.ForeignKey('Category', default=1, on_delete=models.PROTECT, verbose_name='Категория приемки', related_name='get_category') # fast or simple
-    category_service = models.ForeignKey('Category_service', null=True, on_delete=models.PROTECT, verbose_name='Категория услуги', related_name='get_category_service')
+    status = models.ForeignKey('Status', default=1, on_delete = models.SET_DEFAULT, null=True, verbose_name='Статус', related_name='get_status')
+    service = models.ForeignKey('Service', default=1, on_delete = models.SET_DEFAULT, null=True, verbose_name='Услуга', related_name='get_service')
+    device = models.ForeignKey('Device', default=1,  on_delete = models.SET_DEFAULT, null=True, verbose_name='Устройство', related_name='get_device')
+    category = models.ForeignKey('Category', default=1, on_delete = models.SET_DEFAULT, null=True, verbose_name='Категория приемки', related_name='get_category') # fast or simple
+    category_service = models.ForeignKey('Category_service', default=1, on_delete = models.SET_DEFAULT, null=True, verbose_name='Категория услуги', related_name='get_category_service')
     related_uuid = models.JSONField(blank=True) # json dict
     related_user = models.ForeignKey(User, related_name='order_user', null=True, blank=True, on_delete=models.PROTECT, verbose_name='Owner')
 
