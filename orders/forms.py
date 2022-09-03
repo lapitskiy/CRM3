@@ -39,7 +39,7 @@ class SimpleOrderAddForm(forms.ModelForm):
 
     class Meta:
         model = Orders
-        fields = ['device', 'serial', 'service', 'status', 'comment', 'category_service']
+        fields = ['category_service', 'device', 'serial', 'service', 'status', 'comment']
         widgets = {
             #'category': forms.Select(attrs={'class': 'form-control'}),
                 #forms.HiddenInput(),

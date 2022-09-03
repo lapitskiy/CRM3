@@ -160,6 +160,8 @@ class OrderAddView(RelatedMixin, TemplateView):
             #print('form.cleaned_data', form_update.cleaned_data['category'])
             form_one.category_id = self.getCategory()
             self.increaseUsed(category_service=form_one.category_service)
+            self.increaseUsed(service=form_one.service)
+            self.increaseUsed(device=form_one.device)
 
             form_one.related_uuid = related_uuid
             form_one.related_user = request.user
@@ -223,6 +225,14 @@ class OrderAddView(RelatedMixin, TemplateView):
             cat = Category_service.objects.get(name=kwargs['category_service'])
             cat.used = F('used') + 1
             cat.save()
+        if 'service' in kwargs:
+            ser = Service.objects.get(name=kwargs['service'])
+            ser.used = F('used') + 1
+            ser.save()
+        if 'device' in kwargs:
+            dev = Device.objects.get(name=kwargs['device'])
+            dev.used = F('used') + 1
+            dev.save()
 
 
 

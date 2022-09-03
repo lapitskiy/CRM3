@@ -89,6 +89,7 @@ class Category_service(models.Model):
 class Service(models.Model):
     name = models.CharField(max_length=150, db_index=True, unique=True, verbose_name='Наименования услуги')
     used = models.IntegerField(default=0)
+    category_service = models.ForeignKey('Category_service', default=1, on_delete=models.SET_DEFAULT, null=True)
 
     def __str__(self):
         return self.name
@@ -101,6 +102,7 @@ class Service(models.Model):
 class Device(models.Model):
     name = models.CharField(max_length=150, db_index=True, unique=True, verbose_name='Устройство')
     used = models.IntegerField(default=0)
+    category_service = models.ForeignKey('Category_service', default=1, on_delete=models.SET_DEFAULT, null=True)
 
     def __str__(self):
         return self.name

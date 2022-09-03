@@ -31,12 +31,12 @@ class CategoryServiceAdmin(admin.ModelAdmin):
     search_fields = ('title',)
 
 class ServiceAdmin(admin.ModelAdmin):
-    list_display = ('id','name')
+    list_display = ('id','name','used')
     list_display_links = ('id','name')
     search_fields = ('name',)
 
 class DeviceAdmin(admin.ModelAdmin):
-    list_display = ('id','name')
+    list_display = ('id','name','used')
     list_display_links = ('id','name')
     search_fields = ('name',)
 
