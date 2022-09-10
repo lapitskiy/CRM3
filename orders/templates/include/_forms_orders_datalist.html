@@ -81,7 +81,7 @@
 {% endblock javascript %}
 
 <br>
-
+{{ widget }}
 <input id="ajax_input_{{ widget.name }}" list="{{ widget.name }}" autocomplete="off"
     {% if widget.value != None %} name="{{ widget.name }}" value="{{ widget.value|stringformat:'s' }}"{% endif %}
     {% include "django/forms/widgets/attrs.html" %}>
@@ -92,8 +92,6 @@
                 {% include option.template_name with widget=option %}</span>
         {% endfor %}
             {% endfor %}
-
-
 
 <datalist id="{{ widget.name }}">
     <optgroup label="">

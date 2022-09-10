@@ -15,6 +15,7 @@
         Обычный заказ
     {% endif %}
     </h3>
+    ORDER ID {{ order_id }}
     <form action="{% url 'order_edit' order_id %}" method="post">
         {% csrf_token %}
         {% for x in forms %}

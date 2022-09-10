@@ -2,7 +2,7 @@ from django.shortcuts import render, get_object_or_404, redirect
 from django.http import HttpResponse, HttpResponseRedirect, JsonResponse
 from django.views.generic import ListView, DetailView, CreateView, FormView, TemplateView
 from django.urls import reverse_lazy
-from .forms import SimpleOrderAddForm, FastOrderAddForm, SettingDeviceAddForm, SettingServiceAddForm, SettingCategoryServiceAddForm, SettingStatusAddForm
+from .forms import SimpleOrderAddForm, FastOrderAddForm, SettingDeviceAddForm, SettingServiceAddForm, SettingCategoryServiceAddForm, SettingStatusAddForm, SimpleOrderEditForm
 from .models import Orders, Service, Device, Category_service, Status
 
 from plugins.models import Plugins
@@ -343,7 +343,8 @@ class OrderEditView(RelatedMixin, TemplateView):
         context = super().get_context_data(**kwargs)
         get_order = Orders.objects.get(pk=context['order_id'])
         context['forms'] = self.getRelatedEditFormList(obj=get_order)
-        formOne = SimpleOrderAddForm(instance=get_order)
+        formOne = SimpleOrderEditForm(request=self.request, instance=get_order)
+        #print('formone ', formOne)
         formOne.prefix = 'one_form'
         context.update({'formOne': formOne})
         return self.render_to_response(context)
@@ -358,7 +359,7 @@ class OrderEditView(RelatedMixin, TemplateView):
         valid = True
         flag_uuid = False
         get_order = Orders.objects.get(pk=context['order_id'])
-        formOne = SimpleOrderAddForm(self.request.POST, prefix='one_form', instance=get_order)
+        formOne = SimpleOrderEditForm(self.request.POST, prefix='one_form', instance=get_order, request=self.request)
 
         related_form_dict, is_valid_related_dict = self.checkRelatedFormDict(self.request.POST, doing='edit', uuid=get_order.related_uuid)
 
@@ -390,11 +391,16 @@ class OrderEditView(RelatedMixin, TemplateView):
             print('Valid')
             return HttpResponseRedirect(reverse_lazy('orders_home'))
         else:
-            print('NotValid')
-            return self.form_invalid(formOne, form_list, **kwargs)
+            print('NotValid', is_valid_related_dict['form'])
+
+            return self.form_invalid(formOne, is_valid_related_dict['form'], **kwargs, order_id=context['order_id'])
 
     def form_invalid(self, formOne, form_list, **kwargs):
         context = self.get_context_data()
+        #context = kwargs['context']
+        order_id = kwargs['order_id']
+        print('context ', context)
+        print('order id ', order_id)
         formOne.prefix = 'one_form'
         #tag = 0
         #for x in form_list:

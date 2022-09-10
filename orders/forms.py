@@ -62,7 +62,52 @@ class SimpleOrderAddForm(forms.ModelForm):
         print('name ', str(self.cleaned_data['service'].pk))
         return name
 
+#CHOICES = [(service.id, service.name) for service in Service.objects.all()]
 
+#forms
+class SimpleOrderEditForm(forms.ModelForm):
+    #service = forms.ModelChoiceField(queryset=Service.objects.all(), widget=ListTextWidget())
+    #service = [(s.id, s.name) for s in service]
+    service = ChoiceTxtField(queryset=Service.objects.order_by('-used'))
+    #queryset = Service.objects.order_by('-used')
+    device = ChoiceTxtField(queryset=Device.objects.order_by('-used'))
+
+    def __init__(self, *args, **kwargs):
+        self.request = kwargs.pop('request', None)
+        super(SimpleOrderEditForm, self).__init__(*args, **kwargs)
+        self.fields['category_service'].queryset = getCategoryServicePermission(user=self.request.user)
+        status_excluded = ['','-']
+        self.fields['status'].choices = [(k, v) for k, v in self.fields['status'].choices if k not in status_excluded]
+        self.fields['category_service'].choices = [(k, v) for k, v in self.fields['category_service'].choices if k not in status_excluded]
+        self.fields['service'].choices = [(k, v) for k, v in self.fields['service'].choices if k not in status_excluded]
+        self.fields['device'].choices = [(k, v) for k, v in self.fields['device'].choices if k not in status_excluded]
+        self.fields['service'].label = 'Услуга'
+        self.fields['device'].label = 'Устройство'
+
+    class Meta:
+        model = Orders
+        fields = ['category_service', 'device', 'serial', 'service', 'status', 'comment']
+        widgets = {
+            #'category': forms.Select(attrs={'class': 'form-control'}),
+                #forms.HiddenInput(),
+            #'device': forms.TextInput(attrs={'id':'ajax-device', 'class': 'form-control', 'autocomplete':'off'}),
+            #'service': forms.TextInput(attrs={'id':'ajax-service', 'class': 'form-control', 'autocomplete':'off'}),
+            'serial': forms.TextInput(attrs={'class': 'form-control', 'autocomplete':'off'}),
+            'status': forms.Select(attrs={'class': 'form-control', 'autocomplete':'on'}),
+            'category_service': forms.Select(attrs={'class': 'form-control', 'autocomplete': 'on'}),
+            'comment': forms.Textarea(attrs={'class': 'form-control', 'rows': 5}),
+        }
+
+    def clean(self):
+        cleaned_data = super(SimpleOrderEditForm, self).clean()
+        service = cleaned_data.get("service")
+        if service:
+            print('service ', service)
+
+    def clean_service(self):
+        name = self.cleaned_data['service']
+        print('name ', str(self.cleaned_data['service'].pk))
+        return name
 
 class FastOrderAddForm(forms.ModelForm):
     service = ChoiceTxtField(queryset=Service.objects.all().order_by('-id'))
