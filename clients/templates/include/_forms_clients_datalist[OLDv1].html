@@ -34,6 +34,11 @@
                 });
                 return false;
             });
+                $('#ajax_phone_{{ widget.name }}').on('change', function(){
+                $("#ajax-{{ widget.name }}").text($('#'+$(this).attr('list')).find('option[value="'+$(this).val()+'"]').text());
+                var opt = $('option[value="'+$(this).val()+'"]');
+                $('#id_clients-name').val(opt.length ? opt.attr('title') : 'Не указано')
+            });
 })
 
     </script>

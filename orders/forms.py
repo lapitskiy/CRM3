@@ -118,11 +118,12 @@ class FastOrderAddForm(forms.ModelForm):
         self.request = kwargs.pop('request', None)
         super(FastOrderAddForm, self).__init__(*args, **kwargs)
         self.fields['category_service'].queryset = getCategoryServicePermission(user=self.request.user)
-        status_excluded = ['',]
+        status_excluded = ['','-']
         self.fields['category_service'].choices = [(k, v) for k, v in self.fields['category_service'].choices if k not in status_excluded]
+        self.fields['service'].choices = [(k, v) for k, v in self.fields['service'].choices if k not in status_excluded]
+        self.fields['device'].choices = [(k, v) for k, v in self.fields['device'].choices if k not in status_excluded]
         self.fields['service'].label = 'Услуга'
         self.fields['device'].label = 'Устройство'
-
 
 
     class Meta:

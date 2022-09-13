@@ -20,14 +20,13 @@ class Clients(models.Model):
         data = {
             'related_use': 'form',
             'module_name': 'Контакт',
-            'Имя': self.name,
             'Телефон': self.phone,
             'related_uuid': self.related_uuid,
             }
         return data
 
     def get_related_filter(self, **kwargs):
-        results = Clients.objects.filter(Q(name__icontains=kwargs['search_query']) | Q(phone__icontains=kwargs['search_query']))
+        results = Clients.objects.filter(Q(phone__icontains=kwargs['search_query']))
         return results
 
 

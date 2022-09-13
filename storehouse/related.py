@@ -129,3 +129,8 @@ class AppRelated(object):
             related_uuid=related_dict['uuid'])
         f.save()
         print('form save - ', self.prefix)
+
+
+
+#get_related_data - отдаются в модели
+#get_related_filter - отдаются в модели

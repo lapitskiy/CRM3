@@ -32,14 +32,15 @@ class RelatedAddForm(forms.ModelForm):
         self.request = kwargs.pop('request', None)
         super(RelatedAddForm, self).__init__(*args, **kwargs)
         self.fields['phone'].choices = Clients.objects.order_by('-phone').values_list('phone')
+        self.fields['phone'].label = 'Телефон'
 
     #phone = ChoiceTxtField(queryset=Clients.objects.order_by('-phone'))
 
     class Meta:
         model = Clients
-        fields = ['name', 'phone']
+        fields = ['phone']
         widgets = {
-            'name': forms.TextInput(attrs={'class': 'form-control', 'autocomplete': 'off'}),
+            #'name': forms.TextInput(attrs={'class': 'form-control', 'autocomplete': 'off'}),
             # 'phone': forms.TextInput(attrs={'class': 'form-control', 'autocomplete':'off'}),
         }
 
