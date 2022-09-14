@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+{% block title %}{{ title }} - {{ block.super }}{% endblock %}
+{% block sidebar %}
+
+{% include 'include/_sidebar_plugins.html' %}
+{% endblock %}
+
+{% block content %}
+Количество приложений указаных в базе данных: {{ сountPluginDB }}
+<br><br>
+    Количество приложений указаных в базе данных: {{ plugins_check }}
+<br><br>
+{% for k, v in plugins_check.items %}
+<< {{ v }} >>
+                <div class="card" style="width: 18rem;">
+                    <div class="card-header">
+                        <h5 class="card-title">{{ k }}: {{ v.module }}</h5>
+                    </div>
+                    <div class="card-body">
+                        <p class="card-text">[ERROR] {{ v.text }}</p>
+                        <p class="card-text">[LINK] <a class="page-link" href="?error={{ v.text }}&module={{ v.module }}">Восстановить</a></p>
+                    </div>
+                </div>
+<br><br>
+
+{% endfor %}
+{% endblock %}
+
+
+
+

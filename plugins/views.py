@@ -4,6 +4,8 @@ from django.views.generic import ListView, DetailView, CreateView
 from django.urls import reverse_lazy
 from .forms import RelatedPluginForm
 from .models import Plugins, PluginsCategory
+from plugins import settings_plugin
+import re
 
 class ViewPlugins(ListView):
     model = Plugins
@@ -15,6 +17,52 @@ class ViewPlugins(ListView):
         context = super().get_context_data(**kwargs)
         context['title'] = 'Списко плагинов'
         return context
+
+
+class PluginsTestView(ListView):
+    model = Plugins
+    template_name = 'plugins/plugins_test_view.html'
+    context_object_name = 'plugins'
+
+    # extra_context = {'title': 'Главная'}
+
+    def get_context_data(self, *, object_list=None, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['title'] = 'Проверка целостности приложений'
+        context['сountPluginDB'] = self.checkCountPluginDB()
+        context['plugins_check'] = self.checkPluginStruc()
+        print('context ', context)
+        return context
+
+    def checkCountPluginDB(self, **kwargs):
+        count = Plugins.objects.all().count()
+        return count
+
+    def checkPluginStruc(self, **kwargs):
+        dictt = {}
+        inst = []
+        tag = 0
+        pluginsDB_list = Plugins.objects.all().values_list('module_name', flat=True)
+        pluginsDB = Plugins.objects.all()
+        for k in settings_plugin.INSTALLED_APPS_ADD:
+            z = k[0: k.find('.')]
+            inst.append(z)
+            if z not in pluginsDB_list:
+                dict2 = {}
+                dict2['module'] = z
+                dict2['text'] = 'Отсуствует запись в DB, приложение указано только в INI файле'
+                dict2['err'] = 'dberror'
+                tag += 1
+                dictt[tag] = dict2
+        for t in pluginsDB:
+            if t.module_name not in inst:
+                dict2 = {}
+                dict2['module'] = t.module_name
+                dict2['text'] = 'Отсуствует запись в INI, приложение указано только в DB файле'
+                dict2['err'] = 'inierror'
+                tag += 1
+                dictt[tag] = dict2
+        return dictt
 
     #def get_queryset(self):
     #    return Plugins.objects.filter(is_active=True)
