@@ -14,6 +14,15 @@ INSTALLED_URL = {
         'path': 'storehouse/',
         'include': 'storehouse.urls'}}
 
+REPO_DATA = {
+        'title': 'Склады',
+        'id_in_repo': '',
+        'description': '',
+        'module_name': 'storehouse',
+        'version': '1',
+        'related_class_name': 'Storehouses'
+        }
+
 def demodata():
     context = 'Данных для установки нет'
     return context

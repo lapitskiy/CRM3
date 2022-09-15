@@ -1,5 +1,6 @@
 # файл удаляется после установки
 MODULE_NAME = 'money'
+MODULE_CLASS_NAME = 'Money'
 
 INSTALLED_APPS_NAME = 'money.apps.MoneyConfig'
 
@@ -12,6 +13,15 @@ INSTALLED_URL = {
     'money': {
         'path': 'money/',
         'include': 'money.urls'}}
+
+REPO_DATA = {
+        'title': 'Бухгалтерия',
+        'id_in_repo': '',
+        'description': '',
+        'module_name': 'money',
+        'version': '1',
+        'related_class_name': 'Money'
+}
 
 def demodata():
     context = 'Данных для установки нет'

@@ -5,7 +5,7 @@ from django.urls import reverse_lazy
 from .forms import RelatedPluginForm
 from .models import Plugins, PluginsCategory
 from plugins import settings_plugin
-import re
+import importlib
 
 class ViewPlugins(ListView):
     model = Plugins
@@ -29,6 +29,8 @@ class PluginsTestView(ListView):
     def get_context_data(self, *, object_list=None, **kwargs):
         context = super().get_context_data(**kwargs)
         context['title'] = 'Проверка целостности приложений'
+        if self.request.GET.get('error'):
+            self.add_plugin_in_db(models=self.request.GET.get('models'))
         context['сountPluginDB'] = self.checkCountPluginDB()
         context['plugins_check'] = self.checkPluginStruc()
         print('context ', context)
@@ -49,7 +51,7 @@ class PluginsTestView(ListView):
             inst.append(z)
             if z not in pluginsDB_list:
                 dict2 = {}
-                dict2['module'] = z
+                dict2['models'] = z
                 dict2['text'] = 'Отсуствует запись в DB, приложение указано только в INI файле'
                 dict2['err'] = 'dberror'
                 tag += 1
@@ -57,13 +59,20 @@ class PluginsTestView(ListView):
         for t in pluginsDB:
             if t.module_name not in inst:
                 dict2 = {}
-                dict2['module'] = t.module_name
+                dict2['models'] = t.module_name
                 dict2['text'] = 'Отсуствует запись в INI, приложение указано только в DB файле'
                 dict2['err'] = 'inierror'
                 tag += 1
                 dictt[tag] = dict2
         return dictt
 
+    def add_plugin_in_db(self, **kwargs):
+        if 'models' in kwargs:
+            models = kwargs['models']
+            cfgPath = models + '.install'
+            cfg_lib = importlib.import_module(cfgPath)
+            cfg = cfg_lib.REPO_DATA
+            Plugins.objects.update_or_create(title=cfg['title'], module_name=cfg['module_name'], description=cfg['description'], version=cfg['version'], related_class_name=cfg['related_class_name'])
     #def get_queryset(self):
     #    return Plugins.objects.filter(is_active=True)
 
