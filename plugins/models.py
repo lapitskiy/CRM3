@@ -10,7 +10,7 @@ class Plugins(models.Model):
     description = models.TextField(blank=True, verbose_name='Описание')
     photo = models.ImageField(upload_to='photos/%Y/%m/%d/', blank=True, verbose_name='Фото')
     is_active = models.BooleanField(default=False, verbose_name='Активирован')
-    category = models.ForeignKey('PluginsCategory', default=1, on_delete=models.PROTECT, verbose_name='Категория', related_name='get_category')
+    category = models.ForeignKey('PluginsCategory', default=1,  on_delete = models.SET_DEFAULT, null=True, verbose_name='Категория', related_name='get_category')
     is_migrate = models.BooleanField(default=False, verbose_name='Миграция')
     related = models.ManyToManyField('self')
     related_class_name = models.CharField(max_length=150, blank=True, verbose_name='Имя класса для связи')
