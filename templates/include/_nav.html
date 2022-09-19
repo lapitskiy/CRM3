@@ -1,7 +1,7 @@
 <div class="menu menu-sub menu-sub-dropdown menu-column menu-rounded menu-gray-800 menu-state-bg fw-semibold w-200px pb-3" data-kt-menu="true">
 										<!--begin::Menu item-->
                                         {% if user.is_authenticated %}
-
+                                            HERE!
 										<div class="menu-item px-3">
 											<a href="{% url 'add_news' %}" class="menu-link px-3">Новости</a>
 										</div>
@@ -60,8 +60,10 @@
                                             <!--end::Menu sub-->
                                             </div>
 										<!--end::Menu item-->
-									    </div>
                                         {% else %}
-                      Not login
+                      										<div class="menu-item px-3">
+											<a href="{% url 'login' %}" class="menu-link px-3">Not login</a>
+										</div>
                   {% endif %}
+</div>
 
