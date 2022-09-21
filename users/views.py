@@ -3,12 +3,14 @@ from django.contrib import messages
 from django.shortcuts import render, redirect
 from .forms import UserRegisterForm, UserLoginForm
 from django.contrib.auth import login, logout
-from django.views.generic import ListView, TemplateView
+from django.views.generic import ListView, TemplateView, DetailView
 from plugins.utils import RelatedMixin
-from django.contrib.auth.decorators import permission_required
 from django.contrib.auth.models import User
 
-class UserHomeView(RelatedMixin, ListView):
+
+from django.contrib.auth.mixins import LoginRequiredMixin
+
+class UserHomeView(LoginRequiredMixin, RelatedMixin, ListView):
     model = User
     template_name = 'users/users_index.html'
     paginate_by = 10
@@ -21,7 +23,7 @@ class UserHomeView(RelatedMixin, ListView):
         print('user context: ', context)
         return context
 
-UsersHomeViewPermit = permission_required('users.view', raise_exception=True)(UserHomeView.as_view())
+#UsersHomeViewPermit = permission_required('users.view', raise_exception=True)(UserHomeView.as_view())
 
 
 class UsersSettingsView(RelatedMixin, TemplateView):
