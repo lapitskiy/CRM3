@@ -102,16 +102,11 @@ class ViewCurrentPlugins(DetailView):
         context = super().get_context_data(**kwargs)
         context['tag'] = self.kwargs['tag']
         context['form'] = RelatedPluginForm()
-        #print('context form ',context['form'])
         return context
 
     def post(self, request, *args, **kwargs):
-        print('TYT0 ', self.kwargs)
         self.object = self.get_object()
         context = super().get_context_data(**kwargs)
-        print('context ', context)
-        #context = super().get_context_data(**kwargs)
-        #context['id'] = self.kwargs['pk']
 
         form = RelatedPluginForm(request.POST)
         related_id = request.POST['related']
