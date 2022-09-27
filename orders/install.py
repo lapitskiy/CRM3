@@ -1,4 +1,4 @@
-from .models import Category, Status, Device, Service
+from .models import Category, Status, Device, Service, Category_service
 
 MODULE_NAME = 'orders'
 MODULE_CLASS_NAME = 'Orders'
