@@ -4,7 +4,8 @@ from django.core.exceptions import ObjectDoesNotExist
 from django.db.models import Q
 import logging
 
-logging.basicConfig(level='DEBUG')
+#logging.basicConfig(level='DEBUG')
+logger = logging.getLogger(__name__)
 
 class RelatedMixin(object):
     related_module_name = ''
@@ -167,7 +168,7 @@ class RelatedMixin(object):
                                     #print('related_get ', str(related_get))
                                     data_related_list.append(related_get)
                                 if cls_related.related_format == 'select':
-                                    logging.info('cls_model select utils', cls_model)
+                                    logger.info('cls_model select utils', cls_model)
                                     cls_related3 = cls_model.objects.get(Q(related_uuid__icontains=key_uuid))
                                     related_get = cls_related3.get_related_data
                                     #print('tyt 333 ky uuid', key_uuid)
