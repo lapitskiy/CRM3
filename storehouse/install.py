@@ -20,7 +20,7 @@ REPO_DATA = {
         'description': '',
         'module_name': 'storehouse',
         'version': '1',
-        'related_class_name': 'Storehouses'
+        'related_class_name': 'StoreRelated'
         }
 
 def demodata():

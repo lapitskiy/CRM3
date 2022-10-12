@@ -5,7 +5,8 @@ from django.db.models import Q
 import logging
 
 #logging.basicConfig(level='DEBUG')
-logger = logging.getLogger(__name__)
+logger = logging.getLogger('crm3_info')\
+
 
 class RelatedMixin(object):
     related_module_name = ''
@@ -325,16 +326,18 @@ class RelatedMixin(object):
     def relatedPostGetData(self, **kwargs):
         request_get = kwargs['request_get']
         related_dict = {}
+        logger.info('%s relatedPostGetData ', __name__)
         if request_get['relateddata']:
             related = self.checkRelated()
+            logger.info('%s related: %s', __name__, related)
             if related:
                 for x in related:
+                    logger.info('%s related for x: %s', __name__, x.module_name)
                     _dict= {}
                     imp_related = importlib.import_module(x.module_name + '.related')
                     getrelatedClass = getattr(imp_related, 'AppRelated')
                     relatedClass = getrelatedClass()
                     _dict['module'] = x.module_name
-                    print('module' , _dict['module'])
                     _dict['relateddata'] = self.dictUuidToList(relatedClass.linkGetReleatedData(request_get=request_get))
                     related_dict[x.module_name] = _dict
                 return related_dict

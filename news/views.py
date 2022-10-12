@@ -21,6 +21,7 @@ class HomeNews(LoginRequiredMixin, MyMixin, ListView):
 
     def get_context_data(self, *, object_list=None, **kwargs):
         context = super().get_context_data(**kwargs)
+        print('Test!')
         context['title'] = 'Главная страница'
         context['mixin_prop'] = self.get_prop()
         return context

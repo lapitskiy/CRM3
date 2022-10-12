@@ -17,3 +17,8 @@ https://medium.com/analytics-vidhya/django-how-to-pass-the-user-object-into-form
 category_service добавил в модели orders, чтобы можно было искать под каждую категорию услуги и устройста
 31.08:
 переписать datalist. убрал value, остался только name в ajax
+04.10:
+https://stackoverflow.com/questions/2047622/how-to-paginate-django-with-other-get-variables
+url_replace проблма
+09.10:
+надо добавить возможность сортировать бухгалтерию по сотрудникам, по складам

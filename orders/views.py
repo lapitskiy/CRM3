@@ -28,14 +28,13 @@ class OrdersHomeView(RelatedMixin, ListView):
     context_object_name = 'orders'
     related_module_name = 'orders' #mixin
 
-
-
     def get_queryset(self):
         queryset = self.getQuery()
         list_orders = self.getCleanQueryset(queryset=queryset, request=self.request)
         return list_orders
 
     def get_context_data(self, *, object_list=None, **kwargs):
+        print('TEST!')
         context = super().get_context_data(**kwargs)
         context['title'] = 'Все заказы'
         context['filter'] = self.requestGet('filter')
@@ -67,7 +66,6 @@ class OrdersHomeView(RelatedMixin, ListView):
             date_get = self.request.GET.get('date')
             # ~Q(related_uuid='') |
             results_date_uuid = Orders.objects.filter(Q(created_at__icontains=date_get)).values_list('related_uuid')
-
 
         if self.request.GET.get('filter'):
             search_query = self.request.GET.get('filter')

@@ -5,6 +5,9 @@ import re
 from django.core.exceptions import ValidationError
 from django.db.models import Q
 
+import logging
+logger = logging.getLogger('crm3_log')
+
 #fields
 class ListTextWidget(forms.Select):
     template_name = 'include/_forms_clients_datalist.html'

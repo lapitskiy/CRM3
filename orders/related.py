@@ -5,6 +5,10 @@ from plugins.utils import RelatedMixin
 import ast
 from datetime import datetime, timedelta
 
+import logging
+
+logger = logging.getLogger('crm3_info')
+
 
 class AppRelated():
     prefix = 'orders'
@@ -39,57 +43,40 @@ class AppRelated():
         return context
 
     def submenuImportRelated(self, **kwargs):
-        return 'related/_related_orders_submenu.html'
+
+        return 'related/load_sidebar_orders_related_submenu_tags.html'
 
     def linkGetReleatedData(self, **kwargs):
         request_get = kwargs['request_get']
         relateddata = ast.literal_eval(request_get['relateddata'])
         uudi_filter_related_list = []
+        related_result = Orders.objects.none()
+        cond = None
         if relateddata:
             getdata = relateddata
+            logger.info('%s getdata: %s', __name__, getdata)
             if getdata['orders']:
                 _dict = getdata['orders']
-                #print('dict ', _dict)
-                if _dict['category'] == 'all':
-                    related_result = Orders.objects.all()
-                    uudi_filter_related_list = []
-                    if related_result:
-                        for z in related_result:
-                            uudi_filter_related_list.append(z.related_uuid)
-                    return uudi_filter_related_list
-                if _dict['category'] == 'fast':
-                    related_result = Orders.objects.filter(category__category='fast')
-                    uudi_filter_related_list = []
-                    if related_result:
-                        for z in related_result:
-                            uudi_filter_related_list.append(z.related_uuid)
-                    return uudi_filter_related_list
-                if _dict['category'] == 'simple':
-                    related_result = Orders.objects.filter(category__category='simple')
-                    uudi_filter_related_list = []
-                    if related_result:
-                        for z in related_result:
-                            uudi_filter_related_list.append(z.related_uuid)
-                    return uudi_filter_related_list
-                if _dict['category'] == 'date':
-                    print('TYT DATE', request_get['date'])
-                    print('TYT DATE 2', request_get['date2'])
-                    date__range = ["2011-01-01", "2011-01-31"]
+                if _dict['category'] == 'filterform':
+                    if request_get['orders'] == 'all':
+                        related_result = Orders.objects.all()
+                    if request_get['orders'] == 'fast':
+                        related_result = Orders.objects.filter(category__category='fast')
+                    if request_get['orders'] == 'simple':
+                        related_result = Orders.objects.filter(category__category='simple')
                     if request_get['date'] and request_get['date2']:
-                        print('DVE DATE')
                         end_date = datetime.strptime(request_get['date2'], '%Y-%m-%d') + timedelta(days=1)
-                        print('end_date ', end_date)
-                        related_result = Orders.objects.filter(created_at__range=[request_get['date'],end_date])
-                        #(Q(created_at__lte=request_get['date']) & Q(created_at__gte=request.POST['start_date'])
+                        # print('end_date ', end_date)
+                        cond = Orders.objects.filter(created_at__range=[request_get['date'],end_date])
+                        related_result = related_result.intersection(cond)
                     if request_get['date'] and not request_get['date2']:
-                        print('TOLKO DATE 1')
-                        related_result = Orders.objects.filter(Q(created_at__icontains=request_get['date']))
+                        cond = Orders.objects.filter(Q(created_at__icontains=request_get['date']))
+                        related_result = related_result.intersection(cond)
                     if not request_get['date'] and request_get['date2']:
-                        print('TOLKO DATE 2')
-                        related_result = Orders.objects.filter(Q(created_at__icontains=request_get['date2']))
-
-                    uudi_filter_related_list = []
-                    if related_result:
+                        cond = Orders.objects.filter(Q(created_at__icontains=request_get['date2']))
+                        related_result = related_result.intersection(cond)
+                    if related_result is not None:
+                        logger.info('%s related_result %s', __name__, related_result)
                         for z in related_result:
                             uudi_filter_related_list.append(z.related_uuid)
                     return uudi_filter_related_list
