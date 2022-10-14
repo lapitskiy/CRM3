@@ -65,7 +65,7 @@ class AppRelated(object):
         pass
 
     def submenuImportRelated(self, **kwargs):
-        pass
+        return 'storehouse/related/load_sidebar_storehouse_related_submenu_tags.html'
 
     def checkCleanQueryset(self, **kwargs):
         data_uuid_related_list = []
@@ -130,7 +130,23 @@ class AppRelated(object):
         f.save()
         print('form save - ', self.prefix)
 
-
-
-#get_related_data - отдаются в модели
-#get_related_filter - отдаются в модели
+    def linkGetReleatedData(self, **kwargs):
+        request_get = kwargs['request_get']
+        relateddata = ast.literal_eval(request_get['rdata_storehouse'])
+        uudi_filter_related_list = []
+        query = None
+        query2 = None #Orders.objects.none()
+        # cond = None
+        if isinstance(relateddata, dict):
+            getdata = relateddata
+            logger.info('%s getdata: %s', __name__, getdata)
+            if 'submenu' in getdata:
+                _dict = getdata['submenu']
+                if _dict['category'] == 'filterform':
+                    if request_get['orders'] == 'all':
+                        query = Storehouses.objects.all()
+                    if query is not None:
+                        for z in query:
+                            uudi_filter_related_list.append(z.related_uuid)
+                    return uudi_filter_related_list
+        return uudi_filter_related_list

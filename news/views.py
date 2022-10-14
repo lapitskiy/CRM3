@@ -5,10 +5,13 @@ from django.views.generic import ListView, DetailView, CreateView
 from django.urls import reverse_lazy
 from .utils import MyMixin
 from django.contrib.auth.mixins import LoginRequiredMixin
+from django.contrib.auth.decorators import login_required
+from django.utils.decorators import method_decorator
 
 from .models import News, Category
 
-class HomeNews(LoginRequiredMixin, MyMixin, ListView):
+@method_decorator(login_required, name='dispatch')
+class HomeNews(ListView, MyMixin):
     model = News
     template_name = 'news/home_news_list.html'
     context_object_name = 'news'

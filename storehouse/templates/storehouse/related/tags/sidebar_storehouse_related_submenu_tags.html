@@ -1,5 +1,4 @@
 <!-- не используйте кнопку submit и form и csrf токен в related html файлах-->
-
 <!--begin:Menu item-->
 <div data-kt-menu-trigger="click" class="menu-item menu-accordion show">
     <!--begin:Menu link-->
@@ -17,7 +16,7 @@
             </span>
             <!--end::Svg Icon-->
         </span>
-        <span class="menu-title">Модуль "Заказы"</span>
+        <span class="menu-title">Модуль "Склады"</span>
         <span class="menu-arrow"></span>
     </span>
     <!--end:Menu link-->
@@ -28,18 +27,11 @@
         <div class="menu-item">
             <!--begin:Menu link-->
             <div class="list-group">
-                <input type="hidden" name="rdata_orders" value="{'submenu' : {'category': 'filterform'}}">
-
-                <div class="input-group mb-3">
-                    <input class="form-control" type="date" id="date" name="date">
-                </div>
-                <div class="input-group mb-3">
-                    <input class="form-control" type="date" id="date2" name="date2">
-                </div>
-                <select name="orders" id="orders">
-                    <option value="all">Все заказы</option>
-                    <option value="simple">Заказы в ремонт</option>
-                    <option value="fast">Услуги на месте</option>
+                <input type="hidden" name="rdata_storehouse" value="{'submenu' : {'category': 'filterform'}}">
+                <select name="storehouse" id="storehouse">
+                    {% for item in storehouses %}
+                        <option value="{{ item.id }}">{{ item.name }}</option>
+                    {% endfor %}
                 </select>
                 <br>
             </div>
@@ -48,6 +40,5 @@
         <!--end:Menu item-->
     </div>
     <!--end:Menu sub-->
-
 </div>
 

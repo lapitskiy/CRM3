@@ -315,8 +315,8 @@ class RelatedMixin(object):
                 getrelatedClass = getattr(imp_related, 'AppRelated')
                 relatedClass = getrelatedClass()
                 _dict['module'] = x.module_name
-                print('rmodule ', x.module_name)
                 _dict['submenu_import'] = relatedClass.submenuImportRelated()
+                print('submenu_import ', _dict['submenu_import'])
                 if _dict['submenu_import'] is not None:
                     related_form_dict[x.module_name] = _dict
         return related_form_dict
@@ -327,7 +327,7 @@ class RelatedMixin(object):
         request_get = kwargs['request_get']
         related_dict = {}
         logger.info('%s relatedPostGetData ', __name__)
-        if request_get['relateddata']:
+        if 'rdata_' in request_get:
             related = self.checkRelated()
             logger.info('%s related: %s', __name__, related)
             if related:

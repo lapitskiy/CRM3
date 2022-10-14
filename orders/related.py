@@ -43,41 +43,43 @@ class AppRelated():
         return context
 
     def submenuImportRelated(self, **kwargs):
-
         return 'related/load_sidebar_orders_related_submenu_tags.html'
 
     def linkGetReleatedData(self, **kwargs):
         request_get = kwargs['request_get']
-        relateddata = ast.literal_eval(request_get['relateddata'])
+        relateddata = ast.literal_eval(request_get['rdata_orders'])
         uudi_filter_related_list = []
-        related_result = Orders.objects.none()
-        cond = None
+        query = None
+        query2 = None #Orders.objects.none()
+        # cond = None
         if relateddata:
             getdata = relateddata
             logger.info('%s getdata: %s', __name__, getdata)
-            if getdata['orders']:
-                _dict = getdata['orders']
+            if 'submenu' in getdata:
+                _dict = getdata['submenu']
                 if _dict['category'] == 'filterform':
                     if request_get['orders'] == 'all':
-                        related_result = Orders.objects.all()
+                        query = Orders.objects.all()
                     if request_get['orders'] == 'fast':
-                        related_result = Orders.objects.filter(category__category='fast')
+                        query = Orders.objects.filter(category__category='fast')
                     if request_get['orders'] == 'simple':
-                        related_result = Orders.objects.filter(category__category='simple')
+                        query = Orders.objects.filter(category__category='simple')
                     if request_get['date'] and request_get['date2']:
                         end_date = datetime.strptime(request_get['date2'], '%Y-%m-%d') + timedelta(days=1)
                         # print('end_date ', end_date)
-                        cond = Orders.objects.filter(created_at__range=[request_get['date'],end_date])
-                        related_result = related_result.intersection(cond)
+                        query2 = Orders.objects.filter(created_at__range=[request_get['date'],end_date])
                     if request_get['date'] and not request_get['date2']:
-                        cond = Orders.objects.filter(Q(created_at__icontains=request_get['date']))
-                        related_result = related_result.intersection(cond)
+                        query2 = Orders.objects.filter(Q(created_at__icontains=request_get['date']))
                     if not request_get['date'] and request_get['date2']:
-                        cond = Orders.objects.filter(Q(created_at__icontains=request_get['date2']))
-                        related_result = related_result.intersection(cond)
-                    if related_result is not None:
-                        logger.info('%s related_result %s', __name__, related_result)
-                        for z in related_result:
+                        query2 = Orders.objects.filter(Q(created_at__icontains=request_get['date2']))
+                    if query is not None:
+                        print('q1 ', query)
+                        print('q2 ', query2)
+                        if query2 is not None:
+                            query = query & query2
+                        #logger.info('%s related_result %s', __name__, type(intersection))
+                        #print('intersection ', intersection)
+                        for z in query:
                             uudi_filter_related_list.append(z.related_uuid)
                     return uudi_filter_related_list
         return uudi_filter_related_list
