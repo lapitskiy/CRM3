@@ -28,7 +28,7 @@
             <!--begin:Menu link-->
             <div class="list-group">
                 <input type="hidden" name="rdata_storehouse" value="{'submenu' : {'category': 'filterform'}}">
-                <select name="storehouse" id="storehouse">
+                <select name="selectstorehouse" id="selectstorehouse">
                     {% for item in storehouses %}
                         <option value="{{ item.id }}">{{ item.name }}</option>
                     {% endfor %}

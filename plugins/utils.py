@@ -327,7 +327,7 @@ class RelatedMixin(object):
         request_get = kwargs['request_get']
         related_dict = {}
         logger.info('%s relatedPostGetData ', __name__)
-        if 'rdata_' in request_get:
+        if 'rdata_' in str(request_get):
             related = self.checkRelated()
             logger.info('%s related: %s', __name__, related)
             if related:

@@ -2,6 +2,10 @@ from .forms import RelatedAddForm
 from .models import Storehouses, StoreRelated
 from django.db.models import Q
 from django.core.exceptions import ObjectDoesNotExist
+import ast
+import logging
+
+logger = logging.getLogger('crm3_info')
 
 class AppRelated(object):
     prefix = 'storehouse'
@@ -135,7 +139,6 @@ class AppRelated(object):
         relateddata = ast.literal_eval(request_get['rdata_storehouse'])
         uudi_filter_related_list = []
         query = None
-        query2 = None #Orders.objects.none()
         # cond = None
         if isinstance(relateddata, dict):
             getdata = relateddata
@@ -143,8 +146,8 @@ class AppRelated(object):
             if 'submenu' in getdata:
                 _dict = getdata['submenu']
                 if _dict['category'] == 'filterform':
-                    if request_get['orders'] == 'all':
-                        query = Storehouses.objects.all()
+                    if 'selectstorehouse' in request_get:
+                        query = StoreRelated.objects.filter(store_id=request_get['selectstorehouse'])
                     if query is not None:
                         for z in query:
                             uudi_filter_related_list.append(z.related_uuid)

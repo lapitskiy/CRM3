@@ -7,6 +7,8 @@ from django.core.paginator import Paginator
 from django.core.paginator import EmptyPage
 from django.core.paginator import PageNotAnInteger
 from .mixin import CacheQuerysetMixin
+from operator import and_, or_
+from functools import reduce
 
 
 
@@ -50,22 +52,59 @@ class MoneyHomeView(CacheQuerysetMixin, RelatedMixin, ListView):
         return context
 
     def getMoneyQuery(self):
-        print('TYT GET')
-        if self.request.GET.get('relateddata'):
+        print('MONEY QUERY ', self.request.GET)
+        if 'rdata_' in str(self.request.GET):
             if self.request.GET.get('date'):
                 date_get = self.request.GET.get('date')
             relatedListUuid = self.relatedPostGetData(request_get=self.request.GET)
             # нужно вернуть uuid по relateddata и сформировать query по Money.object
             valuelist = []
+            intersec = None
+            query = None
+            query2 = None
+            resultquery = Money.objects.none()
+            print('MONEY QUERY 2 ', relatedListUuid)
+            print('=================================')
+            print('=================================')
+            print('=================================')
             for k, v in relatedListUuid.items():
-                for r in v['relateddata']:
-                    appendlist = Money.objects.filter(Q(related_uuid__icontains=r)).values_list('pk', flat=True)
-                    valuelist.extend(appendlist)
-                    #print('valuelist', valuelist)
+                #print('MONEY QUERY 3')
+                #Money.objects.filter(Q(related_uuid__icontains=v['relateddata']))
+                #query = Money.objects.filter(reduce(and_, [Q(related_uuid__icontains=q) for q in v['relateddata']]))
+                #print('query money ', query)
+                if v['relateddata']:
+                    condition = Q()
+                    print('condition before ', condition)
+                    for r in v['relateddata']:
+                        condition |= Q(related_uuid__icontains=r)
+                        #query = Money.objects.filter(Q(related_uuid__icontains=r))
+                        #resultquery = resultquery & query
+                        #appendlist = Money.objects.filter(Q(related_uuid__icontains=r)).values_list('pk', flat=True)
+                        #valuelist.extend(appendlist)
+                        #print('valuelist', valuelist)
+                    print('condition ', condition)
+                    print('=================================')
+                    valuelist.append(Money.objects.filter(condition))
+            #if len(valuelist) > 1:
+            #    for i in range(0,len(valuelist)-2),2:
+            #        q = valuelist[i]
+            #        intersec = q.intersection(valuelist[i+1])
+            print('$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$')
+            print('valuelist ', valuelist)
+            print('$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$')
+            q1 = valuelist[0]
+            print('q1 ', q1)
+            q2 = valuelist[1]
+            print('q2 ', q2)
+            #intersec = q1.intersection(q2)
+            intersec = q1 & q2
+            print('intersec ', intersec)
             #print('valuelist', valuelist)
             #valuelist = self.dictUuidToList(valuelist)
             #print('valuelist', valuelist)
-            return Money.objects.filter(Q(pk__in=valuelist))
+            #return Money.objects.filter(Q(pk__in=valuelist))
+            #print('condition ', condition)
+            return Money.objects.filter(pk__in=intersec)
         return Money.objects.all()
 
     def getInfo(self, query):
