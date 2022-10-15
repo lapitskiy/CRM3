@@ -69,6 +69,7 @@ class AppRelated(object):
         pass
 
     def submenuImportRelated(self, **kwargs):
+        #if kwargs['request'] is not None:
         return 'storehouse/related/load_sidebar_storehouse_related_submenu_tags.html'
 
     def checkCleanQueryset(self, **kwargs):

@@ -14,7 +14,7 @@ from django.contrib.auth.models import User, Permission
 
 class StorehouseHomeView(ListView):
     model = Storehouses
-    paginate_by = 2
+    paginate_by = 10
     template_name = 'storehouse/storehouse_list.html'
     context_object_name = 'storehouse'
     related_module_name = 'storehouse'  # mixin

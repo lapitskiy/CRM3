@@ -93,28 +93,20 @@ class RelatedMixin(object):
     # [RU] бывший getListUuidFromDictKeyRelated
     # [EN] list related apps
     def dictUuidToList(self, uuid):
-        #print('======')
-        #print('uuid ', type(uuid))
         _list = []
-        #print('####################>>>>>>>>>>>>>')
-        #print('uuid type ', type(uuid))
         if type(uuid) == dict:
             for k, v in uuid.items():
                 _list.append(k)
         if type(uuid) == list:
+            print('=================================')
+            print('dictUuidToList uuid ', uuid)
+
             for x in uuid:
                 if type(x) == tuple or type(x) == list:
                     x = x[0]
-                    #print('', type(x))
-                #print('[utils.py 33] type x: ', x, '; type: ', type(x))
-                for k, v in x.items():
-
-                    #print('k ', k)
-                    _list.append(k)
-        #if type(uuid) == django.db.models.query.QuerySet:
-        #    print('zzzz')
-        #print('_list ', _list)
-        #print('####################<<<<<<<<<<<<<<')
+                if isinstance(x, dict):
+                    for k, v in x.items():
+                        _list.append(k)
         return _list
 
     # [EN] return related data from class get_related_data() in app models
@@ -306,6 +298,10 @@ class RelatedMixin(object):
 
     # [RU] отдает ссылку для import submenu для формирования правильного submenu
     def relatedImportSubmenu(self, **kwargs):
+        # if 'request' in kwargs:
+        #     request = kwargs['request']
+        # else:
+        #     request = None
         related = self.checkRelated()
         related_form_dict = {}
         if related:
@@ -316,7 +312,7 @@ class RelatedMixin(object):
                 relatedClass = getrelatedClass()
                 _dict['module'] = x.module_name
                 _dict['submenu_import'] = relatedClass.submenuImportRelated()
-                print('submenu_import ', _dict['submenu_import'])
+                #print('submenu_import ', _dict['submenu_import'])
                 if _dict['submenu_import'] is not None:
                     related_form_dict[x.module_name] = _dict
         return related_form_dict
@@ -325,6 +321,7 @@ class RelatedMixin(object):
     # [RU] обрабатывает его в соотвествии с правилами плагина и отдает список
     def relatedPostGetData(self, **kwargs):
         request_get = kwargs['request_get']
+
         related_dict = {}
         logger.info('%s relatedPostGetData ', __name__)
         if 'rdata_' in str(request_get):
@@ -338,6 +335,7 @@ class RelatedMixin(object):
                     getrelatedClass = getattr(imp_related, 'AppRelated')
                     relatedClass = getrelatedClass()
                     _dict['module'] = x.module_name
+                    print('relatedPostGetData module ', x.module_name)
                     _dict['relateddata'] = self.dictUuidToList(relatedClass.linkGetReleatedData(request_get=request_get))
                     related_dict[x.module_name] = _dict
                 return related_dict

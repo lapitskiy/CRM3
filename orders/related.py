@@ -73,8 +73,8 @@ class AppRelated():
                     if not request_get['date'] and request_get['date2']:
                         query2 = Orders.objects.filter(Q(created_at__icontains=request_get['date2']))
                     if query is not None:
-                        print('q1 ', query)
-                        print('q2 ', query2)
+                        #print('q1 ', query)
+                        #print('q2 ', query2)
                         if query2 is not None:
                             query = query & query2
                         #logger.info('%s related_result %s', __name__, type(intersection))
