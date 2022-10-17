@@ -2,7 +2,7 @@
 {% load money_template_tags %}
 {% block title %}{{ title }} - {{ block.super }}{% endblock %}
 {% block sidebar %}
-    {% include 'include/_sidebar_money.html' with request=request %}
+    {% include 'include/_sidebar_money.html' %}
 {% endblock %}
 {% block content %}
     <div class="shadow-sm p-3 mb-5 bg-body rounded">
