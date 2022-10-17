@@ -1,4 +1,4 @@
-import { $$, ajax } from "./utils.js";
+import { $$, ajax, replaceToolbarState, debounce } from "./utils.js";
 
 function onKeyDown(event) {
     if (event.keyCode === 27) {
@@ -20,7 +20,8 @@ const djdt = {
                 if (!this.className) {
                     return;
                 }
-                const current = document.getElementById(this.className);
+                const panelId = this.className;
+                const current = document.getElementById(panelId);
                 if ($$.visible(current)) {
                     djdt.hide_panels();
                 } else {
@@ -39,12 +40,24 @@ const djdt = {
                             window.location
                         );
                         url.searchParams.append("store_id", store_id);
-                        url.searchParams.append("panel_id", this.className);
+                        url.searchParams.append("panel_id", panelId);
                         ajax(url).then(function (data) {
                             inner.previousElementSibling.remove(); // Remove AJAX loader
                             inner.innerHTML = data.content;
                             $$.executeScripts(data.scripts);
+                            $$.applyStyles(inner);
+                            djDebug.dispatchEvent(
+                                new CustomEvent("djdt.panel.render", {
+                                    detail: { panelId: panelId },
+                                })
+                            );
                         });
+                    } else {
+                        djDebug.dispatchEvent(
+                            new CustomEvent("djdt.panel.render", {
+                                detail: { panelId: panelId },
+                            })
+                        );
                     }
                 }
             }
@@ -177,6 +190,7 @@ const djdt = {
                 requestAnimationFrame(function () {
                     djdt.handleDragged = false;
                 });
+                djdt.ensure_handle_visibility();
             }
         });
         const show =
@@ -185,6 +199,9 @@ const djdt = {
             djdt.show_toolbar();
         } else {
             djdt.hide_toolbar();
+        }
+        if (djDebug.dataset.sidebarUrl !== undefined) {
+            djdt.update_on_ajax();
         }
     },
     hide_panels() {
@@ -197,6 +214,15 @@ const djdt = {
             e.classList.remove("djdt-active");
         });
     },
+    ensure_handle_visibility() {
+        const handle = document.getElementById("djDebugToolbarHandle");
+        // set handle position
+        const handleTop = Math.min(
+            localStorage.getItem("djdt.top") || 0,
+            window.innerHeight - handle.offsetWidth
+        );
+        handle.style.top = handleTop + "px";
+    },
     hide_toolbar() {
         djdt.hide_panels();
 
@@ -204,16 +230,8 @@ const djdt = {
 
         const handle = document.getElementById("djDebugToolbarHandle");
         $$.show(handle);
-        // set handle position
-        let handleTop = localStorage.getItem("djdt.top");
-        if (handleTop) {
-            handleTop = Math.min(
-                handleTop,
-                window.innerHeight - handle.offsetHeight
-            );
-            handle.style.top = handleTop + "px";
-        }
-
+        djdt.ensure_handle_visibility();
+        window.addEventListener("resize", djdt.ensure_handle_visibility);
         document.removeEventListener("keydown", onKeyDown);
 
         localStorage.setItem("djdt.show", "false");
@@ -236,6 +254,32 @@ const djdt = {
         $$.hide(document.getElementById("djDebugToolbarHandle"));
         $$.show(document.getElementById("djDebugToolbar"));
         localStorage.setItem("djdt.show", "true");
+        window.removeEventListener("resize", djdt.ensure_handle_visibility);
+    },
+    update_on_ajax() {
+        const sidebar_url =
+            document.getElementById("djDebug").dataset.sidebarUrl;
+        const slowjax = debounce(ajax, 200);
+
+        const origOpen = XMLHttpRequest.prototype.open;
+        XMLHttpRequest.prototype.open = function () {
+            this.addEventListener("load", function () {
+                // Chromium emits a "Refused to get unsafe header" uncatchable warning
+                // when the header can't be fetched. While it doesn't impede execution
+                // it's worrisome to developers.
+                if (
+                    this.getAllResponseHeaders().indexOf("djdt-store-id") >= 0
+                ) {
+                    let store_id = this.getResponseHeader("djdt-store-id");
+                    store_id = encodeURIComponent(store_id);
+                    const dest = `${sidebar_url}?store_id=${store_id}`;
+                    slowjax(dest).then(function (data) {
+                        replaceToolbarState(store_id, data);
+                    });
+                }
+            });
+            origOpen.apply(this, arguments);
+        };
     },
     cookie: {
         get(key) {
@@ -270,6 +314,9 @@ const djdt = {
                 options.path ? "; path=" + options.path : "",
                 options.domain ? "; domain=" + options.domain : "",
                 options.secure ? "; secure" : "",
+                "sameSite" in options
+                    ? "; sameSite=" + options.samesite
+                    : "; sameSite=Lax",
             ].join("");
 
             return value;
