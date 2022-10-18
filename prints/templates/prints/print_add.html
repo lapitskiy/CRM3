@@ -17,7 +17,7 @@
     <h3>
      Создание печатной формы
     </h3>
-    <form action="{% url 'print_add'%}?category={{ tag }}" method="post">
+    <form action="{% url 'print_add'%}?category={{ tag }}" method="POST">
         {% csrf_token %}
         {% for x in forms %}
             {{ x.as_p }}

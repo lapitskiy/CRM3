@@ -7,7 +7,7 @@
 
 {% block content %}
 
-    <form action="{% url 'settings_edit'%}?model={{ model }}&id={{ id }}" method="post">
+    <form action="{% url 'settings_edit'%}?model={{ model }}&id={{ id }}" method="POST">
         {% csrf_token %}
         {{ formEdit.non_field_errors }}
         {{ formEdit.as_p }}

@@ -5,7 +5,7 @@
 {% endblock %}
 {% block content %}
     Добавление новости
-    <form action="{% url 'add_news' %}" method="post">
+    <form action="{% url 'add_news' %}" method="POST">
         {% csrf_token %}
         {{ form.non_field_errors }}
         {{ form.as_p }}
