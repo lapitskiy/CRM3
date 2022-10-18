@@ -56,7 +56,7 @@ def user_login(request):
         if form.is_valid():
             user = form.get_user()
             login(request, user)
-            return redirect('settings')
+            return redirect('home')
     else:
         form = UserLoginForm()
 

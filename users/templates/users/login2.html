@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="en">
+	<!--begin::Head-->
+	<head>
+		<meta charset="utf-8" />
+	</head>
+{% block body %}
+    <body>
+							<form method="POST" novalidate="novalidate" id="kt_sign_in_form">
+                                {% csrf_token %}
+								<!--begin::Heading-->
+									<input type="text" required placeholder="login" name="{{ form.username.html_name }}" id="{{ form.username.auto_id }}" autocomplete="off" />
+									<input type="password" placeholder="Password" name="{{ form.password.html_name }}" id="{{ form.password.auto_id }}" autocomplete="off"/>
+									<!--end::Password-->
+									<button type="submit">
+										<!--begin::Indicator label-->
+										<span>Sign In</span>
+									</button>
+							</form>
+	</body>
+{% endblock %}
+</html>
