@@ -27,7 +27,7 @@ class UserHomeView(LoginRequiredMixin, RelatedMixin, ListView):
 
 
 class UsersSettingsView(RelatedMixin, TemplateView):
-    template_name = 'users/users_settings.html'
+    template_name = 'users/users_settingsPrev.html'
     related_module_name = 'users' #relatedmixin module
 
     def get(self, request, *args, **kwargs):
@@ -56,7 +56,7 @@ def user_login(request):
         if form.is_valid():
             user = form.get_user()
             login(request, user)
-            return redirect('orders_home')
+            return redirect('settings')
     else:
         form = UserLoginForm()
 
