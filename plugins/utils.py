@@ -98,8 +98,8 @@ class RelatedMixin(object):
             for k, v in uuid.items():
                 _list.append(k)
         if type(uuid) == list:
-            print('=================================')
-            print('dictUuidToList uuid ', uuid)
+            #print('=================================')
+            #print('dictUuidToList uuid ', uuid)
 
             for x in uuid:
                 if type(x) == tuple or type(x) == list:

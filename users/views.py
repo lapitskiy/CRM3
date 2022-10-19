@@ -7,6 +7,10 @@ from django.views.generic import ListView, TemplateView, DetailView
 from plugins.utils import RelatedMixin
 from django.contrib.auth.models import User
 
+#from django.views.decorators.csrf import csrf_protect
+#from django.utils.decorators import method_decorator
+#from django.views.decorators.csrf import csrf_exempt
+
 
 from django.contrib.auth.mixins import LoginRequiredMixin
 
@@ -49,18 +53,15 @@ def register(request):
         form = UserRegisterForm()
     return render(request, 'users/register.html', {"form": form})
 
-
 def user_login(request):
     if request.method == 'POST':
         form = UserLoginForm(data=request.POST)
         if form.is_valid():
             user = form.get_user()
             login(request, user)
-            return redirect('home')
+            return redirect('news_home')
     else:
         form = UserLoginForm()
-
-    print('form ', form.as_p())
     return render(request, 'users/login.html', {"form": form})
 
 

@@ -7,10 +7,9 @@ from django.core.paginator import Paginator
 from django.core.paginator import EmptyPage
 from django.core.paginator import PageNotAnInteger
 from .mixin import CacheQuerysetMixin
-from operator import and_, or_
+
 from functools import reduce
-
-
+from operator import or_
 
 class MoneyHomeView(CacheQuerysetMixin, RelatedMixin, ListView):
     model = Money
@@ -30,7 +29,7 @@ class MoneyHomeView(CacheQuerysetMixin, RelatedMixin, ListView):
         if self._check_cached() == False:
             getQ = self._caching_queryset(self.getMoneyQuery())
         else:
-            print('self._check_cached() ', self._check_cached())
+            #print('self._check_cached() ', self._check_cached())
             getQ = self._get_cached_queryset()
         context = super().get_context_data(**kwargs)
         context['info'] = self.getInfo(getQ)
@@ -50,12 +49,12 @@ class MoneyHomeView(CacheQuerysetMixin, RelatedMixin, ListView):
             orders_page = paginator.page(paginator.num_pages)
         #print('context info', context['info'])
         context['request'] = self.request
-        print('============================')
-        print('VIEW context', context)
+        #print('============================')
+        #print('VIEW context', context)
         return context
 
     def getMoneyQuery(self):
-        print('MONEY QUERY ', self.request.GET)
+        #print('MONEY QUERY ', self.request.GET)
         if 'rdata_' in str(self.request.GET):
             if self.request.GET.get('date'):
                 date_get = self.request.GET.get('date')
@@ -70,35 +69,51 @@ class MoneyHomeView(CacheQuerysetMixin, RelatedMixin, ListView):
             # print('=================================')
             # print('=================================')
             # print('=================================')
+            #condition = Q()
             for k, v in relatedListUuid.items():
                 #print('MONEY QUERY 3')
                 #Money.objects.filter(Q(related_uuid__icontains=v['relateddata']))
                 #query = Money.objects.filter(reduce(and_, [Q(related_uuid__icontains=q) for q in v['relateddata']]))
                 #print('query money ', query)
                 if v['relateddata']:
-                    condition = Q()
+                    #condition = Q()
+                    print('1 ' , v['relateddata'])
                     # print('condition before ', condition)
-                    for r in v['relateddata']:
-                        condition |= Q(related_uuid__icontains=r)
+                    #Companies.objects.exclusive_in('name__icontains', possible_merchants])
+                    valuelist.append(self.get_related_query_icontains(v['relateddata']))
+                    #for r in v['relateddata']:
+                        #condition &= Q(related_uuid__icontains=r)
+                        #valuelist.append(Q(related_uuid__icontains=r))
+                        #condition |= Q(related_uuid__icontains=r)
+                        #valuelist.append(Q(related_uuid__icontains=r))
+
                         #query = Money.objects.filter(Q(related_uuid__icontains=r))
                         #resultquery = resultquery & query
                         #appendlist = Money.objects.filter(Q(related_uuid__icontains=r)).values_list('pk', flat=True)
-                        #valuelist.extend(appendlist)
                         #print('valuelist', valuelist)
                     # print('condition ', condition)
                     # print('=================================')
-                    valuelist.append(Money.objects.filter(condition))
+
+                    #valuelist.append('')
+#                    valuelist.append(Money.objects.filter(condition))
             # print('$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$')
             # print('valuelist ', valuelist)
             # print('$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$')
-            q1 = valuelist[0]
+            #q1 = valuelist[0]
             # print('q1 ', q1)
-            q2 = valuelist[1]
+            #q2 = valuelist[1]
             # print('q2 ', q2)
             #intersec = q1.intersection(q2)
-            intersec = q1
+            #print('TYT222222 ', valuelist)
+
+            #
+            #if len(valuelist) > 10:
+                #print('TYT222222 ', valuelist[0])
+                #for i in range(1,len(valuelist)):
+                 #   intersec &= valuelist[i]
+            intersec = valuelist[0]
             if len(valuelist) > 1:
-                for i in range(1,len(valuelist)):
+                for i in range(1,len(valuelist)-1):
                     intersec &= valuelist[i]
             #intersec = q1 & q2
             #print('intersec ', intersec)
@@ -107,8 +122,16 @@ class MoneyHomeView(CacheQuerysetMixin, RelatedMixin, ListView):
             #print('valuelist', valuelist)
             #return Money.objects.filter(Q(pk__in=valuelist))
             #print('condition ', condition)
+            #print('intersec ',  intersec)
+
+            #intersec = Money.objects.filter(condition)
+            print('intersec ', intersec)
             return Money.objects.filter(pk__in=intersec)
         return Money.objects.all()
+
+    def get_related_query_icontains(self, valuelist):
+        q_object = reduce(or_, (Q(related_uuid__icontains=value) for value in valuelist))
+        return Money.objects.filter(q_object)
 
     def getInfo(self, query):
         #money
