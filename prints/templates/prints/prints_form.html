@@ -1,21 +1,19 @@
-{% extends "base.html" %}
 {% load static %}
-{% block title %}{{ title }} - {{ block.super }}{% endblock %}
-{% block link %}
-<link href="{% static 'prints/css/print_style.css' %}" rel="stylesheet">
-<link href="{% static 'prints/css/print.min.css' %}" rel="stylesheet" type="text/css">
-<link rel="stylesheet" type="text/css" href="print.css">
-<script src="{% static 'prints/js/print.min.js' %}"></script>
-{% endblock %}
+<html lang="en">
+	<!--begin::Head-->
+	<head>
+		<title>{% block title %}print form{% endblock %}</title>
+		<meta charset="utf-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1" />
+		<link rel="shortcut icon" href="{% static 'assets/media/logos/favicon.ico' %}" />
+        <link href="{% static 'prints/css/print_style.css' %}" rel="stylesheet" type="text/css">
+        <link href="{% static 'prints/css/print.min.css' %}" rel="stylesheet" type="text/css">
+        <script src="{% static 'prints/js/print.min.js' %}"></script>
+    </head>
 
-
-{% block sidebar %}
-    {% include 'include/_sidebar_prints.html' %}
-{% endblock %}
-
-{% block content %}
-    Форма {{ formnumber }}<br><br>
-
+<body>
+    <!--Форма {{ formnumber }}<br><br> -->
+<br>
   <input type="button" onclick="printDiv('print-content')" value="Распечатать!"/>
 <br><br>
 <script type="text/javascript">
@@ -31,5 +29,5 @@
 <div id="print-content">
 {{ printform|safe }}
 </div>
-
-{% endblock %}
+</body>
+</html>

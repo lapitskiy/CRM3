@@ -6,8 +6,8 @@ from django.contrib.auth.models import User
 class Orders(models.Model):
     serial = models.CharField(max_length=150, blank=True, verbose_name='Серийный')
     comment = models.TextField(blank=True, verbose_name='Комментарий')
-    created_at = models.DateTimeField(auto_now_add=True, verbose_name='Создан')
-    updated_at = models.DateTimeField(auto_now=True, verbose_name='Обновлен')
+    created_at = models.DateTimeField(auto_now_add=True, blank=True, null=True, verbose_name='Создан')
+    updated_at = models.DateTimeField(auto_now=True, blank=True, null=True, verbose_name='Обновлен')
     status = models.ForeignKey('Status', default=1, on_delete = models.SET_DEFAULT, null=True, verbose_name='Статус', related_name='get_status')
     service = models.ForeignKey('Service', default=1, on_delete = models.SET_DEFAULT, null=True, verbose_name='Услуга', related_name='get_service')
     device = models.ForeignKey('Device', default=1,  on_delete = models.SET_DEFAULT, null=True, verbose_name='Устройство', related_name='get_device')

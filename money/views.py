@@ -9,7 +9,8 @@ from django.core.paginator import PageNotAnInteger
 from .mixin import CacheQuerysetMixin
 
 from functools import reduce
-from operator import or_
+from operator import or_, and_
+import operator
 
 class MoneyHomeView(CacheQuerysetMixin, RelatedMixin, ListView):
     model = Money
@@ -60,6 +61,7 @@ class MoneyHomeView(CacheQuerysetMixin, RelatedMixin, ListView):
                 date_get = self.request.GET.get('date')
             relatedListUuid = self.relatedPostGetData(request_get=self.request.GET)
             # нужно вернуть uuid по relateddata и сформировать query по Money.object
+            print('relatedListUuid ', relatedListUuid)
             valuelist = []
             #intersec = None
             #query = None
@@ -70,6 +72,7 @@ class MoneyHomeView(CacheQuerysetMixin, RelatedMixin, ListView):
             # print('=================================')
             # print('=================================')
             #condition = Q()
+            interslist = []
             for k, v in relatedListUuid.items():
                 #print('MONEY QUERY 3')
                 #Money.objects.filter(Q(related_uuid__icontains=v['relateddata']))
@@ -80,7 +83,9 @@ class MoneyHomeView(CacheQuerysetMixin, RelatedMixin, ListView):
                     print('1 ' , v['relateddata'])
                     # print('condition before ', condition)
                     #Companies.objects.exclusive_in('name__icontains', possible_merchants])
-                    valuelist.append(self.get_related_query_icontains(v['relateddata']))
+                    #[x for x in a if x in b]
+                    interslist.append(v['relateddata'])
+                    #valuelist.append(self.get_related_query_icontains(v['relateddata']))
                     #for r in v['relateddata']:
                         #condition &= Q(related_uuid__icontains=r)
                         #valuelist.append(Q(related_uuid__icontains=r))
@@ -97,7 +102,8 @@ class MoneyHomeView(CacheQuerysetMixin, RelatedMixin, ListView):
                     #valuelist.append('')
 #                    valuelist.append(Money.objects.filter(condition))
             # print('$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$')
-            # print('valuelist ', valuelist)
+            interslist = list(set.intersection(*map(set,interslist)))
+            print('interslist ', interslist)
             # print('$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$')
             #q1 = valuelist[0]
             # print('q1 ', q1)
@@ -111,10 +117,13 @@ class MoneyHomeView(CacheQuerysetMixin, RelatedMixin, ListView):
                 #print('TYT222222 ', valuelist[0])
                 #for i in range(1,len(valuelist)):
                  #   intersec &= valuelist[i]
-            intersec = valuelist[0]
-            if len(valuelist) > 1:
-                for i in range(1,len(valuelist)-1):
-                    intersec &= valuelist[i]
+
+            #intersec = valuelist[0]
+            #if len(valuelist) > 1:
+            #    for i in range(1,len(valuelist)-1):
+            #        intersec &= valuelist[i]
+
+
             #intersec = q1 & q2
             #print('intersec ', intersec)
             #print('valuelist', valuelist)
@@ -125,8 +134,17 @@ class MoneyHomeView(CacheQuerysetMixin, RelatedMixin, ListView):
             #print('intersec ',  intersec)
 
             #intersec = Money.objects.filter(condition)
-            print('intersec ', intersec)
-            return Money.objects.filter(pk__in=intersec)
+            #print('intersec ', intersec)
+            if interslist:
+                #query = Money.objects.filter(reduce(operator.and_, (Q(related_uuid__icontains=x) for x in interslist)))
+                query = self.get_related_query_icontains(interslist)
+                    #Money.objects.filter(reduce(and_, [Q(related_uuid__icontains=q) for q in interslist]))
+                print('query money return ', query)
+                return query
+            else:
+                print('TYT 0')
+                return Money.objects.none()
+            #Money.objects.filter(Q(related_uuid__icontains=interslist))
         return Money.objects.all()
 
     def get_related_query_icontains(self, valuelist):
