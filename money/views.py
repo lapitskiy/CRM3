@@ -77,10 +77,10 @@ class MoneyHomeView(CacheQuerysetMixin, RelatedMixin, ListView):
                 #print('MONEY QUERY 3')
                 #Money.objects.filter(Q(related_uuid__icontains=v['relateddata']))
                 #query = Money.objects.filter(reduce(and_, [Q(related_uuid__icontains=q) for q in v['relateddata']]))
-                #print('query money ', query)
+                print('!related! ', v['relateddata'])
                 if v['relateddata']:
                     #condition = Q()
-                    print('1 ' , v['relateddata'])
+                    #print('1 ' , v['relateddata'])
                     # print('condition before ', condition)
                     #Companies.objects.exclusive_in('name__icontains', possible_merchants])
                     #[x for x in a if x in b]
@@ -102,6 +102,8 @@ class MoneyHomeView(CacheQuerysetMixin, RelatedMixin, ListView):
                     #valuelist.append('')
 #                    valuelist.append(Money.objects.filter(condition))
             # print('$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$')
+            for x in interslist:
+                print('interslist x ', x)
             interslist = list(set.intersection(*map(set,interslist)))
             print('interslist ', interslist)
             # print('$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$')

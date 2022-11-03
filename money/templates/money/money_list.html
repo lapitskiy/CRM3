@@ -21,7 +21,6 @@
                 {% for item in page_obj %}
                     <div class="tab-pane fade show" id="id-list-{{ item.pk }}" role="tabpanel" aria-labelledby="list-{{ item.pk }}">
                         <div class="shadow p-3 mb-5 bg-body rounded">
-                            Номер: {{ item.pk }}<br>
                             Cумма: {{ item.money }}<br>
                             Предоплата: {{ item.prepayment }}<br>
                             Дата создания: {{ item.created_at }}<br>

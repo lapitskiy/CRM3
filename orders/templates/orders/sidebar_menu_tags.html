@@ -8,7 +8,28 @@
 											</div>
 											<!--end:Menu content-->
 										</div>
-
+<div class="menu-item">
+													<!--begin:Menu link-->
+    													<a class="menu-link" href="{% url 'orders_home' %}?category=simple">
+														<span class="menu-bullet">
+															<span class="bullet bullet-dot"></span>
+														</span>
+														<span class="menu-title">Заказы в ремонт</span>
+													</a>
+													<a class="menu-link" href="{% url 'orders_home' %}?category=fast">
+														<span class="menu-bullet">
+															<span class="bullet bullet-dot"></span>
+														</span>
+														<span class="menu-title">Услуги на месте</span>
+													</a>
+    													<a class="menu-link" href="{% url 'orders_home' %}">
+														<span class="menu-bullet">
+															<span class="bullet bullet-dot"></span>
+														</span>
+														<span class="menu-title">Все заказы</span>
+													</a>
+</div>
+													<!--end:Menu link-->
 										<!--begin:Menu item-->
 										<div data-kt-menu-trigger="click" class="menu-item menu-accordion">
 											<!--begin:Menu link-->
@@ -79,47 +100,7 @@
 												<span class="menu-arrow"></span>
 											</span>
 											<!--end:Menu link-->
-
-                                        	<!--begin:Menu sub ORDERS MAIN-->
-											<div class="menu-sub menu-sub-accordion">
-												<!--begin:Menu SUB item-->
-                                                        <div class="menu-item">
-													<!--begin:Menu link-->
-													<a class="menu-link" href="{% url 'orders_home' %}">
-														<span class="menu-bullet">
-															<span class="bullet bullet-dot"></span>
-														</span>
-														<span class="menu-title">Все заказы</span>
-													</a>
-													<!--end:Menu link-->
-												</div>
-												<!--end:Menu item-->
-												<!--begin:Menu SUB item-->
-                                                        <div class="menu-item">
-													<!--begin:Menu link-->
-													<a class="menu-link" href="{% url 'orders_home' %}?category=simple">
-														<span class="menu-bullet">
-															<span class="bullet bullet-dot"></span>
-														</span>
-														<span class="menu-title">Заказы в ремонт</span>
-													</a>
-													<!--end:Menu link-->
-												</div>
-												<!--end:Menu item-->
-												<!--begin:Menu SUB item-->
-                                                        <div class="menu-item">
-													<!--begin:Menu link-->
-													<a class="menu-link" href="{% url 'orders_home' %}?category=fast">
-														<span class="menu-bullet">
-															<span class="bullet bullet-dot"></span>
-														</span>
-														<span class="menu-title">Услуги на месте</span>
-													</a>
-													<!--end:Menu link-->
-												</div>
-												<!--end:Menu item-->
-
-											</div>
+                                        
 											<!--end:Menu sub-->
 											<!--begin:Menu sub ORDERS CATEGORY-->
 											<div class="menu-sub menu-sub-accordion">

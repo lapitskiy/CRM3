@@ -14,10 +14,10 @@
 
  <h3>
     {% if tag == 'fast' %}
-        Быстрый заказ
+        Услуга на месте
     {% endif %}
     {% if tag == 'simple' %}
-        Обычный заказ
+        Заказ в ремонт
     {% endif %}
     </h3>
     <form action="{% url 'order_add'%}?category={{ tag }}" method="POST">

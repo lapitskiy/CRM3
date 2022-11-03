@@ -91,6 +91,7 @@ class AppRelated():
                         #print('intersection ', intersection)
                         for z in query:
                             uudi_filter_related_list.append(z.related_uuid)
+
                     return uudi_filter_related_list
         return uudi_filter_related_list
 

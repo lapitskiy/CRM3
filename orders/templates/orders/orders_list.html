@@ -38,7 +38,8 @@
 												<path d="M19.0759 3H4.72777C3.95892 3 3.47768 3.83148 3.86067 4.49814L8.56967 12.6949C9.17923 13.7559 9.5 14.9582 9.5 16.1819V19.5072C9.5 20.2189 10.2223 20.7028 10.8805 20.432L13.8805 19.1977C14.2553 19.0435 14.5 18.6783 14.5 18.273V13.8372C14.5 12.8089 14.8171 11.8056 15.408 10.964L19.8943 4.57465C20.3596 3.912 19.8856 3 19.0759 3Z" fill="currentColor" />
 											</svg>
 										</span>
-										<!--end::Svg Icon-->Filter</a>
+										<!--end::Svg Icon-->
+                                            Фильтр</a>
 										<!--begin::Menu 1-->
 										<div class="menu menu-sub menu-sub-dropdown w-250px w-md-300px" data-kt-menu="true" id="kt_menu_62fe696a6df35">
 											<!--begin::Header-->
@@ -119,7 +120,29 @@
 									</div>
 									<!--end::Wrapper-->
 									<!--begin::Button-->
-									<a href="#" class="btn btn-dark fw-bold" data-bs-toggle="modal" data-bs-target="#kt_modal_create_app" id="kt_toolbar_primary_button">Create</a>
+                                        <a href="#" class="btn btn-dark fw-bold" data-kt-menu-trigger="click" data-kt-menu-placement="bottom-end">Cоздать</a>
+                                    <div class="menu menu-sub menu-sub-dropdown w-250px w-md-300px" data-kt-menu="true" id="kt_menu_create123">
+											<!--begin::Header-->
+											<div class="px-7 py-5">
+												<div class="fs-5 text-dark fw-bold">Создать заказа</div>
+											</div>
+											<!--end::Header-->
+											<!--begin::Menu separator-->
+											<div class="separator border-gray-200"></div>
+											<!--end::Menu separator-->
+											<!--begin::Form-->
+											<div class="px-7 py-5">
+												<!--begin::Input group-->
+												<div class="d-flex flex-column mb-10">
+													<!--begin::Label-->
+                                                    <a href="{% url 'order_add'%}?category=fast" class="btn btn-primary"><i class="fa-brands fa-waze fs-4 me-2"></i> Услуга на месте</a><br>
+
+                                                    <a href="{% url 'order_add'%}?category=simple" class="btn btn-info"><i class="fas fa-envelope-open-text fs-4 me-2"></i> Заказ в ремонт</a>
+												</div>
+												<!--end::Input group-->
+											</div>
+											<!--end::Form-->
+										</div>
 									<!--end::Button-->
 								</div>
 								<!--end::Actions-->
@@ -277,23 +300,6 @@
 								<!--end::About card-->
 							</div>
 							<!--end::Post-->
-							<!--begin::Footer-->
-							<div class="footer py-4 d-flex flex-column flex-md-row flex-stack" id="kt_footer">
-								<!--begin::Copyright-->
-								<div class="text-dark order-2 order-md-1">
-									<span class="text-muted fw-semibold me-1">2022&copy;</span>
-									<a href="/" target="_blank" class="text-gray-800 text-hover-primary">Pipe crm</a>
-								</div>
-								<!--end::Copyright-->
-								<!--begin::Menu-->
-								<ul class="menu menu-gray-600 menu-hover-primary fw-semibold order-1">
-									<li class="menu-item">
-										<a href="#" target="_blank" class="menu-link px-2">About</a>
-									</li>
-								</ul>
-								<!--end::Menu-->
-							</div>
-							<!--end::Footer-->
 
 
 
