@@ -42,10 +42,10 @@ class AppRelated():
         }
         return context
 
-    def submenuImportRelated(self, **kwargs):
+    def submenuImportRelated(self, **kwargs) -> str:
         return 'related/load_sidebar_orders_related_submenu_tags.html'
 
-    def linkGetReleatedData(self, **kwargs):
+    def linkGetReleatedData(self, **kwargs) -> dict:
         request_get = kwargs['request_get']
         relateddata = ast.literal_eval(request_get['rdata_orders'])
         uudi_filter_related_list = []

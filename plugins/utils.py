@@ -92,7 +92,7 @@ class RelatedMixin(object):
     # [RU] переводить list dict uuid = [{'uuid', ''},] в _list = ['uuid',]
     # [RU] бывший getListUuidFromDictKeyRelated
     # [EN] list related apps
-    def dictUuidToList(self, uuid):
+    def dictUuidToList(self, uuid) -> list:
         _list = []
         if type(uuid) == dict:
             for k, v in uuid.items():
@@ -112,7 +112,7 @@ class RelatedMixin(object):
     # [EN] return related data from class get_related_data() in app models
     # [RU] возвращает связанные данные на основе выборки qry или page
     # 1) kwargs['page'] - возвращает связанные данные на основе полученного paginate page query
-    def getDataListRelated(self, **kwargs):
+    def getDataListRelated(self, **kwargs) -> list:
         data_related_list = []
         related = self.checkRelated()
         #print('related ', related)
