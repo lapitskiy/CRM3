@@ -74,8 +74,9 @@ class AppRelated():
                         #date = datetime.strptime(request_get['date'], '%Y-%m-%d') + timedelta(days=1)
 
                         #query2 = Orders.objects.filter(Q(created_at__icontains=date))
-                        date = datetime.strptime(request_get['date'], '%Y-%m-%d')
-                        query2 = Orders.objects.filter(created_at__date=datetime.date(date))
+                        #date = datetime.strptime(request_get['date'], '%Y-%m-%d')
+                        end_date = datetime.strptime(request_get['date'], '%Y-%m-%d') + timedelta(days=1)
+                        query2 = Orders.objects.filter(created_at__range=[request_get['date'],end_date])
                     if not request_get['date'] and request_get['date2']:
                         print('DATE 3')
                         query2 = Orders.objects.filter(Q(created_at__icontains=request_get['date2']))
