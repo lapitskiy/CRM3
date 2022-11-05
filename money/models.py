@@ -19,9 +19,13 @@ class Money(models.Model):
             'related_use': 'form',
             'module_name': 'Стоимость',
             'Сумма': self.money,
-            'Предоплата': self.prepayment,
+            'Оплачено': self.prepayment,
             'related_uuid': self.related_uuid,
             }
+
+        if self.money != self.prepayment:
+            data['warning'] = 'red'
+
         return data
 
     def get_related_filter(self, **kwargs):

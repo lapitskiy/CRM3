@@ -8,7 +8,8 @@ class AppRelated(object):
     prefix = 'clients'
     related_format = 'form'
 
-    # если переменная имеет возможность иметь несколько uuid на одну запись, тогда здесь идет обрабтока такой возможности
+    # если переменная имеет возможность иметь несколько uuid на одну запись, тогда здесь идет обработка такой возможности
+    # например на один номер телефона может быть два заказа, и тут идет  проветка нет ли такого телефона в базе уже
     def checkUpdate(self, **kwargs):
         if kwargs['request_post']['clients-phone']:
             try:
@@ -24,7 +25,7 @@ class AppRelated(object):
         return False
 
     # если это связанный объект, который не имеет формы или не требует обновления, то возврщает True и пропускается в
-    # utils checkRelatedIsValidDict, как не требующий добавления для проверки форимы и обновления текущей
+    # utils checkRelatedIsValidDict, как не требующий добавления для проверки формы и обновления текущей
     def passEditUpdate(self, **kwargs):
         return False
 
@@ -49,22 +50,18 @@ class AppRelated(object):
     def checkRelatedAddForm(self, **kwargs):
         context= {}
         request_post = kwargs['request_post']
-        #print('request clients-phone checkRelatedAddForm: ', request_post['clients-phone'])
-        #print('checkUpdate ', self.checkUpdate(request_post=request_post))
         if self.checkUpdate(request_post=request_post):
             get_client = Clients.objects.get(phone=request_post['clients-phone'])
-            #print('get clinet: ', get_client)
             related_form = RelatedAddForm(request_post, prefix=self.prefix, instance=get_client)
             #print('related_form: ', related_form)
             context['uuid'] = get_client.related_uuid
             context['pk'] = get_client.pk
         else:
-            print('CLIENTS ELSE request_post ', request_post)
+            # если форма пустая, пропускаем
             related_form = RelatedAddForm(request_post, prefix=self.prefix)
             related_form.prefix = self.prefix
             context['uuid'] = ''
             context['pk'] = ''
-        print('Related - Client')
         context['form'] = related_form
         return context
 

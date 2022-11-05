@@ -156,11 +156,12 @@ class MoneyHomeView(CacheQuerysetMixin, RelatedMixin, ListView):
     def getInfo(self, query):
         #money
         allmoney = Decimal('0.0')
+        paymoney = Decimal('0.0')
         info = {}
         for x in query:
             #print('money ', x.money)
             allmoney = allmoney + x.money
+            paymoney = paymoney + x.prepayment
         info.update({'allmoney' : str(allmoney)})
-        #order filter
-
+        info.update({'paymoney': str(paymoney)})
         return info

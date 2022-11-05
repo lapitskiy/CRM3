@@ -202,33 +202,57 @@
         </div>
     </div>
     <div class="card-body">
-                                    Принято: {{ item.category_service }}<br>
-                                    В ремонте: {{ item.device }}<br>
-                                    Услуга: {{ item.service }}<br>
-                                    Серийный: {{ item.serial }}<br>
-            {% if item.category.title == "simple" %}
-                    Комментарий: {{ item.comment }}<br>
-                {% endif %}
-                                    Приемщик: {{ item.related_user }}<br>
-                            {% for related_item in related_list %}
-                                {% for order_uuid_key, order_uuid_value in item.related_uuid.items %}
+        Принято: {{ item.category_service }}<br>
+        В ремонте: {{ item.device }}<br>
+        Услуга: {{ item.service }}<br>
+        Серийный: {{ item.serial }}<br>
+        {% if item.category.title == "simple" %}
+                Комментарий: {{ item.comment }}<br>
+        {% endif %}
+                Приемщик: {{ item.related_user }}<br>
 
-                                    {% if related_item.related_uuid and order_uuid_key == related_item.related_uuid and related_item.related_use == 'form' %}
-                                        <br><b>{{ related_item.module_name }}</b><br>
-                                                {% for key, value in related_item.items %}
-                                                    {% if key != 'related_uuid' and key != 'module_name' and key != 'related_use' %}
-                                                        {{ key }}: {{ value }}<br>
-                                                    {% endif %}
-                                                {% endfor %}
-                                    {% endif %}
-                                {% endfor %}
+        <!-- Related data -->
+        {% for related_item in related_list %}
+            {% for order_uuid_key, order_uuid_value in item.related_uuid.items %}
+
+                {% if related_item.related_uuid and order_uuid_key == related_item.related_uuid and related_item.related_use == 'form' %}
+
+                            {% if related_item.warning %}
+                                {% if related_item.warning == 'red' %}
+                                    <!--begin::Alert-->
+                                    <br>
+                                    <div class="alert alert-dismissible bg-light-danger d-flex flex-column flex-sm-row p-0 mb-0">
+                                        <!--begin::Icon-->
+
+                                        <!--end::Icon-->
+
+                                        <!--begin::Wrapper-->
+                                        <div class="d-flex flex-column pe-0 pe-sm-10">
+                                            <!--begin::Content-->
+                                            <span><i class="fa-brands fa-exclamation fs-4 me-2"></i><b>{{ related_item.module_name }}</b></span>
+                                            <!--end::Content-->
+                                        </div>
+                                        <!--end::Wrapper-->
+                                    </div>
+                                    <!--end::Alert-->
+                                {% endif %}
+                            {% else %}
+                                <br><b>{{ related_item.module_name }}</b><br>
+                            {% endif %}
+
+                            {% for key, value in related_item.items %}
+                                {% if key != 'related_uuid' and key != 'module_name' and key != 'related_use' and key != 'warning' %}
+                                    {{ key }}: {{ value }}<br>
+                                {% endif %}
                             {% endfor %}
 
-
-
+                {% endif %}
+            {% endfor %}
+        {% endfor %}
 
     </div>
-    <div class="card-footer">
+
+<div class="card-footer">
 <b>Дополнительные данные</b><br>
                             {% for related_item in related_list %}
                                 {% for order_uuid_key, order_uuid_value in item.related_uuid.items %}

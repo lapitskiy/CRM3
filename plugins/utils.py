@@ -201,9 +201,9 @@ class RelatedMixin(object):
                 app_model = importlib.import_module(modelPath)
                 cls = getattr(app_model, x.related_class_name)
                 related_result = cls().get_related_filter(search_query=search_query)
-                print('####START ')
-                print('related_result ',x.module_name,' :',related_result)
-                print('####END')
+                #print('####START ')
+                #print('related_result ',x.module_name,' :',related_result)
+                #print('####END')
                 if related_result:
                     for z in related_result:
                         uudi_filter_related_list.append(z.related_uuid)

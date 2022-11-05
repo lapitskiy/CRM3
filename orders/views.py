@@ -34,7 +34,6 @@ class OrdersHomeView(RelatedMixin, ListView):
         return list_orders
 
     def get_context_data(self, *, object_list=None, **kwargs):
-        print('TEST!')
         context = super().get_context_data(**kwargs)
         context['title'] = 'Все заказы'
         context['filter'] = self.requestGet('filter')
