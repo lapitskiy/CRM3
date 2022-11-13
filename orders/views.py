@@ -341,7 +341,6 @@ class OrderEditView(RelatedMixin, TemplateView):
         get_order = Orders.objects.get(pk=context['order_id'])
         context['forms'] = self.getRelatedEditFormList(obj=get_order)
         formOne = SimpleOrderEditForm(request=self.request, instance=get_order)
-        #print('formone ', formOne)
         formOne.prefix = 'one_form'
         context.update({'formOne': formOne})
         return self.render_to_response(context)

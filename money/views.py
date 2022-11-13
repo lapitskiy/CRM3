@@ -1,5 +1,6 @@
-from django.views.generic import ListView
-from .models import Money
+from django.views.generic import ListView, TemplateView
+from .models import Money, Prepayment
+from .forms import MoneyEditForm, PrepayEditForm
 from decimal import Decimal
 from plugins.utils import RelatedMixin
 from django.db.models import Q
@@ -7,10 +8,11 @@ from django.core.paginator import Paginator
 from django.core.paginator import EmptyPage
 from django.core.paginator import PageNotAnInteger
 from .mixin import CacheQuerysetMixin
+from django.urls import reverse_lazy
+from django.http import HttpResponseRedirect
 
 from functools import reduce
 from operator import or_, and_
-import operator
 
 class MoneyHomeView(CacheQuerysetMixin, RelatedMixin, ListView):
     model = Money
@@ -161,7 +163,60 @@ class MoneyHomeView(CacheQuerysetMixin, RelatedMixin, ListView):
         for x in query:
             #print('money ', x.money)
             allmoney = allmoney + x.money
-            paymoney = paymoney + x.prepayment
+            #paymoney = paymoney + x.prepayment
         info.update({'allmoney' : str(allmoney)})
         info.update({'paymoney': str(paymoney)})
         return info
+
+class MoneyEditView(TemplateView):
+    template_name = 'money/money_edit.html'
+
+    def get(self, request, *args, **kwargs):
+        context = super().get_context_data(**kwargs)
+        form_money, form_prepay = self.getForm(id=context['money_id'])
+        context.update({'form_money': form_money})
+        context.update({'form_prepay': form_prepay})
+        context.update({'id': self.request.GET.get('id')})
+        return self.render_to_response(context)
+
+    def post(self, request, *args, **kwargs):
+        context = super().get_context_data(**kwargs)
+        form_money, form_prepay = self.getPostForm(id=context['money_id'])
+        if form_money.is_valid():
+            form_money.save()
+            return HttpResponseRedirect(reverse_lazy('money_edit', kwargs={'money_id': context['money_id']}))
+        else:
+            return self.form_invalid(formEdit, **kwargs)
+
+    def form_invalid(self, formEdit, **kwargs):
+        context = self.get_context_data()
+        formEdit.prefix = 'edit_form'
+        context.update({'formEdit': formEdit})
+        context.update({'model': self.request.GET.get('model')})
+        context.update({'id': self.request.GET.get('id')})
+        return self.render_to_response(context)
+
+    def getForm(self, **kwargs):
+        getid = kwargs['id']
+        if getid:
+            try:
+                get_moneyobj = Money.objects.get(pk=getid)
+                get_inst_money = MoneyEditForm(instance=get_moneyobj)
+                get_inst_money.prefix = 'form_money'
+                get_prepayobj = Prepayment.objects.get(money=getid)
+            except Money.DoesNotExist:
+                return None, None
+            except Prepayment.DoesNotExist:
+                get_inst_prepay = PrepayEditForm()
+                get_inst_prepay.prefix = 'form_prepay'
+                return get_inst_money, get_inst_prepay
+            get_inst_prepay = PrepayEditForm(instance=get_prepayobj)
+            get_inst_prepay.prefix = 'form_prepay'
+            return get_inst_money, get_inst_prepay
+
+    def getPostForm(self, **kwargs):
+        getid = kwargs['id']
+        if getid:
+            get_moneyobj = Money.objects.get(pk=getid)
+            get_form_money = MoneyEditForm(self.request.POST, prefix='form_money', instance=get_moneyobj)
+            return get_form_money, None

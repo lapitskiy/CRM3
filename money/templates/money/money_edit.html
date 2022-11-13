@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+{% load money_template_tags %}
+{% block title %}{{ title }} - {{ block.super }}{% endblock %}
+{% block sidebar %}
+    {% include 'include/_sidebar_money.html' %}
+{% endblock %}
+{% block content %}
+    <div class="shadow-sm p-3 mb-5 bg-body rounded">
+    Данные по внесению средств
+    </div>
+    {{ money_id }}
+
+    <form action="{% url 'money_edit' money_id %}" method="POST">
+        {% csrf_token %}
+        {{ form_money.non_field_errors }}
+        {{ form_money.as_p }}
+
+        {{ form_prepay.non_field_errors }}
+        {{ form_prepay.as_p }}
+        <button type="submit" class="btn btn-primary btn-block">Сохранить</button>
+    </form>
+
+{% endblock %}

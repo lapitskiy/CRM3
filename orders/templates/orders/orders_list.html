@@ -241,8 +241,11 @@
                             {% endif %}
 
                             {% for key, value in related_item.items %}
-                                {% if key != 'related_uuid' and key != 'module_name' and key != 'related_use' and key != 'warning' %}
+                                {% if key != 'html' and key != 'related_uuid' and key != 'module_name' and key != 'related_use' and key != 'warning' %}
                                     {{ key }}: {{ value }}<br>
+                                {% endif %}
+                                {% if key == 'html'%}
+                                    {{ value | safe }}<br>
                                 {% endif %}
                             {% endfor %}
 

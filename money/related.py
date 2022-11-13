@@ -72,6 +72,7 @@ class AppRelated(object):
         form_add = form_from_dict.save(commit=False)
         form_add.related_uuid = related_dict['uuid']
         form_add.save()
+
         print('form save - ', self.prefix)
 
     def linkGetReleatedData(self, **kwargs):
