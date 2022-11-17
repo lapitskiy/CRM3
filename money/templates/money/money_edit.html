@@ -6,18 +6,38 @@
 {% endblock %}
 {% block content %}
     <div class="shadow-sm p-3 mb-5 bg-body rounded">
-    Данные по внесению средств
+        <h1>Данные по внесению средств</h1><br>
+        <b>Указанная сумма:</b> {{ moneyobj }}<br>
+        <b>Всего оплачено: </b>{{ prepay_sum }}<br>
+        Дата создания заказа: {{ moneyobj.created_at }}<br>
+        <br><br>
+        <b>Предоплаты: </b><br>
+        {% if prepayobj %}
+            {% for item in prepayobj %}
+            <u>{{ item.prepayment }}</u> <i>{{ item.created_at }}</i><br>
+            {{ item.comment }}
+            <br>
+            {% endfor %}
+        {% else %}
+            Предоплата отсутсвует, внесите деньги в форме ниже
+        {% endif %}
+
     </div>
-    {{ money_id }}
+    <br>
+    <h1>Внести средства</h1>
+    <form action="{% url 'money_edit' money_id %}" method="POST">
+        {% csrf_token %}
+        {{ form_prepay.non_field_errors }}
+        {{ form_prepay.as_p }}
+        <button type="submit" class="btn btn-primary btn-block">Внести</button>
+    </form>
+    <br>
+    <h1>Редактировать</h1>
 
     <form action="{% url 'money_edit' money_id %}" method="POST">
         {% csrf_token %}
         {{ form_money.non_field_errors }}
         {{ form_money.as_p }}
-
-        {{ form_prepay.non_field_errors }}
-        {{ form_prepay.as_p }}
-        <button type="submit" class="btn btn-primary btn-block">Сохранить</button>
+        <button type="submit" class="btn btn-primary btn-block">Обновить</button>
     </form>
-
 {% endblock %}

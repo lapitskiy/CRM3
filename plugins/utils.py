@@ -136,8 +136,8 @@ class RelatedMixin(object):
                             return ''
                         related_get = {}
                         if 'data' in kwargs:
-                            if kwargs['data'] == 'full':
-                                related_get[x.module_name] = cls2.__dict__
+                            if kwargs['data'] == 'dict':
+                                related_get[x.module_name] = cls2.get_related_dict_data()
                         else:
                             related_get = cls2.get_related_data()
 
@@ -180,9 +180,7 @@ class RelatedMixin(object):
     def getModelFromStr(self, **kwargs):
         if 'cls' in kwargs and 'app' in kwargs and 'uuid' in kwargs:
             modelPath = kwargs['app'] + '.models'
-            print('model path ', modelPath)
             imp_model = importlib.import_module(modelPath)
-            print('NO!')
             cls_model = getattr(imp_model, kwargs['cls'])
             try:
                 cls2 = cls_model.objects.get(Q(related_uuid__icontains=kwargs['uuid']))
@@ -343,7 +341,7 @@ class RelatedMixin(object):
 
     # [RU] отдает dict с названием связанных плагинов и списком его доступных полей для вывода
     # [RU] пример работы плагина, это вывод перменных для вывода в печатных формах плагина prints
-    def relatedGetAllFieldsFromModel(self, **kwargs):
+    def relatedGetAllFieldsFromModel(self, **kwargs) -> dict:
         related_dict = {}
         related = self.checkRelated()
         if related:
@@ -359,5 +357,6 @@ class RelatedMixin(object):
                     _list.append(field.__str__())
                 _dict['fields'] = _list
                 related_dict[x.module_name] = _dict
+            print('related_dict', related_dict)
             return related_dict
         return related_dict

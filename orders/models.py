@@ -1,6 +1,7 @@
 from django.db import models
 from django.urls import reverse
 from django.contrib.auth.models import User
+from django.forms.models import model_to_dict
 
 # Create your models here.
 class Orders(models.Model):
@@ -35,6 +36,9 @@ class Orders(models.Model):
             'related_uuid': self.related_uuid,
             }
         return data
+
+    def get_related_dict_data(self):
+        return model_to_dict(self)
 
     def __str__(self):
         return str(self.pk)
@@ -73,8 +77,8 @@ class Category(models.Model):
         ordering = ['title']
 
 class Category_service(models.Model):
-    name = models.CharField(max_length=150, verbose_name='Наименования категории услуги')
-    category = models.CharField(max_length=150, db_index=True, unique=True, verbose_name='Категория')
+    name = models.CharField(max_length=150, unique=True, verbose_name='Наименования категории услуги')
+    #category = models.CharField(max_length=150, db_index=True,  verbose_name='Категория')
     used = models.IntegerField(default=0)
     user_permission = models.ManyToManyField(User)
 

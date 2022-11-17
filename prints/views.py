@@ -25,33 +25,34 @@ class PrintFormView(RelatedMixin, TemplateView):
 
     def get(self, request, *args, **kwargs):
         context = super().get_context_data(**kwargs)
-
         if self.request.GET.get('form'):
             pass
         else:
             print_form = Prints.objects.first()
-
-        related_data = self.getDataListRelated(uuid=self.request.GET.get('uuid'), one='uuid', data='full')
+        related_data = self.getDataListRelated(uuid=self.request.GET.get('uuid'), one='uuid', data='dict')
         context['printform'] = self.getPrintForm(content=print_form.contentform, related=related_data)
         context['formnumber'] = print_form.pk
         return self.render_to_response(context)
 
     def getPrintForm(self, **kwargs):
         after_text = ''
-        print('related ', kwargs['related'])
-        print('print_form.contentform ', kwargs['content'])
+        #print('related ', kwargs['related'])
+        #print('print_form.contentform ', kwargs['content'])
+        related = kwargs['related']
+        rel_money = related[0]['money']
+        print('kwargs', rel_money)
         if 'content' in kwargs and 'related' in kwargs:
             #list_related = re.findall(r'[a-zA-Z0-9]+\.[a-zA-Z0-9]+\.[a-zA-Z0-9]+', kwargs['content'])
             after_text = kwargs['content']
             list_related = [f.group(0) for f in re.finditer('(?<={{)(.*?)(?=}})', kwargs['content'])]
 
             for x in list_related:
-                print('x ', x)
+                #print('x ', x)
                 list_split = x.split('.')
-                print('list_split ', list_split)
+                #print('list_split ', list_split)
                 get_obj = self.getModelFromStr(uuid=self.request.GET.get('uuid'), app=list_split[0], cls=list_split[1])
-                print('split 2: ', list_split[2])
-                print('get_obj: ', get_obj)
+                #print('split 2: ', list_split[2])
+                #print('get_obj: ', get_obj)
                 if get_obj:
                     get_name = getattr(get_obj, list_split[2])
                     after_text = after_text.replace('{{'+x+'}}', str(get_name))

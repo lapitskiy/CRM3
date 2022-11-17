@@ -2,6 +2,7 @@ from django.db import models
 from django.urls import reverse
 from django.core.validators import RegexValidator
 from django.db.models import Q
+from django.forms.models import model_to_dict
 
 # Create your models here.
 class Clients(models.Model):
@@ -24,6 +25,9 @@ class Clients(models.Model):
             'related_uuid': self.related_uuid,
             }
         return data
+
+    def get_related_dict_data(self):
+        return model_to_dict(self)
 
     def get_related_filter(self, **kwargs):
         results = Clients.objects.filter(Q(phone__icontains=kwargs['search_query']))

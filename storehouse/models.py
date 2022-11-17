@@ -6,6 +6,7 @@ from django.core.exceptions import ValidationError
 import phonenumbers
 from django.contrib.auth.models import User
 from django.utils.translation import gettext as _
+from django.forms.models import model_to_dict
 
 def validate_phone_number(value):
     try:
@@ -44,6 +45,8 @@ class StoreRelated(models.Model):
         pass
         return
 
+    def get_related_dict_data(self):
+        return model_to_dict(self)
 
     def __str__(self):
         return str(self.store.name)

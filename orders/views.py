@@ -231,9 +231,6 @@ class OrderAddView(RelatedMixin, TemplateView):
             dev.used = F('used') + 1
             dev.save()
 
-
-
-
     def getForm(self):
         category_filter = self.request.GET.get('category')
         if category_filter:

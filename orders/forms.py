@@ -139,9 +139,10 @@ class FastOrderAddForm(forms.ModelForm):
 class SettingServiceAddForm(forms.ModelForm):
     class Meta:
         model = Service
-        fields = ['name']
+        fields = ['name','category_service']
         widgets = {
             'name': forms.TextInput(attrs={'class': 'form-control', 'autocomplete': 'off'}),
+            'category_service': forms.Select(attrs={'class': 'form-control', 'autocomplete': 'on'}),
         }
 
     def clean_name(self):
@@ -155,9 +156,10 @@ class SettingServiceAddForm(forms.ModelForm):
 class SettingDeviceAddForm(forms.ModelForm):
     class Meta:
         model = Device
-        fields = ['name']
+        fields = ['name','category_service']
         widgets = {
             'name': forms.TextInput(attrs={'class': 'form-control', 'autocomplete': 'off'}),
+            'category_service': forms.Select(attrs={'class': 'form-control', 'autocomplete': 'on'}),
         }
 
     def clean_name(self):
@@ -171,10 +173,9 @@ class SettingDeviceAddForm(forms.ModelForm):
 class SettingCategoryServiceAddForm(forms.ModelForm):
     class Meta:
         model = Category_service
-        fields = ['name','category','user_permission']
+        fields = ['name','user_permission']
         widgets = {
             'name': forms.TextInput(attrs={'class': 'form-control', 'autocomplete': 'off'}),
-            'category': forms.TextInput(attrs={'class': 'form-control', 'autocomplete': 'off'}),
         }
 
     def clean_name(self):

@@ -26,8 +26,8 @@ class CategoryAdmin(admin.ModelAdmin):
     search_fields = ('title',)
 
 class CategoryServiceAdmin(admin.ModelAdmin):
-    list_display = ('id','name', 'category')
-    list_display_links = ('id','name', 'category')
+    list_display = ('id','name')
+    list_display_links = ('id','name')
     search_fields = ('title',)
 
 class ServiceAdmin(admin.ModelAdmin):

@@ -3,6 +3,7 @@ from django.urls import reverse
 from django.core.validators import RegexValidator
 from django.db.models import Q
 from ckeditor_uploader.fields import RichTextUploadingField
+from django.forms.models import model_to_dict
 
 # Create your models here.
 class Prints(models.Model):
@@ -23,11 +24,8 @@ class Prints(models.Model):
             }
         return data
 
-    def get_related_html(self):
-        data = {
-            'Печать': 'Button here',
-            }
-        return data
+    def get_related_dict_data(self):
+        return model_to_dict(self)
 
     def get_related_filter(self, **kwargs):
         pass

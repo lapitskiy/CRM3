@@ -2,6 +2,8 @@ from django.db import models
 from django.urls import reverse
 from django.db.models import Q
 from decimal import Decimal
+from django.db.models import Sum
+from django.forms.models import model_to_dict
 
 # Create your models here.
 class Money(models.Model):
@@ -17,7 +19,9 @@ class Money(models.Model):
         return reverse('view_money', kwargs={'pk': self.pk})
 
     def get_related_data(self):
-        prepayment = self.getPrepaySum()
+        prepayment = Prepayment.get_all_prepayment_sum(id=self.pk)
+        if prepayment is None:
+            prepayment = 0
         data = {
             'related_use': 'form',
             'module_name': 'Стоимость',
@@ -29,19 +33,19 @@ class Money(models.Model):
 
         if self.money != prepayment:
             data['warning'] = 'red'
-
         return data
+
+    def get_related_dict_data(self):
+        dict_ = model_to_dict(self)
+        prepayment = Prepayment.get_all_prepayment_sum(id=self.pk)
+        if prepayment is None:
+            prepayment = 0
+        dict_.update({'prepayment': prepayment})
+        return dict_
 
     def get_related_filter(self, **kwargs):
         results = Money.objects.filter(Q(money__icontains=kwargs['search_query']) | Q(prepayment__icontains=kwargs['search_query']))
         return results
-
-    def getPrepaySum(self, **kwargs):
-        results = Prepayment.objects.filter(pk=self.pk)
-        paymoney = Decimal('0.0')
-        for x in results:
-            paymoney = paymoney + x.prepayment
-        return paymoney
 
     def __str__(self):
         return str(self.money)
@@ -65,3 +69,14 @@ class Prepayment(models.Model):
         verbose_name = 'Предоплата'
         verbose_name_plural = 'Предоплата'
         ordering = ['-created_at']
+
+    @classmethod
+    def get_all_prepayment_sum(cls, id):
+        return cls.objects.filter(money=id).aggregate(Sum('prepayment'))['prepayment__sum']
+
+    def getPrepaySum(self, **kwargs):
+        results = Prepayment.objects.filter(pk=self.pk)
+        sum_ = Decimal('0.0')
+        for x in results:
+            sum_ = sum_ + x.prepayment
+        return sum_
