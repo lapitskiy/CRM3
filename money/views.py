@@ -272,8 +272,9 @@ class MoneyEditViewTEST(FormView):
             return get_form_money, get_form_prepay
 '''
 
-class MoneyEditView(TemplateView):
+class MoneyEditView(RelatedMixin, TemplateView):
     template_name = 'money/money_edit.html'
+    related_module_name = 'money'
     #extra_context = {'money_id':}
 
     def get_context_data(self, **kwargs):

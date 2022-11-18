@@ -48,7 +48,7 @@ class OrdersHomeView(RelatedMixin, ListView):
             orders_page = paginator.page(page)
         except EmptyPage:
             orders_page = paginator.page(paginator.num_pages)
-        context['related_list'] = self.getDataListRelated(page=orders_page)
+        context['related_list'] = self.getDataListRelated(query=orders_page)
         return context
 
     def post(self, request, *args, **kwargs):
@@ -134,6 +134,7 @@ class OrderAddView(RelatedMixin, TemplateView):
 
 
     def post(self, request, *args, **kwargs):
+        context = super().get_context_data(**kwargs)
         postCopy = self.ajaxConvert()
         formOne = self.getPostForm(request=self.request, postcopy=postCopy)
         related_form_dict, is_valid_related_dict = self.checkRelatedFormDict(self.request.POST, doing='add', request=self.request)
@@ -166,7 +167,6 @@ class OrderAddView(RelatedMixin, TemplateView):
             #print('related_isValid_dict ', related_form_dict)
             #related form model add data
             self.saveRelatedFormData(related_dict=related_form_dict, request=self.request, related_uuid=related_uuid)
-
             '''
             for k, v  in related_form_dict.items():
                 form_from_dict = related_form_dict[k]['form']
@@ -182,7 +182,8 @@ class OrderAddView(RelatedMixin, TemplateView):
                 form_add.save()
                 print('form save')
             '''
-            return HttpResponseRedirect(reverse_lazy('orders_home'))
+
+            return HttpResponseRedirect(reverse_lazy('orders_one', kwargs={'order_id': form_one.pk}))
         else:
             return self.form_invalid(formOne, is_valid_related_dict['form'], **kwargs)
 
@@ -443,6 +444,21 @@ class OrderEditView(RelatedMixin, TemplateView):
         return reverse_lazy('orders_home')
         
     '''
+
+class OrdersOneView(RelatedMixin, TemplateView):
+    template_name = 'orders/orders_one.html'
+    related_module_name = 'orders'
+
+    def get_queryset(self, **kwargs):
+        return Orders.objects.get(pk=kwargs['id'])
+
+    def get_context_data(self, *, object_list=None, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['title'] = 'Заказ'
+        order = self.get_queryset(id=context['order_id'])
+        context['item'] = order
+        context['related_list'] = self.getDataListRelated(query=order, one='getobj')
+        return context
 
 class SettingsView(RelatedMixin, ListView):
     #model = Orders

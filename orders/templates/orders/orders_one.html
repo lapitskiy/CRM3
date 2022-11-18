@@ -148,7 +148,6 @@
 								<!--end::Actions-->
 							</div>
 							<!--end::Toolbar-->
-
 							<!--begin::Post-->
 							<div class="content flex-column-fluid" id="kt_content">
 								<!--begin::About card-->
@@ -157,32 +156,14 @@
 									<div class="card-body p-5 px-lg-19 py-lg-16">
 										<!--begin::Content main-->
 										<div class="mb-14">
-
 											<!--begin::Body-->
 											<!--begin::ORDERS-->
 											<div class="mb-15">
+	                                            <div class="row">
+                                                    <div class="col-8">
+                                                        <div class="tab-content" id="nav-tabContent">
 
-	   <div class="row">
-        <div class="col-4">
-            <div class="list-group list-group-flush" id="list-tab" role="tablist">
-                {% for item in page_obj %}
-                    {% if forloop.counter == 1 %}
-                        <a class="list-group-item list-group-item-action active" id="list-{{ item.pk }}" data-bs-toggle="list" href="#id-list-{{ item.pk }}" role="tab" aria-controls="home">Заказ {{ item.pk }}</a>
-                    {% else %}
-                        <a class="list-group-item list-group-item-action" id="list-{{ item.pk }}" data-bs-toggle="list" href="#id-list-{{ item.pk }}" role="tab" aria-controls="home">Заказ {{ item.pk }}</a>
-                    {% endif %}
-                {% endfor %}
-            </div>
-        </div>
-        <div class="col-8">
-            <div class="tab-content" id="nav-tabContent">
-                {% for item in page_obj %}
-                    {% if forloop.counter == 1 %}
-                        <div class="tab-pane fade show active" id="id-list-{{ item.pk }}" role="tabpanel" aria-labelledby="list-{{ item.pk }}">
-                    {% else %}
-                        <div class="tab-pane fade" id="id-list-{{ item.pk }}" role="tabpanel" aria-labelledby="list-{{ item.pk }}">
-                    {% endif %}
-<div class="card shadow-sm">
+                                                                <div class="card shadow-sm">
     <div class="card-header">
         <h3 class="card-title">
             {% if item.category.title == "fast" %}
@@ -190,7 +171,7 @@
             {% else %}
                 Заказ в ремонт:&nbsp;<br>
             {% endif %}
-            <b>{{ item.pk }}</b> </h3>
+            <b>{{ item.pk }}</b></h3>
         <div class="card-toolbar">
             {% if item.category.title == "simple" %}
                 Статус: &nbsp;<span class="badge rounded-pill bg-warning text-dark"> {{ item.status }}</span>
@@ -202,7 +183,6 @@
         </div>
     </div>
     <div class="card-body">
-        <i class="fa-solid fa-up-right-from-square"></i><a href="one/{{ item.pk }}" target="_blank">Открыть в новом окне</a><br><br>
         Принято: {{ item.category_service }}<br>
         В ремонте: {{ item.device }}<br>
         Услуга: {{ item.service }}<br>
@@ -264,7 +244,6 @@
                                                 {% for key, value in related_item.items %}
                                                     {% if key == 'related_use' and value == 'link' %}
                                                         {{ related_item.html | safe }}
-                                                        <a target="_blank" href=" {{ related_item.link }}{{ related_item.related_uuid }}">{{ related_item.module_name }}</a><br>
                                                     {% endif %}
                                                      {% if key == 'related_use' and value == 'text' %}
                                                         {{ related_item.related_text }}<br>
@@ -280,44 +259,9 @@
     </div>
 </div>
 
-
-                    </div>
-                {% endfor %}
-            </div>
-        </div>
-    </div>
-    <br><br>
-    <nav aria-label="...">
-        <ul class="pagination">
-            {% if page_obj.has_previous %}
-                <li class="page-item">
-                    <a class="page-link" href="?page=1&filter={{ filter }}">&laquo; В начало</a>
-                </li>
-                <li class="page-item">
-                    <a class="page-link" href="?page={{ page_obj.previous_page_number }}&filter={{ filter }}">Предудущая</a>
-                </li>
-            {% endif %}
-            {% for p in page_obj.paginator.page_range %}
-                {% if page_obj.number == p %}
-                    <li class="page-item active" aria-current="page">
-                        <span class="page-link">{{ p }}</span>
-                    </li>
-                {% elif p > page_obj.number|add:-3 and p < page_obj.number|add:3 %}
-                    <li class="page-item">
-                        <a class="page-link" href="?page={{ p }}&filter={{ filter }}">{{ p }}</a>
-                    </li>
-                {% endif %}
-            {% endfor %}
-            {% if page_obj.has_next %}
-                <li class="page-item">
-                    <a class="page-link" href="?page={{ page_obj.next_page_number }}&filter={{ filter }}">Следующая</a>
-                </li>
-                <li class="page-item">
-                    <a class="page-link" href="?page={{ page_obj.paginator.num_pages }}&filter={{ filter }}"> В конец &raquo;</a>
-                </li>
-            {% endif %}
-        </ul>
-    </nav>
+                                                        </div>
+                                                    </div>
+                                                </div>
 											</div>
 											<!--end::ORDERS-->
 											<!--end::Body-->
@@ -329,9 +273,6 @@
 								<!--end::About card-->
 							</div>
 							<!--end::Post-->
-
-
-
 
 <!--begin::Accordion-->
 <div class="accordion accordion-icon-toggle" id="kt_accordion_2">

@@ -5,7 +5,7 @@ from django.db.models import Q
 import logging
 
 #logging.basicConfig(level='DEBUG')
-logger = logging.getLogger('crm3_info')\
+logger = logging.getLogger('crm3_error')#('crm3_info')
 
 
 class RelatedMixin(object):
@@ -21,8 +21,14 @@ class RelatedMixin(object):
 
         :rtype: object
         """
-        related = Plugins.objects.get(module_name=self.related_module_name)
-        return related.related.all()
+        try:
+            related = Plugins.objects.get(module_name=self.related_module_name)
+            return related.related.all()
+        except Plugins.DoesNotExist:
+            if self.related_module_name == '':
+                logger.error('csl checkRelated. Не указан related_module_name')
+            else:
+                logger.error('csl checkRelated. Приложение не установлено. Записи нет в базе данных.')
 
     # [RU] возвращает все связанные формы
     # [EN] list related forms
@@ -115,9 +121,9 @@ class RelatedMixin(object):
     def getDataListRelated(self, **kwargs) -> list:
         data_related_list = []
         related = self.checkRelated()
-        #print('related ', related)
-        if 'page' in kwargs:
-            qry = kwargs['page']
+
+        if 'query' in kwargs:
+            qry = kwargs['query']
 
         if related:
             for x in related:
@@ -143,6 +149,33 @@ class RelatedMixin(object):
 
                         related_get['related_uuid'] = kwargs['uuid']
                         data_related_list.append(related_get)
+                    if kwargs['one'] == 'getobj':
+                        for key_uuid, value_uuid in qry.related_uuid.items():
+                            try:
+                                if cls_related.related_format == 'form':
+                                    cls2 = cls_model.objects.get(Q(related_uuid__icontains=key_uuid))
+                                    related_get = cls2.get_related_data()
+                                    related_get['related_uuid'] = key_uuid
+                                    data_related_list.append(related_get)
+                                if cls_related.related_format == 'link':
+                                    #print('cls_model link', cls_model)
+                                    cls_related2 = cls_model()
+                                    related_get = cls_related2.get_related_data(related_uuid=key_uuid)
+                                    related_get['related_uuid'] = key_uuid
+                                    #print('related_get ', str(related_get))
+                                    data_related_list.append(related_get)
+                                if cls_related.related_format == 'select':
+                                    logger.info('cls_model select utils %s', cls_model)
+                                    cls_related3 = cls_model.objects.get(Q(related_uuid__icontains=key_uuid))
+                                    related_get = cls_related3.get_related_data
+                                    #print('tyt 333 ky uuid', key_uuid)
+                                    #print('related_get select', str(related_get))
+                                    related_get['related_uuid'] = key_uuid
+                                    #print('related_get ', str(related_get))
+                                    data_related_list.append(related_get)
+                            except ObjectDoesNotExist:
+                                pass
+
                 else:
                     for r in qry:
                         for key_uuid, value_uuid in r.related_uuid.items():
@@ -156,7 +189,7 @@ class RelatedMixin(object):
                                 if cls_related.related_format == 'link':
                                     #print('cls_model link', cls_model)
                                     cls_related2 = cls_model()
-                                    related_get = cls_related2.get_related_data
+                                    related_get = cls_related2.get_related_data(related_uuid=key_uuid)
                                     related_get['related_uuid'] = key_uuid
                                     #print('related_get ', str(related_get))
                                     data_related_list.append(related_get)

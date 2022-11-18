@@ -14,14 +14,14 @@ class Prints(models.Model):
     def get_absolute_url(self):
         return reverse('view_prints', kwargs={'pk': self.pk})
 
-    @property
-    def get_related_data(self):
-        data = {
-            'related_use': 'link',
-            'module_name': 'Печать',
-            'link': '../prints/form/?uuid=',
-            'form': self.pk
-            }
+    def get_related_data(self, **kwargs):
+        data = {}
+        if 'related_uuid' in kwargs:
+            data = {
+                'related_use': 'link',
+                'html': '<a href="/prints/form/?uuid='+kwargs['related_uuid']+'" target="_blank">Распечатать</a>',
+                'form': self.pk
+                }
         return data
 
     def get_related_dict_data(self):

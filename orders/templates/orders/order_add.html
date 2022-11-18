@@ -20,7 +20,7 @@
         Заказ в ремонт
     {% endif %}
     </h3>
-    <form action="{% url 'order_add'%}?category={{ tag }}" method="POST">
+    <form action="{% url 'order_add' %}?category={{ tag }}" method="POST">
         {% csrf_token %}
         {% for x in forms %}
             {{ x.as_p }}
