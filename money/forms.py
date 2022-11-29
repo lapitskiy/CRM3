@@ -16,7 +16,7 @@ class MyInputText(forms.TextInput):
 
 class RelatedAddForm(forms.ModelForm):
     #money = MyInputText()
-    is_pay = forms.BooleanField(initial=True)
+    is_pay = forms.BooleanField(initial=True, required=False)
 
     def __init__(self, *args, **kwargs):
         self.request = kwargs.pop('request', None)
@@ -29,7 +29,7 @@ class RelatedAddForm(forms.ModelForm):
         fields = ['money', 'is_pay']
         widgets = {
             'money': forms.TextInput(attrs={'class': 'form-control', 'autocomplete':'off','placeholder': 'Стоимость'}),
-            'is_pay': forms.CheckboxInput()
+            'is_pay': forms.CheckboxInput(attrs={'required': 'False'})
         }
 
 class MoneyEditForm(forms.ModelForm):
