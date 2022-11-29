@@ -125,7 +125,6 @@ class RelatedMixin(object):
 
         if 'query' in kwargs:
             qry = kwargs['query']
-
         if related:
             for x in related:
                 #print('======= utils.py getDataListRelated')
@@ -140,7 +139,7 @@ class RelatedMixin(object):
                         try:
                             cls2 = cls_model.objects.get(Q(related_uuid__icontains=kwargs['uuid']))
                         except cls_model.DoesNotExist:
-                            return ''
+                            pass
                         related_get = {}
                         if 'data' in kwargs:
                             if kwargs['data'] == 'dict':
@@ -176,7 +175,6 @@ class RelatedMixin(object):
                                     data_related_list.append(related_get)
                             except ObjectDoesNotExist:
                                 pass
-
                 else:
                     for r in qry:
                         for key_uuid, value_uuid in r.related_uuid.items():
@@ -204,6 +202,7 @@ class RelatedMixin(object):
                                     #print('related_get ', str(related_get))
                                     data_related_list.append(related_get)
                             except ObjectDoesNotExist:
+                                print('ObjectDoesNotExist')
                                 pass
         #print('======= data_related_list')
         #print(data_related_list)

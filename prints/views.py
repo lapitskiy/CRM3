@@ -39,6 +39,7 @@ class PrintFormView(RelatedMixin, TemplateView):
         #print('related ', kwargs['related'])
         #print('print_form.contentform ', kwargs['content'])
         related = kwargs['related']
+        print('kwargs rel', related)
         rel_money = related[0]['money']
         print('kwargs', rel_money)
         if 'content' in kwargs and 'related' in kwargs:
