@@ -315,18 +315,23 @@ class MoneyEditView(RelatedMixin, TemplateView):
     def post(self, request, *args, **kwargs):
         context = self.get_context_data(**kwargs)
         form_money, form_prepay = self.getPostForm(request=self.request.POST, money_id=context['money_id'])
-        #print('context1: ', context)
-        if form_money.is_valid():
-            form_money.save()
-        else:
-            return self.form_invalid(form_money=form_money, form_prepay=form_prepay)
-
-        if form_prepay.is_valid():
-            form = form_prepay.save(commit=False)
-            form.money_id = int(context['money_id'])
-            form.save()
-        else:
-            return self.form_invalid(form_money=form_money, form_prepay=form_prepay)
+        if self.request.GET['method'] == 'money':
+            if form_money.is_valid():
+                form_money.save()
+            else:
+                print('tyt01')
+                return self.form_invalid(form_money=form_money, form_prepay=form_prepay)
+        print('tyt0')
+        if self.request.GET['method'] == 'prepay':
+            if form_prepay.is_valid():
+                print('tyt1')
+                form = form_prepay.save(commit=False)
+                form.money_id = int(context['money_id'])
+                form.save()
+                print('tyt2')
+            else:
+                print('tyt3')
+                return self.form_invalid(form_money=form_money, form_prepay=form_prepay)
         #print('tyt valid')
         return HttpResponseRedirect(reverse_lazy('money_edit', kwargs={'money_id': context['money_id']}))
 
@@ -366,6 +371,7 @@ class MoneyEditView(RelatedMixin, TemplateView):
             get_moneyobj = Money.objects.get(pk=getid)
             get_form_money = MoneyEditForm(self.request.POST, prefix='form_money', instance=get_moneyobj)
             get_form_prepay = PrepayEditForm(self.request.POST, prefix='form_prepay')
+            print('get_form_money ', get_form_money)
             #try:
                 #get_prepayobj = Prepayment.objects.filter(money=getid)
                 #sum_ = get_prepayobj.getPrepaySum()

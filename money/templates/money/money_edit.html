@@ -25,7 +25,7 @@
     </div>
     <br>
     <h1>Внести средства</h1>
-    <form action="{% url 'money_edit' money_id %}" method="POST">
+    <form action="{% url 'money_edit' money_id %}?method=prepay" method="POST">
         {% csrf_token %}
         {{ form_prepay.non_field_errors }}
         {{ form_prepay.as_p }}
@@ -34,7 +34,7 @@
     <br>
     <h1>Редактировать</h1>
 
-    <form action="{% url 'money_edit' money_id %}" method="POST">
+    <form action="{% url 'money_edit' money_id %}?method=money" method="POST">
         {% csrf_token %}
         {{ form_money.non_field_errors }}
         {{ form_money.as_p }}
