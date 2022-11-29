@@ -7,7 +7,7 @@ from django.forms.models import model_to_dict
 # Create your models here.
 class Clients(models.Model):
     name = models.CharField(max_length=150, blank=True, verbose_name='Имя')
-    phone_regex = RegexValidator(regex=r'^\+?1?\d{9,15}$', message="Phone number must be entered in the format: '+999999999'. Up to 15 digits allowed.")
+    phone_regex = RegexValidator(regex=r'^\+?1?\d{9,15}$', message="Phone number must be entered in the format: '+79998887766'. Up to 15 digits allowed.")
     phone = models.CharField(validators=[phone_regex], unique=True, max_length=17, verbose_name='Телефон') # validators should be a list
     created_at = models.DateTimeField(auto_now_add=True, verbose_name='Создан')
     updated_at = models.DateTimeField(auto_now=True, verbose_name='Обновлен')

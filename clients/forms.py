@@ -15,10 +15,10 @@ class ListTextWidget(forms.Select):
     def format_value(self, value):
         # Copied from forms.Input - makes sure value is rendered properly
         if value == '' or value is None:
-            print('ListTextWidget None')
+            #print('ListTextWidget None')
             return ''
         if self.is_localized:
-            print('ListTextWidget local')
+            #print('ListTextWidget local')
             return formats.localize_input(value)
         return str(value)
 

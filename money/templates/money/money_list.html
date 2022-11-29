@@ -6,7 +6,10 @@
 {% endblock %}
 {% block content %}
     <div class="shadow-sm p-3 mb-5 bg-body rounded">
-    Оплаченная сумма: {{ info.paymoney }} | Cумма общая: {{ info.allmoney }}
+        Дата: <b>{{ get.date }}</b>
+    <br>
+    Оплаченная сумма: {{ info.paymoney }}<br>Не оплаченная сумма: {{ info.diffmoney }}<br><br><i>Общая указанная сумма: {{ info.allmoney }}</i>
+
     </div>
     <div class="row">
         <div class="col-4">

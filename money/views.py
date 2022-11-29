@@ -52,6 +52,7 @@ class MoneyHomeView(CacheQuerysetMixin, RelatedMixin, ListView):
             orders_page = paginator.page(paginator.num_pages)
         #print('context info', context['info'])
         context['request'] = self.request
+        context['get'] = self.request.GET
         #print('============================')
         #print('VIEW context', context)
         return context
@@ -63,7 +64,7 @@ class MoneyHomeView(CacheQuerysetMixin, RelatedMixin, ListView):
                 date_get = self.request.GET.get('date')
             relatedListUuid = self.relatedPostGetData(request_get=self.request.GET)
             # нужно вернуть uuid по relateddata и сформировать query по Money.object
-            print('relatedListUuid ', relatedListUuid)
+            #print('relatedListUuid ', relatedListUuid)
             valuelist = []
             #intersec = None
             #query = None
@@ -79,7 +80,7 @@ class MoneyHomeView(CacheQuerysetMixin, RelatedMixin, ListView):
                 #print('MONEY QUERY 3')
                 #Money.objects.filter(Q(related_uuid__icontains=v['relateddata']))
                 #query = Money.objects.filter(reduce(and_, [Q(related_uuid__icontains=q) for q in v['relateddata']]))
-                print('!related! ', v['relateddata'])
+                #print('!related! ', v['relateddata'])
                 if v['relateddata']:
                     #condition = Q()
                     #print('1 ' , v['relateddata'])
@@ -104,10 +105,10 @@ class MoneyHomeView(CacheQuerysetMixin, RelatedMixin, ListView):
                     #valuelist.append('')
 #                    valuelist.append(Money.objects.filter(condition))
             # print('$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$')
-            for x in interslist:
-                print('interslist x ', x)
+            #for x in interslist:
+                #print('interslist x ', x)
             interslist = list(set.intersection(*map(set,interslist)))
-            print('interslist ', interslist)
+            #print('interslist ', interslist)
             # print('$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$')
             #q1 = valuelist[0]
             # print('q1 ', q1)
@@ -143,10 +144,10 @@ class MoneyHomeView(CacheQuerysetMixin, RelatedMixin, ListView):
                 #query = Money.objects.filter(reduce(operator.and_, (Q(related_uuid__icontains=x) for x in interslist)))
                 query = self.get_related_query_icontains(interslist)
                     #Money.objects.filter(reduce(and_, [Q(related_uuid__icontains=q) for q in interslist]))
-                print('query money return ', query)
+                #print('query money return ', query)
                 return query
             else:
-                print('TYT 0')
+                #print('TYT 0')
                 return Money.objects.none()
             #Money.objects.filter(Q(related_uuid__icontains=interslist))
         return Money.objects.all()
@@ -164,7 +165,9 @@ class MoneyHomeView(CacheQuerysetMixin, RelatedMixin, ListView):
             #print('money ', x.money)
             allmoney = allmoney + x.money
             #paymoney = paymoney + x.prepayment
+            paymoney = paymoney + Prepayment.get_all_prepayment_sum(id=x)
         info.update({'allmoney' : str(allmoney)})
+        info.update({'diffmoney': str(allmoney-paymoney)})
         info.update({'paymoney': str(paymoney)})
         return info
 
@@ -306,7 +309,7 @@ class MoneyEditView(RelatedMixin, TemplateView):
         form_money, form_prepay = self.getForm(id=context['money_id'])
         context.update({'form_money': form_money})
         context.update({'form_prepay': form_prepay})
-        print('prepayobj', context['prepayobj'])
+        #print('prepayobj', context['prepayobj'])
         return self.render_to_response(context)
 
     def post(self, request, *args, **kwargs):
@@ -324,7 +327,7 @@ class MoneyEditView(RelatedMixin, TemplateView):
             form.save()
         else:
             return self.form_invalid(form_money=form_money, form_prepay=form_prepay)
-        print('tyt valid')
+        #print('tyt valid')
         return HttpResponseRedirect(reverse_lazy('money_edit', kwargs={'money_id': context['money_id']}))
 
     def form_invalid(self, **kwargs):

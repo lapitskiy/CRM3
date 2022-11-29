@@ -10,8 +10,8 @@ class CacheQuerysetMixin:
 
     def _caching_queryset(self, queryset=None):
         if not self._cached_queryset:
-            print('NOT CACHED ', self._cached_queryset)
-            print('QUERY ', queryset)
+            #print('NOT CACHED ', self._cached_queryset)
+            #print('QUERY ', queryset)
             self._cached_queryset = queryset
         return self._cached_queryset
 

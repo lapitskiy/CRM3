@@ -302,7 +302,7 @@
                     <li class="page-item active" aria-current="page">
                         <span class="page-link">{{ p }}</span>
                     </li>
-                {% elif p > page_obj.number|add:-3 and p < page_obj.number|add:3 %}
+                {% elif p > page_obj.number|add:-5 and p < page_obj.number|add:5 %}
                     <li class="page-item">
                         <a class="page-link" href="?page={{ p }}&filter={{ filter }}">{{ p }}</a>
                     </li>

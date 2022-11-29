@@ -65,12 +65,12 @@ class AppRelated():
                     if request_get['orders'] == 'simple':
                         query = Orders.objects.filter(category__category='simple')
                     if request_get['date'] and request_get['date2']:
-                        print('DATE 1')
+                        #print('DATE 1')
                         end_date = datetime.strptime(request_get['date2'], '%Y-%m-%d') + timedelta(days=1)
                         # print('end_date ', end_date)
                         query2 = Orders.objects.filter(created_at__range=[request_get['date'],end_date])
                     if request_get['date'] and not request_get['date2']:
-                        print('DATE 2')
+                        #print('DATE 2')
                         #date = datetime.strptime(request_get['date'], '%Y-%m-%d') + timedelta(days=1)
 
                         #query2 = Orders.objects.filter(Q(created_at__icontains=date))
@@ -78,16 +78,16 @@ class AppRelated():
                         end_date = datetime.strptime(request_get['date'], '%Y-%m-%d') + timedelta(days=1)
                         query2 = Orders.objects.filter(created_at__range=[request_get['date'],end_date])
                     if not request_get['date'] and request_get['date2']:
-                        print('DATE 3')
+                        #print('DATE 3')
                         query2 = Orders.objects.filter(Q(created_at__icontains=request_get['date2']))
                     if query is not None:
                         #print('q1 ', query)
                         #print('q2 ', query2)
                         if query2 is not None:
-                            print('query ', query)
-                            print('query 2', query2)
+                            #print('query ', query)
+                            #print('query 2', query2)
                             query = query & query2
-                            print('query result ', query)
+                            #print('query result ', query)
                         #logger.info('%s related_result %s', __name__, type(intersection))
                         #print('intersection ', intersection)
                         for z in query:

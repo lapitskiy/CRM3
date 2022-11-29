@@ -1,5 +1,5 @@
 from .forms import RelatedAddForm
-from .models import Money
+from .models import Money, Prepayment
 from django.db.models import Q
 
 class AppRelated(object):
@@ -40,6 +40,10 @@ class AppRelated(object):
             context['uuid'] = ''
             context['pk'] = '1'
         context['form'] = related_form
+        if related_form.is_valid():
+            context['valid'] = True
+        else:
+            context['valid'] = False
         return context
 
     def checkRelatedEditForm(self, **kwargs):
@@ -72,8 +76,12 @@ class AppRelated(object):
         form_add = form_from_dict.save(commit=False)
         form_add.related_uuid = related_dict['uuid']
         form_add.save()
+        print('money saveform: ', form_from_dict.cleaned_data.get('is_pay'))
+        print('money pk: ', form_add.pk)
 
-        print('form save - ', self.prefix)
+        if form_from_dict.cleaned_data.get('is_pay'):
+            prepay = Prepayment(money=form_add, prepayment=form_add.money)
+            prepay.save()
 
     def linkGetReleatedData(self, **kwargs):
         uudi_filter_related_list = []

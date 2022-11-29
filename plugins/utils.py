@@ -3,6 +3,7 @@ import importlib
 from django.core.exceptions import ObjectDoesNotExist
 from django.db.models import Q
 import logging
+import time
 
 #logging.basicConfig(level='DEBUG')
 logger = logging.getLogger('crm3_error')#('crm3_info')
@@ -53,7 +54,7 @@ class RelatedMixin(object):
     # [RU] показываться конкретному пользователю или по опредленным параметрам указанных в каждом приложнении.
     # [EN] wait translate
     def getCleanQueryset(self, **kwargs):
-        related = self.checkRelated()
+        related = self.checkRelated() # --- 0.005012989044189453 seconds ---
         queryset = kwargs['queryset']
         if related:
             for x in related:
@@ -292,13 +293,10 @@ class RelatedMixin(object):
                 _dict['pk'] = _dict2['pk']
                 _dict['form'] = _dict2['form']
                 _dict['class'] = relatedClass
-                if _dict['form'].is_valid():
-                    _dict['valid'] = True
-                else:
-                    _dict['valid'] = False
+                _dict['valid'] = _dict2['valid']
                 related_form_dict[x.module_name] = _dict
 
-        # помещаем в перменную есть ли общий валид или в какой-то из свазанных форм ест ошибка
+        # если хотя бы в одной форме нет валида, отдаем переменную is_valid_dict=False
         is_valid_dict = {}
         is_valid_dict['is_valid'] = True
         form_list = []
@@ -323,7 +321,7 @@ class RelatedMixin(object):
             else:
                 related_form_dict[k]['uuid'] = related_uuid
             relatedClass = related_form_dict[k]['class']
-            relatedClass.saveForm(related_dict=related_form_dict[k])
+            relatedClass.saveForm(related_dict=related_form_dict[k], request=request)
         return
 
 

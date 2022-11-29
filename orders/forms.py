@@ -54,12 +54,10 @@ class SimpleOrderAddForm(forms.ModelForm):
     def clean(self):
         cleaned_data = super(SimpleOrderAddForm, self).clean()
         service = cleaned_data.get("service")
-        if service:
-            print('service ', service)
 
     def clean_service(self):
         name = self.cleaned_data['service']
-        print('name ', str(self.cleaned_data['service'].pk))
+        #print('name ', str(self.cleaned_data['service'].pk))
         return name
 
 #CHOICES = [(service.id, service.name) for service in Service.objects.all()]
@@ -101,12 +99,12 @@ class SimpleOrderEditForm(forms.ModelForm):
     def clean(self):
         cleaned_data = super(SimpleOrderEditForm, self).clean()
         service = cleaned_data.get("service")
-        if service:
-            print('service ', service)
+        #if service:
+            #print('service ', service)
 
     def clean_service(self):
         name = self.cleaned_data['service']
-        print('name ', str(self.cleaned_data['service'].pk))
+        #print('name ', str(self.cleaned_data['service'].pk))
         return name
 
 class FastOrderAddForm(forms.ModelForm):

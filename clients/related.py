@@ -50,19 +50,31 @@ class AppRelated(object):
     def checkRelatedAddForm(self, **kwargs):
         context= {}
         request_post = kwargs['request_post']
+        context['request_post'] = kwargs['request_post']
         if self.checkUpdate(request_post=request_post):
             get_client = Clients.objects.get(phone=request_post['clients-phone'])
             related_form = RelatedAddForm(request_post, prefix=self.prefix, instance=get_client)
             #print('related_form: ', related_form)
             context['uuid'] = get_client.related_uuid
             context['pk'] = get_client.pk
+            if related_form.is_valid():
+                context['valid'] = True
+            else:
+                context['valid'] = False
         else:
-            # если форма пустая, пропускаем
             related_form = RelatedAddForm(request_post, prefix=self.prefix)
             related_form.prefix = self.prefix
+            if related_form.is_valid():
+                context['valid'] = True
+            else:
+                context['valid'] = False
+            if request_post['clients-phone'] == '':
+                print('phone ', request_post['clients-phone'])
+                context['valid'] = True
             context['uuid'] = ''
             context['pk'] = ''
         context['form'] = related_form
+        print('clinet request_post ', context['request_post'])
         return context
 
     def checkRelatedEditForm(self, **kwargs):
@@ -92,7 +104,7 @@ class AppRelated(object):
 
     def getAjaxRelatedList(self, **kwargs):
         if kwargs['data']:
-            print('kwargs data', kwargs['data'])
+            #print('kwargs data', kwargs['data'])
             qry = Clients.objects.filter(Q(phone__icontains=kwargs['data'])).values()
             return [entry for entry in qry]
 
@@ -105,7 +117,18 @@ class AppRelated(object):
     def saveForm(self, **kwargs):
         related_dict = kwargs['related_dict']
         form_from_dict = related_dict['form']
-        form_add = form_from_dict.save(commit=False)
-        form_add.related_uuid = related_dict['uuid']
-        form_add.save()
-        print('form save - ', self.prefix)
+        request = kwargs['request']
+        #print('valid ', form_from_dict.is_valid())
+        ##print('tyt 1 ', form_from_dict)
+        #print('tyt 2 ', form_from_dict.cleaned_data.get('id_clients-phone'))
+        #print('tyt 22 ', form_from_dict.cleaned_data.get('clients-phone'))
+        #print('tyt 23 ', form_from_dict.cleaned_data['phone'])
+        if request.POST['clients-phone'] == '':
+            print('tyt 3')
+            pass
+        else:
+            print('tyt 4')
+            form_add = form_from_dict.save(commit=False)
+            form_add.related_uuid = related_dict['uuid']
+            form_add.save()
+            print('save contact')

@@ -33,7 +33,7 @@ class PluginsTestView(ListView):
             self.add_plugin_in_db(models=self.request.GET.get('models'))
         context['сountPluginDB'] = self.checkCountPluginDB()
         context['plugins_check'] = self.checkPluginStruc()
-        print('context ', context)
+        #print('context ', context)
         return context
 
     def checkCountPluginDB(self, **kwargs):
@@ -111,8 +111,8 @@ class ViewCurrentPlugins(DetailView):
         form = RelatedPluginForm(request.POST)
         related_id = request.POST['related']
         context['form'] = form
-        print('request.POST', request.POST)
-        print('related_id', related_id)
+        #print('request.POST', request.POST)
+        #print('related_id', related_id)
 
         if form.is_valid():
             self.plugin = self.get_object()
@@ -158,7 +158,7 @@ class InstallRepositoryPlugins(ListView):
         context['id']= self.kwargs['id']
         context['tag'] = self.kwargs['tag']
         #context['link'] = request.path
-        print('context ', context)
+        #print('context ', context)
         return context
 
     #def get(self, *args, **kwargs):

@@ -17,7 +17,7 @@ from django.db.models import Q, F
 from plugins.utils import RelatedMixin
 import json
 from django.forms.models import model_to_dict
-
+import time
 
 
 
@@ -131,7 +131,6 @@ class OrderAddView(RelatedMixin, TemplateView):
         context.update({'formOne': formOne})
         context.update({'tag': self.getVar()})
         return self.render_to_response(context)
-
 
     def post(self, request, *args, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -264,14 +263,14 @@ class OrderAddView(RelatedMixin, TemplateView):
 def ajax_request(request):
     """Check ajax"""
     model = request.GET.get('model')
-    print('model ', model)
+    #print('model ', model)
     if model:
         if 'service' in model:
             service = request.GET.get('one_form-service', None)
-            print('service ', service)
+            #print('service ', service)
             qry = Service.objects.filter(Q(name__icontains=service)).values()
             qry_list = [entry for entry in qry]
-            print('qry inst', qry_list)
+            #print('qry inst', qry_list)
 
             if not qry or service == '':
                 response = {
@@ -287,11 +286,11 @@ def ajax_request(request):
 
         if 'device' in model:
             device = request.GET.get('one_form-device', None)
-            print('device', device)
+            #print('device', device)
             #qry = Device.objects.filter(Q(name__icontains=device)).values_list('name', flat=True)
             qry = Device.objects.filter(Q(name__icontains=device)).values()
             qry_list = [entry for entry in qry]
-            print('qry inst', qry_list)
+            #print('qry inst', qry_list)
             if not qry or device == '':
                 response = {
                     'is_taken': '',
@@ -302,23 +301,23 @@ def ajax_request(request):
                     'is_taken': qry_list,
                     'is_exist' : True,
                 }
-            print('response ', response)
+            #print('response ', response)
             return JsonResponse(response)
 
     """Check ajax RELATED"""
     related = request.GET.get('related')
     data = request.GET.get('data')
-    print('request.GET ', request.GET)
-    print('related ', related)
-    print('texgt ', request.GET.get('clients-phone'))
-    print('data ', data)
+    #print('request.GET ', request.GET)
+    #print('related ', related)
+    #print('texgt ', request.GET.get('clients-phone'))
+    #print('data ', data)
 
     if related and data:
         formPath = related + '.related'
         appRelated = importlib.import_module(formPath)
         related_class = appRelated.AppRelated()
         qry_list = related_class.getAjaxRelatedList(data=request.GET[data])
-        print('qry inst ', qry_list)
+        #print('qry inst ', qry_list)
         if not qry_list:
             response = {
                 'is_taken': '',
@@ -368,7 +367,7 @@ class OrderEditView(RelatedMixin, TemplateView):
         if formOne.is_valid() and is_valid_related_dict['is_valid']:
             formOne.save()
             for k, v  in related_form_dict.items():
-                print('update ', related_form_dict[k]['update'])
+                #print('update ', related_form_dict[k]['update'])
                 if not related_form_dict[k]['update']:
                     form_from_dict = related_form_dict[k]['form']
                     form_add = form_from_dict.save(commit=False)
@@ -382,10 +381,10 @@ class OrderEditView(RelatedMixin, TemplateView):
                         self.relatedDeleteMultipleUuid(dictt=related_form_dict[k], deleteUuid=get_order.related_uuid)
                         form_add.related_uuid = related_form_dict[k]['convert']
                     form_add.save()
-            print('Valid')
+            #print('Valid')
             return HttpResponseRedirect(reverse_lazy('orders_home'))
         else:
-            print('NotValid', is_valid_related_dict['form'])
+            #print('NotValid', is_valid_related_dict['form'])
 
             return self.form_invalid(formOne, is_valid_related_dict['form'], **kwargs, order_id=context['order_id'])
 
@@ -393,8 +392,8 @@ class OrderEditView(RelatedMixin, TemplateView):
         context = self.get_context_data()
         #context = kwargs['context']
         order_id = kwargs['order_id']
-        print('context ', context)
-        print('order id ', order_id)
+        #print('context ', context)
+        #print('order id ', order_id)
         formOne.prefix = 'one_form'
         #tag = 0
         #for x in form_list:
@@ -490,8 +489,8 @@ class SettingsView(RelatedMixin, ListView):
             context.update({'model': self.request.GET.get('model')})
         else:
             context.update({'model': 'service'})
-        print('context ', context['model'])
-        print('context ', context)
+        #print('context ', context['model'])
+        #print('context ', context)
         return context
 
     def post(self, request, *args, **kwargs):
@@ -548,10 +547,10 @@ class SettingsAddView(TemplateView):
         if formAdd.is_valid():
             form_update = formAdd.save(commit=False)
             form_update.save()
-            print('Valid')
+            #print('Valid')
             return HttpResponseRedirect(reverse_lazy('order_settings') + '?model=' + self.request.GET.get('model'))
         else:
-            print('NotValid')
+            #print('NotValid')
             return self.form_invalid(formAdd, **kwargs)
 
     def getForm(self):

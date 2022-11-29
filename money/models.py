@@ -7,13 +7,13 @@ from django.forms.models import model_to_dict
 
 # Create your models here.
 class Money(models.Model):
-    money = models.DecimalField(max_digits=19, blank=True, default=0, decimal_places=2, verbose_name='Сумма')
+    money = models.DecimalField(max_digits=19, default=0, decimal_places=2, verbose_name='Сумма')
     #prepayment = models.DecimalField(max_digits=19, blank=True, default=0, decimal_places=2, verbose_name='Оплачено')
     created_at = models.DateTimeField(auto_now_add=True, verbose_name='Создан')
     #updated_at = models.DateTimeField(auto_now=True, verbose_name='Обновлен')
     updated_dict = models.JSONField(blank=True, default=dict)  # json dict
     #related_uuid = models.CharField(max_length=22, blank=True, verbose_name='uuid')
-    related_uuid = models.JSONField(blank=True) # json dict
+    related_uuid = models.JSONField() # json dict
 
     def get_absolute_url(self):
         return reverse('view_money', kwargs={'pk': self.pk})
@@ -44,7 +44,7 @@ class Money(models.Model):
         return dict_
 
     def get_related_filter(self, **kwargs):
-        results = Money.objects.filter(Q(money__icontains=kwargs['search_query']) | Q(prepayment__icontains=kwargs['search_query']))
+        results = Money.objects.filter(Q(money__icontains=kwargs['search_query']))
         return results
 
     def __str__(self):
@@ -72,6 +72,9 @@ class Prepayment(models.Model):
 
     @classmethod
     def get_all_prepayment_sum(cls, id):
+        prepay = cls.objects.filter(money=id).aggregate(Sum('prepayment'))['prepayment__sum']
+        if prepay is None:
+            return Decimal('0.0')
         return cls.objects.filter(money=id).aggregate(Sum('prepayment'))['prepayment__sum']
 
     def getPrepaySum(self, **kwargs):

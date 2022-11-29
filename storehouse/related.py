@@ -4,6 +4,7 @@ from django.db.models import Q
 from django.core.exceptions import ObjectDoesNotExist
 import ast
 import logging
+import time
 
 logger = logging.getLogger('crm3_info')
 
@@ -49,17 +50,15 @@ class AppRelated(object):
         if self.checkUpdate(request_post=request_post):
             pass
         else:
-            print('request', request)
             related_form = RelatedAddForm(request_post, prefix=self.prefix, request=request)
             related_form.prefix = self.prefix
-            if related_form.is_valid():
-                print('store valid ')
-            else:
-                print('store not valid')
             context['uuid'] = ''
             context['pk'] = ''
-        print('Related - Store')
         context['form'] = related_form
+        if related_form.is_valid():
+            context['valid'] = True
+        else:
+            context['valid'] = False
         return context
 
     def checkRelatedEditForm(self, **kwargs):
@@ -78,13 +77,16 @@ class AppRelated(object):
         #result_queryset = []
         result_queryset = kwargs['queryset']
         #print('type queryset ', type(kwargs['queryset']))
+        i = 0
+        start_time = time.time()
         for r in kwargs['queryset']:
             #print('r ',r.related_uuid)
             for key_uuid, value_uuid in r.related_uuid.items():
                 #print(f'key {key_uuid} value {value_uuid}')
                 try:
                     # доедлать, с класса related.py, вставить проверку на if и отдавать связаные данные для menu
-                    currentStore = StoreRelated.objects.get(Q(related_uuid__icontains=key_uuid))
+                    i = i + 1
+                    currentStore = StoreRelated.objects.get(related_uuid__icontains=key_uuid)
                     #print('tyt')
                     if self.request.user in currentStore.store.user_permission.all():
                         #print('есть попадание по складу - ', currentStore.store.name)
@@ -102,6 +104,7 @@ class AppRelated(object):
 
         #query_list = kwargs['queryset'].values_list('related_uuid', flat=True)
         #print('result_queryset ', result_queryset)
+        print("%i --- %s seconds ---" % (i, time.time() - start_time))
         return result_queryset
 
 
@@ -133,7 +136,7 @@ class AppRelated(object):
             store=form_from_dict.cleaned_data['name'],
             related_uuid=related_dict['uuid'])
         f.save()
-        print('form save - ', self.prefix)
+        #print('form save - ', self.prefix)
 
     def linkGetReleatedData(self, **kwargs):
         request_get = kwargs['request_get']
