@@ -345,7 +345,6 @@ class OrderEditView(RelatedMixin, TemplateView):
 
     def post(self, request, *args, **kwargs):
         context = super().get_context_data(**kwargs)
-
         related = self.checkRelated()
         form_list = []
         #module_list = []
@@ -353,10 +352,7 @@ class OrderEditView(RelatedMixin, TemplateView):
         flag_uuid = False
         get_order = Orders.objects.get(pk=context['order_id'])
         formOne = SimpleOrderEditForm(self.request.POST, prefix='one_form', instance=get_order, request=self.request)
-
         related_form_dict, is_valid_related_dict = self.checkRelatedFormDict(self.request.POST, doing='edit', uuid=get_order.related_uuid)
-
-
         #relatedValid = True
         #print('related_isValid_dict ', related_isValid_dict)
         #print('related_isValid_dict ', related_isValid_dict)
@@ -382,18 +378,16 @@ class OrderEditView(RelatedMixin, TemplateView):
                         form_add.related_uuid = related_form_dict[k]['convert']
                     form_add.save()
             #print('Valid')
-            return HttpResponseRedirect(reverse_lazy('orders_home'))
+            return HttpResponseRedirect(reverse_lazy('orders_one', kwargs={'order_id': context['order_id']}))
         else:
-            #print('NotValid', is_valid_related_dict['form'])
-
-            return self.form_invalid(formOne, is_valid_related_dict['form'], **kwargs, order_id=context['order_id'])
+            print('NotValid', context['order_id'])
+            return self.form_invalid(formOne, is_valid_related_dict['form'], order_id=context['order_id'])
 
     def form_invalid(self, formOne, form_list, **kwargs):
         context = self.get_context_data()
         #context = kwargs['context']
-        order_id = kwargs['order_id']
         #print('context ', context)
-        #print('order id ', order_id)
+        #print('order id ', context['order_id'])
         formOne.prefix = 'one_form'
         #tag = 0
         #for x in form_list:
@@ -402,6 +396,7 @@ class OrderEditView(RelatedMixin, TemplateView):
         context.update({'formOne': formOne})
         context['forms'] = form_list
         context['tag'] = 'fast'
+        context['order_id'] = kwargs['order_id']
         return self.render_to_response(context)
 
     def checkRelated(self):

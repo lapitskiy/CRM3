@@ -59,6 +59,10 @@ class AppRelated(object):
             context['pk'] = get_money.pk
             context['uuid'] = ''
         context['form'] = related_form
+        if related_form.is_valid():
+            context['valid'] = True
+        else:
+            context['valid'] = False
         return context
 
     def deleteRelatedMultipleUuid(self, **kwargs):

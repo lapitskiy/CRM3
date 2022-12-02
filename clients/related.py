@@ -91,6 +91,10 @@ class AppRelated(object):
             context['uuid'] = ''
             context['pk'] = ''
         context['form'] = related_form
+        if related_form.is_valid():
+            context['valid'] = True
+        else:
+            context['valid'] = False
         return context
 
     def deleteRelatedMultipleUuid(self, **kwargs):

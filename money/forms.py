@@ -1,27 +1,27 @@
 from django import forms
 from .models import Money, Prepayment
 
+class SpecialCheckboxInput(forms.CheckboxInput):
+    template_name = "include/_forms_textinput.html"
 
 class RelatedAddForm(forms.ModelForm):
     #money = MyInputText()
-    is_pay = forms.BooleanField(initial=True, required=False)
+    is_pay = forms.BooleanField(label=False, initial=True, required=False, widget=SpecialCheckboxInput(attrs={}))
 
     def __init__(self, *args, **kwargs):
         self.request = kwargs.pop('request', None)
         super(RelatedAddForm, self).__init__(*args, **kwargs)
         self.fields['money'].initial = ''
-        self.fields['is_pay'].label = 'Оплачено'
 
     class Meta:
         model = Money
         fields = ['money', 'is_pay']
         widgets = {
             'money': forms.TextInput(attrs={'class': 'form-control', 'autocomplete':'off','placeholder': 'Стоимость'}),
-            'is_pay': forms.CheckboxInput(attrs={'required': 'False'})
+            #'is_pay': forms.CheckboxInput(attrs={'class': 'text-danger', 'required': 'False'})
         }
 
 class MoneyEditForm(forms.ModelForm):
-
     def __init__(self, *args, **kwargs):
         self.request = kwargs.pop('request', None)
         super(MoneyEditForm, self).__init__(*args, **kwargs)

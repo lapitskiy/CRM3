@@ -1,5 +1,12 @@
-<br>tyt!
-<input type="text" id="{{ widget.name }}" autocomplete="off"
-       {% if widget.value != None %} name="{{ widget.name }}" value="{{ widget.value|stringformat:'s' }}"{% endif %}
+<div class="form-check form-check-custom form-check-danger form-check-solid">
+    <input class="form-check-input" type="{{ widget.type }}" name="{{ widget.name }}"
+       {% if widget.value != None %}
+       value="{{ widget.value|stringformat:'s' }}"
+       {% endif %}
        {% include "django/forms/widgets/attrs.html" %}>
-tyt!
+    <label class="form-check-label" for="">
+        <b>Оплачено!</b>
+    </label>
+</div>
+
+
