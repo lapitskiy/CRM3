@@ -1,5 +1,5 @@
 from .forms import RelatedAddForm
-from .models import Storehouses, StoreRelated
+from .models import Storehouses, StoreRelated, RelatedUuid
 from django.db.models import Q
 from django.core.exceptions import ObjectDoesNotExist
 import ast
@@ -71,39 +71,33 @@ class AppRelated(object):
         #if kwargs['request'] is not None:
         return 'storehouse/related/load_sidebar_storehouse_related_submenu_tags.html'
 
-    def checkCleanQueryset(self, **kwargs):
-        data_uuid_related_list = []
-        self.request = kwargs['request']
-        #result_queryset = []
-        result_queryset = kwargs['queryset']
-        #print('type queryset ', type(kwargs['queryset']))
+    def checkCleanQueryset(self, **kwargs) -> dict:
         i = 0
         start_time = time.time()
-        for r in kwargs['queryset']:
-            #print('r ',r.related_uuid)
-            for key_uuid, value_uuid in r.related_uuid.items():
-                #print(f'key {key_uuid} value {value_uuid}')
-                try:
-                    # доедлать, с класса related.py, вставить проверку на if и отдавать связаные данные для menu
-                    i = i + 1
-                    currentStore = StoreRelated.objects.get(related_uuid__icontains=key_uuid)
-                    #print('tyt')
-                    if self.request.user in currentStore.store.user_permission.all():
-                        #print('есть попадание по складу - ', currentStore.store.name)
-                        pass
-                    else:
-                        #print('такого склада нет ')
-                        #new_queryset = result_queryset.exclude(Q(related_uuid__icontains=key_uuid))
-                        result_queryset = result_queryset.exclude(pk=r.pk)
-                        #print('new_queryset ', new_queryset)
-                        #result_queryset = new_queryset
-                    data_uuid_related_list.append(key_uuid)
-                except ObjectDoesNotExist:
-                    result_queryset = result_queryset.exclude(pk=r.pk)
-                    pass
-
-        #query_list = kwargs['queryset'].values_list('related_uuid', flat=True)
-        #print('result_queryset ', result_queryset)
+        data_uuid_related_list = []
+        self.request = kwargs['request']
+        result_queryset = kwargs['dict_queryset']
+        filterStore = StoreRelated.objects.filter(store__user_permission=self.request.user)
+        #print('store perm ', len(filterStore))
+        flat_qry = result_queryset.values_list('related_uuid', flat=True)
+        uuid = RelatedUuid.objects.filter(related_uuid__in=flat_qry).values_list('related', flat=True)
+        filterStore = filterStore.filter(pk__in=uuid)
+        #print('flat_qry in ', len(flat_qry))
+        #print('store perm in ', len(filterStore))
+        #for r in list(kwargs['dict_queryset']):
+        #    for key_uuid, value_uuid in r['related_uuid'].items():
+        ##        try:
+         #           currentStore = StoreRelated.objects.get(related_uuid__icontains=key_uuid)
+         #           if self.request.user in currentStore.store.user_permission.all():
+         #               break
+         #           else:
+         #               result_queryset.remove(r)
+         #               break
+         #           data_uuid_related_list.append(key_uuid)
+          #      except ObjectDoesNotExist:
+          #          result_queryset.remove(r)
+          #          break
+         #   i = i + 1
         print("%i --- %s seconds ---" % (i, time.time() - start_time))
         return result_queryset
 

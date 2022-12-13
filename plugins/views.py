@@ -5,6 +5,8 @@ from django.urls import reverse_lazy
 from .forms import RelatedPluginForm
 from .models import Plugins, PluginsCategory
 from plugins import settings_plugin
+from .utils import RelatedMixin
+
 import importlib
 
 class ViewPlugins(ListView):
@@ -75,6 +77,61 @@ class PluginsTestView(ListView):
             Plugins.objects.update_or_create(title=cfg['title'], module_name=cfg['module_name'], description=cfg['description'], version=cfg['version'], related_class_name=cfg['related_class_name'])
     #def get_queryset(self):
     #    return Plugins.objects.filter(is_active=True)
+
+class PluginsUuidUpdateView(RelatedMixin, ListView):
+    model = Plugins
+    template_name = 'plugins/plugins_uuid_view.html'
+    context_object_name = 'plugins'
+
+    # extra_context = {'title': 'Главная'}
+
+    def get_context_data(self, *, object_list=None, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['title'] = 'перенос uuid из версии v1 в версию v2'
+
+        context['resultUuid'] = self.checkUuid()
+        #print('context ', context)
+        return context
+
+    def checkUuid(self, **kwargs):
+        related = self.checkRelated()
+        dict_ = {}
+        module = Plugins.objects.all().values('module_name', 'related_class_name')
+        for iterr in module:
+            #print('key val ', iterr)
+            modelPath = iterr['module_name'] + '.models'
+            imp_model = importlib.import_module(modelPath)
+            cls_model = getattr(imp_model, iterr['related_class_name'])
+            cls_relateduuid = getattr(imp_model, 'RelatedUuid')
+
+            obj_ = cls_model.objects.all()
+            for item in obj_:
+                related_json = item.related_uuid
+                #for item in obj:
+                #print('item: ', obj)
+                #dict_2 = obj['related_uuid']
+
+                #print('dict_2: ', dict_2)
+                #print('type: ', type(dict_2))
+                #p = Person.objects.create(first_name="Bruce", last_name="Springsteen")
+                if type(related_json) is dict:
+                    if len(related_json) > 1:
+                        for key in related_json.keys():
+                            related_uuid = cls_relateduuid.objects.update_or_create(related_uuid=key)
+                            item.uuid.add(related_uuid[0])
+                            item.save()
+                            #related_uuid.cls_model_set.add(item)
+                            #item.uuid_set.create(related_uuid=key)
+                    else:
+                        for key, value in related_json.items():
+                            #print('long uuid ', len(key), key)
+                            print('mtm related_uuid key ', key)
+                            related_uuid = cls_relateduuid.objects.update_or_create(related_uuid=key)
+                            print('mtm related_uuid ', related_uuid)
+                            item.uuid.add(related_uuid[0])
+                            item.save()
+        return dict_
+
 
 class ViewPluginsByCategory(ListView):
     model = Plugins

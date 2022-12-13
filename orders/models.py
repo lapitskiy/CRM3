@@ -13,13 +13,18 @@ class Orders(models.Model):
     service = models.ForeignKey('Service', default=1, on_delete = models.SET_DEFAULT, null=True, verbose_name='Услуга', related_name='get_service')
     device = models.ForeignKey('Device', default=1,  on_delete = models.SET_DEFAULT, null=True, verbose_name='Устройство', related_name='get_device')
     category = models.ForeignKey('Category', default=1, on_delete = models.SET_DEFAULT, null=True, verbose_name='Категория приемки', related_name='get_category') # fast or simple
-    category_service = models.ForeignKey('Category_service', default=1, on_delete = models.SET_DEFAULT, null=True, verbose_name='Категория услуги', related_name='get_category_service')
+    category_service = models.ForeignKey('Category_service', default=1, on_delete=models.SET_DEFAULT, null=True, verbose_name='Категория услуги', related_name='get_category_service')
     related_uuid = models.JSONField(blank=True) # json dict
+    uuid = models.ManyToManyField('RelatedUuid')
     related_user = models.ForeignKey(User, related_name='order_user', null=True, blank=True, on_delete=models.PROTECT, verbose_name='Owner')
 
 
     def get_absolute_url(self):
         return reverse('view_orders', kwargs={'pk': self.pk})
+
+    @classmethod
+    def get_related_uuid(cls, uuid):
+        pass
 
     def get_related_data(self):
         data = {
@@ -116,3 +121,12 @@ class Device(models.Model):
         verbose_name = 'Устройство'
         verbose_name_plural = 'Устройство'
         ordering = ['name']
+
+
+class RelatedUuid(models.Model):
+    related_uuid = models.CharField(max_length=25, verbose_name='uuid', unique=True)
+
+    class Meta:
+        verbose_name = 'uuid'
+        verbose_name_plural = 'uuid'
+        ordering = ['pk']

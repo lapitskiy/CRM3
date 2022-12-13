@@ -54,8 +54,8 @@ class RelatedMixin(object):
     # [RU] показываться конкретному пользователю или по опредленным параметрам указанных в каждом приложнении.
     # [EN] wait translate
     def getCleanQueryset(self, **kwargs):
-        related = self.checkRelated() # --- 0.005012989044189453 seconds ---
-        queryset = kwargs['queryset']
+        related = self.checkRelated()  # --- 0.005012989044189453 seconds ---
+        queryset = kwargs['dict_queryset']
         if related:
             for x in related:
                 imp_related = importlib.import_module(x.module_name + '.related')
@@ -63,7 +63,7 @@ class RelatedMixin(object):
                 relatedClass = getrelatedClass()
                 if relatedClass.passCleanQueryset():
                     continue
-                queryset = relatedClass.checkCleanQueryset(queryset=kwargs['queryset'], request=kwargs['request'])
+                queryset = relatedClass.checkCleanQueryset(dict_queryset=kwargs['dict_queryset'], request=kwargs['request'])
         return queryset
 
     # [RU] возвращает все связанные формы для edit GET
@@ -131,15 +131,13 @@ class RelatedMixin(object):
                 modelPath = x.module_name + '.models'
                 imp_model = importlib.import_module(modelPath)
                 cls_model = getattr(imp_model, x.related_class_name)
+                cls_related_model = getattr(imp_model, 'RelatedUuid')
                 relatedPath = x.module_name + '.related'
                 imp_related = importlib.import_module(relatedPath)
                 cls_related = getattr(imp_related, 'AppRelated')
+
                 if 'one' in kwargs:
                     if kwargs['one'] == 'uuid':
-                        try:
-                            cls2 = cls_model.objects.get(Q(related_uuid__icontains=kwargs['uuid']))
-                        except cls_model.DoesNotExist:
-                            pass
                         related_get = {}
                         if 'data' in kwargs:
                             if kwargs['data'] == 'dict':
@@ -153,7 +151,7 @@ class RelatedMixin(object):
                         for key_uuid, value_uuid in qry.related_uuid.items():
                             try:
                                 if cls_related.related_format == 'form':
-                                    cls2 = cls_model.objects.get(Q(related_uuid__icontains=key_uuid))
+                                    #cls2 = cls_model.objects.get(Q(related_uuid__icontains=key_uuid))
                                     related_get = cls2.get_related_data()
                                     related_get['related_uuid'] = key_uuid
                                     data_related_list.append(related_get)
@@ -176,15 +174,32 @@ class RelatedMixin(object):
                             except ObjectDoesNotExist:
                                 pass
                 else:
+                    print('qry z ', qry.object_list)
+                    if cls_related.related_format == 'form':
+                        cls2 = cls_model.objects.filter(related_uuid__in=qry.object_list)
+                        related_get = cls2.get_related_data()
+                        related_get['related_uuid'] = key_uuid
+                        data_related_list.append(related_get)
+                    '''
                     for r in qry:
                         for key_uuid, value_uuid in r.related_uuid.items():
                             try:
+
                                 # доедлать, с класса related.py, вставить проверку на if и отдавать связаные данные для menu
+                                # cls2 = cls_model.objects.get(Q(related_uuid__icontains=kwargs['uuid']))
+                                #print('x.related_class_name ', x.related_class_name)
+                                #print('kwargs uuid ', kwargs['uuid'])
+                                #cls2 = cls_model.get_related_uuid(uuid=kwargs['uuid'])
+
                                 if cls_related.related_format == 'form':
+
                                     cls2 = cls_model.objects.get(Q(related_uuid__icontains=key_uuid))
                                     related_get = cls2.get_related_data()
                                     related_get['related_uuid'] = key_uuid
                                     data_related_list.append(related_get)
+                                    
+                                    
+                                    
                                 if cls_related.related_format == 'link':
                                     #print('cls_model link', cls_model)
                                     cls_related2 = cls_model()
@@ -202,8 +217,9 @@ class RelatedMixin(object):
                                     #print('related_get ', str(related_get))
                                     data_related_list.append(related_get)
                             except ObjectDoesNotExist:
-                                print('ObjectDoesNotExist')
+                                #print('ObjectDoesNotExist')
                                 pass
+                    '''
         #print('======= data_related_list')
         #print(data_related_list)
         return data_related_list

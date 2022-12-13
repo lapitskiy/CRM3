@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+{% block title %}{{ title }} - {{ block.super }}{% endblock %}
+{% block sidebar %}
+
+{% include 'include/_sidebar_plugins.html' %}
+{% endblock %}
+
+{% block content %}
+Перенос данных uuid c json в сlass RelatedUuid
+<br><br>
+<div class="card" style="width: 18rem;">
+    <div class="card-body">
+        <p class="card-text">
+            {{ resultUuid }}
+        </p>
+    </div>
+</div>
+<br><br>
+{% endblock %}
+
+
+
+

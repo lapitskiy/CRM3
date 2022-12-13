@@ -28,9 +28,10 @@ def validate_phone_number(value):
 class StoreRelated(models.Model):
     store = models.ForeignKey('Storehouses', null=True, on_delete=models.PROTECT, verbose_name='Отделение', related_name='get_storehouse', blank=False)
     related_uuid = models.JSONField(blank=True, null=True)
+    uuid = models.ManyToManyField('RelatedUuid')
 
     @property
-    def get_related_data(self):
+    def get_related_data(self, **kwargs):
         #print('tyt 222')
         data = {
             'related_use': 'text',
@@ -47,6 +48,10 @@ class StoreRelated(models.Model):
 
     def get_related_dict_data(self):
         return model_to_dict(self)
+
+    @classmethod
+    def get_related_uuid(cls, uuid):
+        return StoreRelated.objects.get(pk=RelatedUuid.objects.get(related_uuid=uuid).related)
 
     def __str__(self):
         return str(self.store.name)
@@ -95,3 +100,11 @@ class Category(models.Model):
         verbose_name = 'Категория'
         verbose_name_plural = 'Категории'
         ordering = ['title']
+
+class RelatedUuid(models.Model):
+    related_uuid = models.CharField(max_length=25, verbose_name='uuid', unique=True)
+
+    class Meta:
+        verbose_name = 'uuid'
+        verbose_name_plural = 'uuid'
+        ordering = ['pk']

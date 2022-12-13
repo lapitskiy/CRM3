@@ -29,17 +29,18 @@ class OrdersHomeView(RelatedMixin, ListView):
     related_module_name = 'orders' #mixin
 
     def get_queryset(self):
-        queryset = self.getQuery()
-        list_orders = self.getCleanQueryset(queryset=queryset, request=self.request)
-        return list_orders
+        dict_queryset = self.getQuery()
+        dict_orders = self.getCleanQueryset(dict_queryset=dict_queryset, request=self.request)
+        #print('list_orders ', list_orders)
+        return dict_orders
 
     def get_context_data(self, *, object_list=None, **kwargs):
         context = super().get_context_data(**kwargs)
         context['title'] = 'Все заказы'
         context['filter'] = self.requestGet('filter')
         context['date'] = self.requestGet('date')
-        list_orders = self.get_queryset()
-        paginator = Paginator(list_orders, self.paginate_by)
+        dict_orders = self.get_queryset()
+        paginator = Paginator(dict_orders, self.paginate_by)
         page = self.request.GET.get('page')
         try:
             orders_page = paginator.page(page)

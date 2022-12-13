@@ -10,9 +10,11 @@ class Prints(models.Model):
     name = models.CharField(max_length=150, blank=True, verbose_name='Название')
     contentform = RichTextUploadingField()
     related_uuid = models.JSONField(blank=True, null=True)
+    uuid = models.ManyToManyField('RelatedUuid')
 
     def get_absolute_url(self):
         return reverse('view_prints', kwargs={'pk': self.pk})
+
 
     def get_related_data(self, **kwargs):
         data = {}
@@ -29,7 +31,10 @@ class Prints(models.Model):
 
     def get_related_filter(self, **kwargs):
         pass
-        return
+
+    @classmethod
+    def get_related_uuid(cls, uuid):
+        return Prints.objects.get(pk=RelatedUuid.objects.get(related_uuid=uuid).related)
 
 
     def __str__(self):
@@ -39,3 +44,11 @@ class Prints(models.Model):
         verbose_name = 'Форма'
         verbose_name_plural = 'Формы'
         ordering = ['-pk']
+
+class RelatedUuid(models.Model):
+    related_uuid = models.CharField(max_length=25, verbose_name='uuid', unique=True)
+
+    class Meta:
+        verbose_name = 'uuid'
+        verbose_name_plural = 'uuid'
+        ordering = ['pk']

@@ -14,11 +14,12 @@ class Money(models.Model):
     updated_dict = models.JSONField(blank=True, default=dict)  # json dict
     #related_uuid = models.CharField(max_length=22, blank=True, verbose_name='uuid')
     related_uuid = models.JSONField() # json dict
+    uuid = models.ManyToManyField('RelatedUuid')
 
     def get_absolute_url(self):
         return reverse('view_money', kwargs={'pk': self.pk})
 
-    def get_related_data(self):
+    def get_related_data(self, **kwargs):
         prepayment = Prepayment.get_all_prepayment_sum(id=self.pk)
         if prepayment is None:
             prepayment = 0
@@ -46,6 +47,10 @@ class Money(models.Model):
     def get_related_filter(self, **kwargs):
         results = Money.objects.filter(Q(money__icontains=kwargs['search_query']))
         return results
+
+    @classmethod
+    def get_related_uuid(self, uuid):
+        return Money.objects.get(pk=RelatedUuid.objects.get(related_uuid=uuid).related)
 
     def __str__(self):
         return str(self.money)
@@ -83,3 +88,11 @@ class Prepayment(models.Model):
         for x in results:
             sum_ = sum_ + x.prepayment
         return sum_
+
+class RelatedUuid(models.Model):
+    related_uuid = models.CharField(max_length=25, verbose_name='uuid', unique=True)
+
+    class Meta:
+        verbose_name = 'uuid'
+        verbose_name_plural = 'uuid'
+        ordering = ['pk']
