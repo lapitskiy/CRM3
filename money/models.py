@@ -29,7 +29,7 @@ class Money(models.Model):
             'Сумма': self.money,
             'Оплачено': prepayment,
             'html': '<a href="/money/edit/'+str(self.pk)+'" target="_blank">Внести предоплату</a>',
-            'related_uuid': self.related_uuid,
+            'related_uuid': list(self.uuid.values_list('related_uuid', flat=True)),
             }
 
         if self.money != prepayment:

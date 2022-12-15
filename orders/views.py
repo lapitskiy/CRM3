@@ -29,10 +29,10 @@ class OrdersHomeView(RelatedMixin, ListView):
     related_module_name = 'orders' #mixin
 
     def get_queryset(self):
-        dict_queryset = self.getQuery()
-        dict_orders = self.getCleanQueryset(dict_queryset=dict_queryset, request=self.request)
+        queryset = self.getQuery()
+        orders = self.getCleanQueryset(queryset=queryset, request=self.request)
         #print('list_orders ', list_orders)
-        return dict_orders
+        return orders
 
     def get_context_data(self, *, object_list=None, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -49,6 +49,7 @@ class OrdersHomeView(RelatedMixin, ListView):
             orders_page = paginator.page(page)
         except EmptyPage:
             orders_page = paginator.page(paginator.num_pages)
+
         context['related_list'] = self.getDataListRelated(query=orders_page)
         return context
 

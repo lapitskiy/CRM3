@@ -55,7 +55,7 @@ class RelatedMixin(object):
     # [EN] wait translate
     def getCleanQueryset(self, **kwargs):
         related = self.checkRelated()  # --- 0.005012989044189453 seconds ---
-        queryset = kwargs['dict_queryset']
+        queryset = kwargs['queryset']
         if related:
             for x in related:
                 imp_related = importlib.import_module(x.module_name + '.related')
@@ -63,7 +63,9 @@ class RelatedMixin(object):
                 relatedClass = getrelatedClass()
                 if relatedClass.passCleanQueryset():
                     continue
-                queryset = relatedClass.checkCleanQueryset(dict_queryset=kwargs['dict_queryset'], request=kwargs['request'])
+                print('enter ', queryset)
+                queryset = relatedClass.checkCleanQueryset(queryset=kwargs['queryset'], request=kwargs['request'])
+                print('exit ', queryset)
         return queryset
 
     # [RU] возвращает все связанные формы для edit GET
@@ -174,12 +176,18 @@ class RelatedMixin(object):
                             except ObjectDoesNotExist:
                                 pass
                 else:
-                    print('qry z ', qry.object_list)
+                    #print('qry z ', qry.object_list)
+                    #print('qry zч ', qry.__class__)
                     if cls_related.related_format == 'form':
-                        cls2 = cls_model.objects.filter(related_uuid__in=qry.object_list)
-                        related_get = cls2.get_related_data()
-                        related_get['related_uuid'] = key_uuid
-                        data_related_list.append(related_get)
+                        q = qry.object_list.values_list('uuid__related_uuid', flat=True)
+                        #q = q.value_list('uuid')
+                        #print('q ', q)
+                        cls2 = cls_model.objects.filter(uuid__related_uuid__in=list(q))
+                        #print('cls2 ', cls2)
+                        for item in cls2:
+                            related_get = item.get_related_data()
+                            #related_get['related_uuid'] = key_uuid
+                            data_related_list.append(related_get)
                     '''
                     for r in qry:
                         for key_uuid, value_uuid in r.related_uuid.items():

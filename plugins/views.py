@@ -130,6 +130,8 @@ class PluginsUuidUpdateView(RelatedMixin, ListView):
                             print('mtm related_uuid ', related_uuid)
                             item.uuid.add(related_uuid[0])
                             item.save()
+
+
         return dict_
 
 

@@ -37,7 +37,7 @@ class StoreRelated(models.Model):
             'related_use': 'text',
             'module_name': 'Отделения',
             'related_text': 'Отделение '+self.store.name,
-            'related_uuid': self.related_uuid,
+            'related_uuid': list(self.uuid.values_list('related_uuid', flat=True)),
             }
         #print('storehouses data related: ', data)
         return data

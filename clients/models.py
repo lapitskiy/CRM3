@@ -23,7 +23,7 @@ class Clients(models.Model):
             'related_use': 'form',
             'module_name': 'Контакт',
             'Телефон': self.phone,
-            'related_uuid': self.related_uuid,
+            'related_uuid': list(self.uuid.values_list('related_uuid', flat=True)),
             }
         return data
 

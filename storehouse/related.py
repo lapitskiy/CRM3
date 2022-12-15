@@ -71,18 +71,20 @@ class AppRelated(object):
         #if kwargs['request'] is not None:
         return 'storehouse/related/load_sidebar_storehouse_related_submenu_tags.html'
 
-    def checkCleanQueryset(self, **kwargs) -> dict:
+    def checkCleanQueryset(self, **kwargs):
         i = 0
         start_time = time.time()
         data_uuid_related_list = []
         self.request = kwargs['request']
-        result_queryset = kwargs['dict_queryset']
+        result_queryset = kwargs['queryset']
         filterStore = StoreRelated.objects.filter(store__user_permission=self.request.user)
         #print('store perm ', len(filterStore))
-        flat_qry = result_queryset.values_list('related_uuid', flat=True)
-        uuid = RelatedUuid.objects.filter(related_uuid__in=flat_qry).values_list('related', flat=True)
-        filterStore = filterStore.filter(pk__in=uuid)
-        #print('flat_qry in ', len(flat_qry))
+        flat_qry = filterStore.values_list('uuid__related_uuid', flat=True)
+        #uuid = StoreRelated.objects.filter(related_uuid__in=flat_qry).values_list('related', flat=True)
+        #print('class ', result_queryset.__class__)
+        #result_queryset = filterStore.filter(uuid__in=flat_qry)
+        result_queryset = result_queryset.filter(uuid__related_uuid__in=list(flat_qry))
+
         #print('store perm in ', len(filterStore))
         #for r in list(kwargs['dict_queryset']):
         #    for key_uuid, value_uuid in r['related_uuid'].items():

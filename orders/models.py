@@ -38,7 +38,7 @@ class Orders(models.Model):
             'Устройство': self.device,
             'Категория приемки': self.category,
             'Категория услуги': self.category_service,
-            'related_uuid': self.related_uuid,
+            'related_uuid': list(self.uuid.values_list('related_uuid', flat=True)),
             }
         return data
 

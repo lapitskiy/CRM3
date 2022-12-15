@@ -22,7 +22,8 @@ class Prints(models.Model):
             data = {
                 'related_use': 'link',
                 'html': '<a href="/prints/form/?uuid='+kwargs['related_uuid']+'" target="_blank">Распечатать</a>',
-                'form': self.pk
+                'form': self.pk,
+                'related_uuid': list(self.uuid.values_list('related_uuid', flat=True)),
                 }
         return data
 

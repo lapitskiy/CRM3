@@ -213,7 +213,9 @@
                 Приемщик: {{ item.related_user }}<br>
 
         <!-- Related data -->
+    {{ related_list }}
         {% for related_item in related_list %}
+
             {% for order_uuid_key, order_uuid_value in item.related_uuid.items %}
 
                 {% if related_item.related_uuid and order_uuid_key == related_item.related_uuid and related_item.related_use == 'form' %}
