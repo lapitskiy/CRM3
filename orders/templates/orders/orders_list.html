@@ -213,13 +213,9 @@
                 Приемщик: {{ item.related_user }}<br>
 
         <!-- Related data -->
-    {{ related_list }}
         {% for related_item in related_list %}
-
-            {% for order_uuid_key, order_uuid_value in item.related_uuid.items %}
-
-                {% if related_item.related_uuid and order_uuid_key == related_item.related_uuid and related_item.related_use == 'form' %}
-
+                {% for order_uuid_key in item.uuid.all %}
+                {% if related_item.related_uuid and order_uuid_key.related_uuid == related_item.uuid and related_item.related_use == 'form' %}
                             {% if related_item.warning %}
                                 {% if related_item.warning == 'red' %}
                                     <!--begin::Alert-->
@@ -244,7 +240,7 @@
                             {% endif %}
 
                             {% for key, value in related_item.items %}
-                                {% if key != 'html' and key != 'related_uuid' and key != 'module_name' and key != 'related_use' and key != 'warning' %}
+                                {% if key != 'uuid' and key != 'html' and key != 'related_uuid' and key != 'module_name' and key != 'related_use' and key != 'warning' %}
                                     {{ key }}: {{ value }}<br>
                                 {% endif %}
                                 {% if key == 'html'%}
@@ -253,7 +249,7 @@
                             {% endfor %}
 
                 {% endif %}
-            {% endfor %}
+                {% endfor %}
         {% endfor %}
 
     </div>

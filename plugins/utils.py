@@ -127,6 +127,9 @@ class RelatedMixin(object):
 
         if 'query' in kwargs:
             qry = kwargs['query']
+            qry_uuid_list = list(qry.object_list.values_list('uuid__related_uuid', flat=True))
+            # q = q.value_list('uuid')
+            #rint('qry_uuid_list ', qry_uuid_list)
         if related:
             for x in related:
                 #print('======= utils.py getDataListRelated')
@@ -179,15 +182,18 @@ class RelatedMixin(object):
                     #print('qry z ', qry.object_list)
                     #print('qry zч ', qry.__class__)
                     if cls_related.related_format == 'form':
-                        q = qry.object_list.values_list('uuid__related_uuid', flat=True)
-                        #q = q.value_list('uuid')
-                        #print('q ', q)
-                        cls2 = cls_model.objects.filter(uuid__related_uuid__in=list(q))
-                        #print('cls2 ', cls2)
-                        for item in cls2:
-                            related_get = item.get_related_data()
+                        for uuid in qry_uuid_list:
+                            try:
+                                cls2 = cls_model.objects.get(uuid__related_uuid=uuid)
+                                related_get = cls2.get_related_data()
+                                related_get['uuid'] = uuid
+                                data_related_list.append(related_get)
+                            except ObjectDoesNotExist:
+                                pass
+                        #for item in cls2:
+                            #related_get = item.get_related_data()
                             #related_get['related_uuid'] = key_uuid
-                            data_related_list.append(related_get)
+
                     '''
                     for r in qry:
                         for key_uuid, value_uuid in r.related_uuid.items():
