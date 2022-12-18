@@ -63,9 +63,11 @@ class RelatedMixin(object):
                 relatedClass = getrelatedClass()
                 if relatedClass.passCleanQueryset():
                     continue
-                print('enter ', queryset)
-                queryset = relatedClass.checkCleanQueryset(queryset=kwargs['queryset'], request=kwargs['request'])
-                print('exit ', queryset)
+                #print('enter ', queryset)
+                queryset = relatedClass.checkCleanQueryset(queryset=kwargs['queryset'], request=kwargs['request']) # --- 0.009974241256713867 seconds ---
+                #print('exit ', queryset)
+
+        #  --- 0.01399374008178711 seconds ---
         return queryset
 
     # [RU] возвращает все связанные формы для edit GET
@@ -190,9 +192,26 @@ class RelatedMixin(object):
                                 data_related_list.append(related_get)
                             except ObjectDoesNotExist:
                                 pass
-                        #for item in cls2:
-                            #related_get = item.get_related_data()
-                            #related_get['related_uuid'] = key_uuid
+
+                    if cls_related.related_format == 'link':
+                        # print('cls_model link', cls_model)
+                        #cls_related2 = cls_model()
+                        for uuid in qry_uuid_list:
+                            cls_related2 = cls_model()
+                            related_get = cls_related2.get_related_data(related_uuid=uuid)
+                            related_get['uuid'] = uuid
+                            data_related_list.append(related_get)
+
+                    if cls_related.related_format == 'select':
+                        logger.info('cls_model select utils %s', cls_model)
+                        for uuid in qry_uuid_list:
+                            try:
+                                cls2 = cls_model.objects.get(uuid__related_uuid=uuid)
+                                related_get = cls2.get_related_data()
+                                related_get['uuid'] = uuid
+                                data_related_list.append(related_get)
+                            except ObjectDoesNotExist:
+                                pass
 
                     '''
                     for r in qry:

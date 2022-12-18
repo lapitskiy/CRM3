@@ -23,7 +23,7 @@ class Prints(models.Model):
                 'related_use': 'link',
                 'html': '<a href="/prints/form/?uuid='+kwargs['related_uuid']+'" target="_blank">Распечатать</a>',
                 'form': self.pk,
-                'related_uuid': list(self.uuid.values_list('related_uuid', flat=True)),
+                'related_uuid': kwargs['related_uuid'],
                 }
         return data
 

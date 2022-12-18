@@ -30,16 +30,13 @@ class StoreRelated(models.Model):
     related_uuid = models.JSONField(blank=True, null=True)
     uuid = models.ManyToManyField('RelatedUuid')
 
-    @property
     def get_related_data(self, **kwargs):
-        #print('tyt 222')
         data = {
             'related_use': 'text',
             'module_name': 'Отделения',
             'related_text': 'Отделение '+self.store.name,
             'related_uuid': list(self.uuid.values_list('related_uuid', flat=True)),
             }
-        #print('storehouses data related: ', data)
         return data
 
     def get_related_filter(self, **kwargs):

@@ -72,8 +72,6 @@ class AppRelated(object):
         return 'storehouse/related/load_sidebar_storehouse_related_submenu_tags.html'
 
     def checkCleanQueryset(self, **kwargs):
-        i = 0
-        start_time = time.time()
         data_uuid_related_list = []
         self.request = kwargs['request']
         result_queryset = kwargs['queryset']
@@ -83,7 +81,7 @@ class AppRelated(object):
         #uuid = StoreRelated.objects.filter(related_uuid__in=flat_qry).values_list('related', flat=True)
         #print('class ', result_queryset.__class__)
         #result_queryset = filterStore.filter(uuid__in=flat_qry)
-        result_queryset = result_queryset.filter(uuid__related_uuid__in=list(flat_qry))
+        result_queryset = result_queryset.filter(uuid__related_uuid__in=flat_qry)
 
         #print('store perm in ', len(filterStore))
         #for r in list(kwargs['dict_queryset']):
@@ -100,7 +98,6 @@ class AppRelated(object):
           #          result_queryset.remove(r)
           #          break
          #   i = i + 1
-        print("%i --- %s seconds ---" % (i, time.time() - start_time))
         return result_queryset
 
 

@@ -257,20 +257,13 @@
 <div class="card-footer">
 <b>Дополнительные данные</b><br>
                             {% for related_item in related_list %}
-                                {% for order_uuid_key, order_uuid_value in item.related_uuid.items %}
-                                    {% if related_item.related_uuid and order_uuid_key == related_item.related_uuid %}
-                                                {% for key, value in related_item.items %}
-                                                    {% if key == 'related_use' and value == 'link' %}
-                                                        {{ related_item.html | safe }}
-                                                        <a target="_blank" href=" {{ related_item.link }}{{ related_item.related_uuid }}">{{ related_item.module_name }}</a><br>
-                                                    {% endif %}
-                                                     {% if key == 'related_use' and value == 'text' %}
-                                                        {{ related_item.related_text }}<br>
-                                                    {% endif %}
-                                                {% endfor %}
-
-
-
+                                {% for order_uuid_key in item.uuid.all %}
+                                    {% if related_item.related_uuid and order_uuid_key.related_uuid == related_item.uuid  and related_item.related_use == 'link'%}
+                                        {{ related_item.html | safe }}
+                                        <a target="_blank" href=" {{ related_item.link }}{{ related_item.related_uuid }}">{{ related_item.module_name }}</a><br>
+                                    {% endif %}
+                                    {% if related_item.related_uuid and order_uuid_key.related_uuid == related_item.uuid  and related_item.related_use == 'text'%}
+                                        {{ related_item.related_text }}<br>
                                     {% endif %}
                                 {% endfor %}
                             {% endfor %}

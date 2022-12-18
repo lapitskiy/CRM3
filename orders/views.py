@@ -23,19 +23,20 @@ import time
 
 class OrdersHomeView(RelatedMixin, ListView):
     #model = Orders
+
     paginate_by = 10
     template_name = 'orders/orders_list.html'
     context_object_name = 'orders'
     related_module_name = 'orders' #mixin
 
     def get_queryset(self):
-        queryset = self.getQuery()
-        orders = self.getCleanQueryset(queryset=queryset, request=self.request)
-        #print('list_orders ', list_orders)
+        queryset = self.getQuery() #  --- 0.0 seconds ---
+        orders = self.getCleanQueryset(queryset=queryset, request=self.request) #  --- 0.22246241569519043 seconds ---
         return orders
 
     def get_context_data(self, *, object_list=None, **kwargs):
-        context = super().get_context_data(**kwargs)
+        start_time = time.time()
+        context = super(OrdersHomeView, self).get_context_data(**kwargs)
         context['title'] = 'Все заказы'
         context['filter'] = self.requestGet('filter')
         context['date'] = self.requestGet('date')
@@ -51,6 +52,7 @@ class OrdersHomeView(RelatedMixin, ListView):
             orders_page = paginator.page(paginator.num_pages)
 
         context['related_list'] = self.getDataListRelated(query=orders_page)
+        print(" --- %s seconds ---" % (time.time() - start_time))
         return context
 
     def post(self, request, *args, **kwargs):
