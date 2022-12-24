@@ -11,6 +11,7 @@ import shortuuid
 from django.core.paginator import Paginator
 from django.core.paginator import EmptyPage
 from django.core.paginator import PageNotAnInteger
+
 from django.core.exceptions import ObjectDoesNotExist
 from django.db import connection
 from django.db.models import Q, F
@@ -18,7 +19,6 @@ from plugins.utils import RelatedMixin
 import json
 from django.forms.models import model_to_dict
 import time
-
 
 
 class OrdersHomeView(RelatedMixin, ListView):
@@ -51,7 +51,9 @@ class OrdersHomeView(RelatedMixin, ListView):
         except EmptyPage:
             orders_page = paginator.page(paginator.num_pages)
 
-        context['related_list'] = self.getDataListRelated(query=orders_page)
+        context['related_list'] = self.getDataListRelated(querypage=orders_page)
+        context['main_list'] = list(orders_page.object_list.values())
+        print(' main_list', context['main_list'])
         print(" --- %s seconds ---" % (time.time() - start_time))
         return context
 
@@ -448,14 +450,15 @@ class OrdersOneView(RelatedMixin, TemplateView):
     related_module_name = 'orders'
 
     def get_queryset(self, **kwargs):
-        return Orders.objects.get(pk=kwargs['id'])
+        #return Orders.objects.get(pk=kwargs['id'])
+        return Orders.objects.filter(pk=kwargs['id'])[0:1]
 
     def get_context_data(self, *, object_list=None, **kwargs):
         context = super().get_context_data(**kwargs)
         context['title'] = 'Заказ'
         order = self.get_queryset(id=context['order_id'])
         context['item'] = order
-        context['related_list'] = self.getDataListRelated(query=order, one='getobj')
+        context['related_list'] = self.getDataListRelated(queryone=order, one='getobj')
         return context
 
 class SettingsView(RelatedMixin, ListView):

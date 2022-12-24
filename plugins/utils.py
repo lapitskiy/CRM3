@@ -127,9 +127,14 @@ class RelatedMixin(object):
         data_related_list = []
         related = self.checkRelated()
 
-        if 'query' in kwargs:
-            qry = kwargs['query']
+        if 'querypage' in kwargs:
+            qry = kwargs['querypage']
             qry_uuid_list = list(qry.object_list.values_list('uuid__related_uuid', flat=True))
+            # q = q.value_list('uuid')
+            #rint('qry_uuid_list ', qry_uuid_list)
+        if 'queryone' in kwargs:
+            qry = kwargs['queryone']
+            qry_uuid_list = list(qry.values_list('uuid__related_uuid', flat=True))
             # q = q.value_list('uuid')
             #rint('qry_uuid_list ', qry_uuid_list)
         if related:
@@ -155,31 +160,30 @@ class RelatedMixin(object):
                         related_get['related_uuid'] = kwargs['uuid']
                         data_related_list.append(related_get)
                     if kwargs['one'] == 'getobj':
-                        for key_uuid, value_uuid in qry.related_uuid.items():
-                            try:
-                                if cls_related.related_format == 'form':
-                                    #cls2 = cls_model.objects.get(Q(related_uuid__icontains=key_uuid))
-                                    related_get = cls2.get_related_data()
-                                    related_get['related_uuid'] = key_uuid
+
+                        if cls_related.related_format == 'form':
+                            for uuid in qry_uuid_list:
+                                try:
+                                    r_cls = cls_model.objects.get(uuid__related_uuid=uuid)
+                                    related_get = r_cls.get_related_data()
+                                    related_get['uuid'] = uuid
                                     data_related_list.append(related_get)
-                                if cls_related.related_format == 'link':
-                                    #print('cls_model link', cls_model)
-                                    cls_related2 = cls_model()
-                                    related_get = cls_related2.get_related_data(related_uuid=key_uuid)
-                                    related_get['related_uuid'] = key_uuid
-                                    #print('related_get ', str(related_get))
-                                    data_related_list.append(related_get)
-                                if cls_related.related_format == 'select':
-                                    logger.info('cls_model select utils %s', cls_model)
-                                    cls_related3 = cls_model.objects.get(Q(related_uuid__icontains=key_uuid))
-                                    related_get = cls_related3.get_related_data
-                                    #print('tyt 333 ky uuid', key_uuid)
-                                    #print('related_get select', str(related_get))
-                                    related_get['related_uuid'] = key_uuid
-                                    #print('related_get ', str(related_get))
-                                    data_related_list.append(related_get)
-                            except ObjectDoesNotExist:
-                                pass
+                                except ObjectDoesNotExist:
+                                    pass
+                        if cls_related.related_format == 'link':
+                            r_cls = cls_model()
+                            related_get = r_cls.get_related_data(related_uuid=uuid)
+                            related_get['uuid'] = uuid
+                            data_related_list.append(related_get)
+                        if cls_related.related_format == 'select':
+                            logger.info('cls_model select utils %s', cls_model)
+                            #r_cls = cls_model.objects.get(uuid__related_uuid=uuid)
+                            #related_get = r_cls.get_related_data
+                            #print('tyt 333 ky uuid', key_uuid)
+                            #print('related_get select', str(related_get))
+                            #related_get['related_uuid'] = key_uuid
+                            #print('related_get ', str(related_get))
+                            #data_related_list.append(related_get)
                 else:
                     #print('qry z ', qry.object_list)
                     #print('qry zч ', qry.__class__)
