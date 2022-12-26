@@ -4,7 +4,6 @@
     {% include 'include/_sidebar_orders.html' %}
 {% endblock %}
 {% block content %}
-
                             <!--begin::Toolbar-->
 							<div class="toolbar mb-5 mb-lg-7" id="kt_toolbar">
 								<!--begin::Page title-->
@@ -166,37 +165,37 @@
                                                                 <div class="card shadow-sm">
     <div class="card-header">
         <h3 class="card-title">
-            {% if item.category.title == "fast" %}
+            {% if item.0.category_id == 1 %}
                 Услуга на месте:&nbsp;<br>
             {% else %}
                 Заказ в ремонт:&nbsp;<br>
             {% endif %}
-            <b>{{ item.pk }}</b></h3>
+            <b>{{ item.0.id }}</b></h3>
         <div class="card-toolbar">
-            {% if item.category.title == "simple" %}
-                Статус: &nbsp;<span class="badge rounded-pill bg-warning text-dark"> {{ item.status }}</span>
+            {% if item.0.category_id == 2 %}
+                Статус: &nbsp;<span class="badge rounded-pill bg-warning text-dark"> {{ item.0.status__title }}</span>
             {% endif %}
-            &nbsp; Дата: &nbsp;<span class="badge rounded-pill bg-dark"> {{ item.created_at }} </span>&nbsp;&nbsp;
+            &nbsp; Дата: &nbsp;<span class="badge rounded-pill bg-dark"> {{ item.0.created_at }} </span>&nbsp;&nbsp;
             <button type="button" class="btn btn-sm btn-light">
-                <a href="edit/{{ item.pk }}">Редактировать</a>
+                <a href="edit/{{ item.0.id }}">Редактировать</a>
             </button>
         </div>
     </div>
     <div class="card-body">
-        Принято: {{ item.category_service }}<br>
-        В ремонте: {{ item.device }}<br>
-        Услуга: {{ item.service }}<br>
-        Серийный: {{ item.serial }}<br>
-        {% if item.category.title == "simple" %}
-                Комментарий: {{ item.comment }}<br>
+
+        Принято: {{ item.0.category_service__name }}<br>
+        В ремонте: {{ item.0.device__name }}<br>
+        Услуга: {{ item.0.service__name }}<br>
+        Серийный: {{ item.0.serial }}<br>
+        {% if item.0.category_id == 2 %}
+                Комментарий: {{ item.0.comment }}<br>
         {% endif %}
-                Приемщик: {{ item.related_user }}<br>
+                Приемщик: {{ item.0.related_user__username }}<br>
 
         <!-- Related data -->
         {% for related_item in related_list %}
-            {% for order_uuid_key, order_uuid_value in item.related_uuid.items %}
 
-                {% if related_item.related_uuid and order_uuid_key == related_item.related_uuid and related_item.related_use == 'form' %}
+                {% if related_item.related_uuid and item.0.uuid__related_uuid == related_item.uuid and related_item.related_use == 'form' %}
 
                             {% if related_item.warning %}
                                 {% if related_item.warning == 'red' %}
@@ -222,7 +221,7 @@
                             {% endif %}
 
                             {% for key, value in related_item.items %}
-                                {% if key != 'html' and key != 'related_uuid' and key != 'module_name' and key != 'related_use' and key != 'warning' %}
+                                {% if key != 'html' and key != 'related_uuid' and key != 'uuid' and key != 'module_name' and key != 'related_use' and key != 'warning' %}
                                     {{ key }}: {{ value }}<br>
                                 {% endif %}
                                 {% if key == 'html'%}
@@ -231,7 +230,6 @@
                             {% endfor %}
 
                 {% endif %}
-            {% endfor %}
         {% endfor %}
 
     </div>
@@ -239,8 +237,7 @@
 <div class="card-footer">
 <b>Дополнительные данные</b><br>
                             {% for related_item in related_list %}
-                                {% for order_uuid_key, order_uuid_value in item.related_uuid.items %}
-                                    {% if related_item.related_uuid and order_uuid_key == related_item.related_uuid %}
+                                    {% if related_item.related_uuid and item.0.uuid__related_uuid == related_item.uuid %}
                                                 {% for key, value in related_item.items %}
                                                     {% if key == 'related_use' and value == 'link' %}
                                                         {{ related_item.html | safe }}
@@ -253,7 +250,6 @@
 
 
                                     {% endif %}
-                                {% endfor %}
                             {% endfor %}
 
     </div>
@@ -287,7 +283,6 @@
 
         <!--begin::Body-->
         <div id="kt_accordion_2_item_1" class="fs-6 collapse show ps-10" data-bs-parent="#kt_accordion_2">
-            {{ related_list }}
         </div>
         <!--end::Body-->
     </div>

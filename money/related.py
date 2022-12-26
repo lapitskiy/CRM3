@@ -1,5 +1,5 @@
 from .forms import RelatedAddForm
-from .models import Money, Prepayment
+from .models import Money, Prepayment, RelatedUuid
 from django.db.models import Q
 
 class AppRelated(object):
@@ -78,7 +78,11 @@ class AppRelated(object):
         related_dict = kwargs['related_dict']
         form_from_dict = related_dict['form']
         form_add = form_from_dict.save(commit=False)
-        form_add.related_uuid = related_dict['uuid']
+        print('related_dict 1', related_dict['uuid'])
+        make_uuid_obj = RelatedUuid(related_uuid=related_dict['uuid'])
+        make_uuid_obj.save()
+        form_add.save()
+        form_add.uuid.add(make_uuid_obj)
         form_add.save()
         print('money saveform: ', form_from_dict.cleaned_data.get('is_pay'))
         print('money pk: ', form_add.pk)

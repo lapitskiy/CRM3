@@ -14,7 +14,7 @@ class Orders(models.Model):
     device = models.ForeignKey('Device', default=1,  on_delete = models.SET_DEFAULT, null=True, verbose_name='Устройство', related_name='get_device')
     category = models.ForeignKey('Category', default=1, on_delete = models.SET_DEFAULT, null=True, verbose_name='Категория приемки', related_name='get_category') # fast or simple
     category_service = models.ForeignKey('Category_service', default=1, on_delete=models.SET_DEFAULT, null=True, verbose_name='Категория услуги', related_name='get_category_service')
-    related_uuid = models.JSONField(blank=True) # json dict
+    related_uuid = models.JSONField(blank=True, null=True) # json dict
     uuid = models.ManyToManyField('RelatedUuid')
     related_user = models.ForeignKey(User, related_name='order_user', null=True, blank=True, on_delete=models.PROTECT, verbose_name='Owner')
 
@@ -23,8 +23,12 @@ class Orders(models.Model):
         return reverse('view_orders', kwargs={'pk': self.pk})
 
     @classmethod
-    def get_related_uuid(cls, uuid):
-        pass
+    def get_related_by_uuid(self, uuid):
+        try:
+            return Orders.objects.get(uuid__related_uuid=uuid)
+        except ObjectDoesNotExist:
+            pass
+
 
     def get_related_data(self):
         data = {

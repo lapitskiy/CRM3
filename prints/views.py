@@ -5,6 +5,7 @@ from .models import Prints
 from plugins.utils import RelatedMixin
 from .forms import SimplePrintAddForm
 import re
+import importlib
 
 class PrintsHomeView(ListView):
     model = Prints
@@ -29,8 +30,9 @@ class PrintFormView(RelatedMixin, TemplateView):
             pass
         else:
             print_form = Prints.objects.first()
-        related_data = self.getDataListRelated(uuid=self.request.GET.get('uuid'), one='uuid', data='dict')
-        context['printform'] = self.getPrintForm(content=print_form.contentform, related=related_data)
+        #related_data = self.getDataListRelated(uuid=self.request.GET.get('uuid'), method='get_one_obj_by_str_uuid', data='dict')
+        #print('related_data prints ', related_data)
+        context['printform'] = self.getPrintForm(content=print_form.contentform)
         context['formnumber'] = print_form.pk
         return self.render_to_response(context)
 
@@ -38,19 +40,17 @@ class PrintFormView(RelatedMixin, TemplateView):
         after_text = ''
         #print('related ', kwargs['related'])
         #print('print_form.contentform ', kwargs['content'])
-        related = kwargs['related']
-        print('kwargs rel', related)
-        rel_money = related[0]['money']
-        print('kwargs', rel_money)
-        if 'content' in kwargs and 'related' in kwargs:
+        #related = kwargs['related']
+        #print('kwargs rel', related)
+        #rel_money = related[0]['money']
+        #print('kwargs', rel_money)
+        if 'content' in kwargs:
             #list_related = re.findall(r'[a-zA-Z0-9]+\.[a-zA-Z0-9]+\.[a-zA-Z0-9]+', kwargs['content'])
             after_text = kwargs['content']
             list_related = [f.group(0) for f in re.finditer('(?<={{)(.*?)(?=}})', kwargs['content'])]
 
             for x in list_related:
-                #print('x ', x)
                 list_split = x.split('.')
-                #print('list_split ', list_split)
                 get_obj = self.getModelFromStr(uuid=self.request.GET.get('uuid'), app=list_split[0], cls=list_split[1])
                 #print('split 2: ', list_split[2])
                 #print('get_obj: ', get_obj)
@@ -62,6 +62,19 @@ class PrintFormView(RelatedMixin, TemplateView):
 
         return after_text
 
+    # [EN] return obj
+    # [RU] возвращает объект на основе строк класса и app
+    def getModelFromStr(self, **kwargs):
+        if 'cls' in kwargs and 'app' in kwargs and 'uuid' in kwargs:
+            modelPath = kwargs['app'] + '.models'
+            imp_model = importlib.import_module(modelPath)
+            cls_model = getattr(imp_model, kwargs['cls'])
+            try:
+                cls2 = cls_model.objects.get(uuid__related_uuid=kwargs['uuid'])
+                return cls2
+            except cls_model.DoesNotExist:  # тоже самое с cls2.DoesNotExist:
+                return False
+        return False
 
 
 class PrintAddView(RelatedMixin, TemplateView):

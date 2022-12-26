@@ -73,12 +73,13 @@ class RelatedMixin(object):
     # [RU] возвращает все связанные формы для edit GET
     # [EN] list related forms
     def getRelatedEditFormList(self, **kwargs):
+        start_time = time.time()
         related = self.checkRelated()
         form_list = []
         obj = kwargs['obj']
+        obj_uuid_list = obj.objects.values_list('uuid__related_uuid', flat=True)
         if related:
             for x in related:
-
                 imp_related = importlib.import_module(x.module_name + '.related')
                 getrelatedClass = getattr(imp_related, 'AppRelated')
                 relatedClass = getrelatedClass()
@@ -89,14 +90,17 @@ class RelatedMixin(object):
                 app_form = importlib.import_module(formPath)
                 app_model = importlib.import_module(modelPath)
                 cls = getattr(app_model, x.related_class_name)
-                for key_uuid, value_uuid in obj.related_uuid.items():
+                #obj_uuid_list = list(filter(lambda a: a != None, obj_uuid_list))
+                #obj_uuid_list = list(filter((None).__ne__, obj_uuid_list))
+                for uuid in obj_uuid_list:
                     try:
-                        get_related = cls.objects.get(Q(related_uuid__icontains=key_uuid))
+                        get_related = cls.objects.get(uuid__related_uuid=uuid)
                         related_form = app_form.RelatedAddForm(instance=get_related)
                     except cls.DoesNotExist:
                         related_form = app_form.RelatedAddForm()
                 related_form.prefix = x.module_name
                 form_list.append(related_form)
+        print(" --- %s seconds getRelatedEditFormList ---" % (time.time() - start_time))
         return form_list
 
     # [RU] переводить dict uuid = {'uuid', ''} в _list = ['uuid',]
@@ -127,64 +131,55 @@ class RelatedMixin(object):
         data_related_list = []
         related = self.checkRelated()
 
-        if 'querypage' in kwargs:
-            qry = kwargs['querypage']
+        if kwargs['method'] == 'query_paginator_page':
+            qry = kwargs['query']
             qry_uuid_list = list(qry.object_list.values_list('uuid__related_uuid', flat=True))
             # q = q.value_list('uuid')
             #rint('qry_uuid_list ', qry_uuid_list)
-        if 'queryone' in kwargs:
-            qry = kwargs['queryone']
+        if kwargs['method'] == 'get_one_obj_by_qry':
+            qry = kwargs['query']
             qry_uuid_list = list(qry.values_list('uuid__related_uuid', flat=True))
             # q = q.value_list('uuid')
-            #rint('qry_uuid_list ', qry_uuid_list)
+
         if related:
             for x in related:
                 #print('======= utils.py getDataListRelated')
                 modelPath = x.module_name + '.models'
                 imp_model = importlib.import_module(modelPath)
                 cls_model = getattr(imp_model, x.related_class_name)
-                cls_related_model = getattr(imp_model, 'RelatedUuid')
                 relatedPath = x.module_name + '.related'
                 imp_related = importlib.import_module(relatedPath)
                 cls_related = getattr(imp_related, 'AppRelated')
 
-                if 'one' in kwargs:
-                    if kwargs['one'] == 'uuid':
-                        related_get = {}
-                        if 'data' in kwargs:
-                            if kwargs['data'] == 'dict':
-                                related_get[x.module_name] = cls2.get_related_dict_data()
-                        else:
-                            related_get = cls2.get_related_data()
-
-                        related_get['related_uuid'] = kwargs['uuid']
+                if kwargs['method'] == 'get_one_obj_by_str_uuid':
+                    related_get = {}
+                    if 'data' in kwargs:
+                        if kwargs['data'] == 'dict':
+                            obj = cls_model.get_related_by_uuid(uuid=kwargs['uuid'])
+                            related_get[x.module_name] = obj.get_related_dict_data()
+                    related_get['uuid'] = kwargs['uuid']
+                    print(x.module_name, ': ', related_get)
+                    print('=================')
+                    data_related_list.append(related_get)
+                if kwargs['method'] == 'get_one_obj_by_qry':
+                    if cls_related.related_format == 'form':
+                        for uuid in qry_uuid_list:
+                            try:
+                                print('uuid money ', qry_uuid_list)
+                                r_cls = cls_model.objects.get(uuid__related_uuid=uuid)
+                                related_get = r_cls.get_related_data()
+                                related_get['uuid'] = uuid
+                                data_related_list.append(related_get)
+                            except ObjectDoesNotExist:
+                                pass
+                    if cls_related.related_format == 'link':
+                        r_cls = cls_model()
+                        related_get = r_cls.get_related_data(related_uuid=uuid)
+                        related_get['uuid'] = uuid
                         data_related_list.append(related_get)
-                    if kwargs['one'] == 'getobj':
-
-                        if cls_related.related_format == 'form':
-                            for uuid in qry_uuid_list:
-                                try:
-                                    r_cls = cls_model.objects.get(uuid__related_uuid=uuid)
-                                    related_get = r_cls.get_related_data()
-                                    related_get['uuid'] = uuid
-                                    data_related_list.append(related_get)
-                                except ObjectDoesNotExist:
-                                    pass
-                        if cls_related.related_format == 'link':
-                            r_cls = cls_model()
-                            related_get = r_cls.get_related_data(related_uuid=uuid)
-                            related_get['uuid'] = uuid
-                            data_related_list.append(related_get)
-                        if cls_related.related_format == 'select':
-                            logger.info('cls_model select utils %s', cls_model)
-                            #r_cls = cls_model.objects.get(uuid__related_uuid=uuid)
-                            #related_get = r_cls.get_related_data
-                            #print('tyt 333 ky uuid', key_uuid)
-                            #print('related_get select', str(related_get))
-                            #related_get['related_uuid'] = key_uuid
-                            #print('related_get ', str(related_get))
-                            #data_related_list.append(related_get)
-                else:
+                    if cls_related.related_format == 'select':
+                        logger.info('cls_model select utils %s', cls_model)
+                if kwargs['method'] == 'query_paginator_page':
                     #print('qry z ', qry.object_list)
                     #print('qry zч ', qry.__class__)
                     if cls_related.related_format == 'form':
@@ -216,64 +211,10 @@ class RelatedMixin(object):
                                 data_related_list.append(related_get)
                             except ObjectDoesNotExist:
                                 pass
-
-                    '''
-                    for r in qry:
-                        for key_uuid, value_uuid in r.related_uuid.items():
-                            try:
-
-                                # доедлать, с класса related.py, вставить проверку на if и отдавать связаные данные для menu
-                                # cls2 = cls_model.objects.get(Q(related_uuid__icontains=kwargs['uuid']))
-                                #print('x.related_class_name ', x.related_class_name)
-                                #print('kwargs uuid ', kwargs['uuid'])
-                                #cls2 = cls_model.get_related_uuid(uuid=kwargs['uuid'])
-
-                                if cls_related.related_format == 'form':
-
-                                    cls2 = cls_model.objects.get(Q(related_uuid__icontains=key_uuid))
-                                    related_get = cls2.get_related_data()
-                                    related_get['related_uuid'] = key_uuid
-                                    data_related_list.append(related_get)
-                                    
-                                    
-                                    
-                                if cls_related.related_format == 'link':
-                                    #print('cls_model link', cls_model)
-                                    cls_related2 = cls_model()
-                                    related_get = cls_related2.get_related_data(related_uuid=key_uuid)
-                                    related_get['related_uuid'] = key_uuid
-                                    #print('related_get ', str(related_get))
-                                    data_related_list.append(related_get)
-                                if cls_related.related_format == 'select':
-                                    logger.info('cls_model select utils %s', cls_model)
-                                    cls_related3 = cls_model.objects.get(Q(related_uuid__icontains=key_uuid))
-                                    related_get = cls_related3.get_related_data
-                                    #print('tyt 333 ky uuid', key_uuid)
-                                    #print('related_get select', str(related_get))
-                                    related_get['related_uuid'] = key_uuid
-                                    #print('related_get ', str(related_get))
-                                    data_related_list.append(related_get)
-                            except ObjectDoesNotExist:
-                                #print('ObjectDoesNotExist')
-                                pass
-                    '''
         #print('======= data_related_list')
         #print(data_related_list)
         return data_related_list
 
-    # [EN] return obj
-    # [RU] возвращает объект на основе строк класса и app
-    def getModelFromStr(self, **kwargs):
-        if 'cls' in kwargs and 'app' in kwargs and 'uuid' in kwargs:
-            modelPath = kwargs['app'] + '.models'
-            imp_model = importlib.import_module(modelPath)
-            cls_model = getattr(imp_model, kwargs['cls'])
-            try:
-                cls2 = cls_model.objects.get(Q(related_uuid__icontains=kwargs['uuid']))
-                return cls2
-            except cls_model.DoesNotExist:  # тоже самое с cls2.DoesNotExist:
-                return False
-        return False
 
     # return uuid related list for search query
     def getUuidListFilterRelated(self, search_query):
@@ -365,13 +306,15 @@ class RelatedMixin(object):
     def saveRelatedFormData(self, request, **kwargs):
         related_form_dict = kwargs['related_dict']
         related_uuid = kwargs['related_uuid']
+        print('related_form_dict', related_form_dict)
         for k, v in related_form_dict.items():
-            if related_form_dict[k]['update']:
-                update_uuid_dict = related_form_dict[k]['uuid']
-                update_uuid_dict.update(related_uuid)
-                related_form_dict[k]['uuid'] = update_uuid_dict
-            else:
-                related_form_dict[k]['uuid'] = related_uuid
+            #if related_form_dict[k]['update']:
+            #    update_uuid_dict = related_uuid
+            #    update_uuid_dict.update(related_uuid)
+            #    related_form_dict[k]['uuid'] = update_uuid_dict
+            #else:
+            #    related_form_dict[k]['uuid'] = related_uuid
+            related_form_dict[k]['uuid'] = related_uuid
             relatedClass = related_form_dict[k]['class']
             relatedClass.saveForm(related_dict=related_form_dict[k], request=request)
         return

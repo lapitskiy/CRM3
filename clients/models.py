@@ -35,8 +35,8 @@ class Clients(models.Model):
         return results
 
     @classmethod
-    def get_related_uuid(cls, uuid):
-        return Clients.objects.get(pk=RelatedUuid.objects.get(related_uuid=uuid).related)
+    def get_related_by_uuid(cls, uuid):
+        return Clients.objects.get(uuid__related_uuid=uuid)
 
 
     def __str__(self):

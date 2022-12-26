@@ -1,5 +1,5 @@
 from .forms import RelatedAddForm
-from .models import Clients
+from .models import Clients, RelatedUuid
 from django.core.exceptions import ObjectDoesNotExist
 from django.db.models import Q
 
@@ -55,7 +55,7 @@ class AppRelated(object):
             get_client = Clients.objects.get(phone=request_post['clients-phone'])
             related_form = RelatedAddForm(request_post, prefix=self.prefix, instance=get_client)
             #print('related_form: ', related_form)
-            context['uuid'] = get_client.related_uuid
+            context['uuid'] = ''
             context['pk'] = get_client.pk
             if related_form.is_valid():
                 context['valid'] = True
@@ -128,11 +128,11 @@ class AppRelated(object):
         #print('tyt 22 ', form_from_dict.cleaned_data.get('clients-phone'))
         #print('tyt 23 ', form_from_dict.cleaned_data['phone'])
         if request.POST['clients-phone'] == '':
-            print('tyt 3')
             pass
         else:
-            print('tyt 4')
             form_add = form_from_dict.save(commit=False)
-            form_add.related_uuid = related_dict['uuid']
+            make_uuid_obj = RelatedUuid(related_uuid=related_dict['uuid'])
+            make_uuid_obj.save()
             form_add.save()
-            print('save contact')
+            form_add.uuid.add(make_uuid_obj)
+            form_add.save()

@@ -13,7 +13,7 @@ class Money(models.Model):
     #updated_at = models.DateTimeField(auto_now=True, verbose_name='Обновлен')
     updated_dict = models.JSONField(blank=True, default=dict)  # json dict
     #related_uuid = models.CharField(max_length=22, blank=True, verbose_name='uuid')
-    related_uuid = models.JSONField() # json dict
+    related_uuid = models.JSONField(blank=True, null=True) # json dict
     uuid = models.ManyToManyField('RelatedUuid')
 
     def get_absolute_url(self):
@@ -49,8 +49,8 @@ class Money(models.Model):
         return results
 
     @classmethod
-    def get_related_uuid(self, uuid):
-        return Money.objects.get(pk=RelatedUuid.objects.get(related_uuid=uuid).related)
+    def get_related_by_uuid(self, uuid):
+        return Money.objects.get(uuid__related_uuid=uuid)
 
     def __str__(self):
         return str(self.money)

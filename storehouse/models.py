@@ -47,8 +47,8 @@ class StoreRelated(models.Model):
         return model_to_dict(self)
 
     @classmethod
-    def get_related_uuid(cls, uuid):
-        return StoreRelated.objects.get(pk=RelatedUuid.objects.get(related_uuid=uuid).related)
+    def get_related_by_uuid(cls, uuid):
+        return StoreRelated.objects.get(uuid__related_uuid=uuid)
 
     def __str__(self):
         return str(self.store.name)

@@ -5,8 +5,6 @@
 {% endblock %}
 {% block content %}
 
-    {{ main_list.0 }}
-
                             <!--begin::Toolbar-->
 							<div class="toolbar mb-5 mb-lg-7" id="kt_toolbar">
 								<!--begin::Page title-->
@@ -167,57 +165,56 @@
 	   <div class="row">
         <div class="col-4">
             <div class="list-group list-group-flush" id="list-tab" role="tablist">
-                {% for item in page_obj %}
+                {% for item in main_list %}
                     {% if forloop.counter == 1 %}
-                        <a class="list-group-item list-group-item-action active" id="list-{{ item.pk }}" data-bs-toggle="list" href="#id-list-{{ item.pk }}" role="tab" aria-controls="home">Заказ {{ item.pk }}</a>
+                        <a class="list-group-item list-group-item-action active" id="list-{{ item.id }}" data-bs-toggle="list" href="#id-list-{{ item.id }}" role="tab" aria-controls="home">Заказ {{ item.id }}</a>
                     {% else %}
-                        <a class="list-group-item list-group-item-action" id="list-{{ item.pk }}" data-bs-toggle="list" href="#id-list-{{ item.pk }}" role="tab" aria-controls="home">Заказ {{ item.pk }}</a>
+                        <a class="list-group-item list-group-item-action" id="list-{{ item.id }}" data-bs-toggle="list" href="#id-list-{{ item.id }}" role="tab" aria-controls="home">Заказ {{ item.id }}</a>
                     {% endif %}
                 {% endfor %}
             </div>
         </div>
         <div class="col-8">
             <div class="tab-content" id="nav-tabContent">
-                {% for item in page_obj %}
+                {% for item in main_list %}
                     {% if forloop.counter == 1 %}
-                        <div class="tab-pane fade show active" id="id-list-{{ item.pk }}" role="tabpanel" aria-labelledby="list-{{ item.pk }}">
+                        <div class="tab-pane fade show active" id="id-list-{{ item.id }}" role="tabpanel" aria-labelledby="list-{{ item.id }}">
                     {% else %}
-                        <div class="tab-pane fade" id="id-list-{{ item.pk }}" role="tabpanel" aria-labelledby="list-{{ item.pk }}">
+                        <div class="tab-pane fade" id="id-list-{{ item.id }}" role="tabpanel" aria-labelledby="list-{{ item.id }}">
                     {% endif %}
 <div class="card shadow-sm">
     <div class="card-header">
         <h3 class="card-title">
-            {% if item.category.title == "fast" %}
+            {% if item.category_id == 1 %}
                 Услуга на месте:&nbsp;<br>
             {% else %}
                 Заказ в ремонт:&nbsp;<br>
             {% endif %}
-            <b>{{ item.pk }}</b> </h3>
+            <b>{{ item.id }}</b> </h3>
         <div class="card-toolbar">
-            {% if item.category.title == "simple" %}
-                Статус: &nbsp;<span class="badge rounded-pill bg-warning text-dark"> {{ item.status }}</span>
+            {% if item.category_id == 2 %}
+                Статус: &nbsp;<span class="badge rounded-pill bg-warning text-dark"> {{ item.status__title }}</span>
             {% endif %}
             &nbsp; Дата: &nbsp;<span class="badge rounded-pill bg-dark"> {{ item.created_at }} </span>&nbsp;&nbsp;
             <button type="button" class="btn btn-sm btn-light">
-                <a href="edit/{{ item.pk }}">Редактировать</a>
+                <a href="edit/{{ item.id }}">Редактировать</a>
             </button>
         </div>
     </div>
     <div class="card-body">
-        <i class="fa-solid fa-up-right-from-square"></i><a href="one/{{ item.pk }}" target="_blank">Открыть в новом окне</a><br><br>
-        Принято: {{ item.category_service }}<br>
-        В ремонте: {{ item.device }}<br>
-        Услуга: {{ item.service }}<br>
+        <i class="fa-solid fa-up-right-from-square"></i><a href="one/{{ item.id }}" target="_blank">Открыть в новом окне</a><br><br>
+        Принято: {{ item.category_service__name }}<br>
+        В ремонте: {{ item.device__name }}<br>
+        Услуга: {{ item.service__name }}<br>
         Серийный: {{ item.serial }}<br>
-        {% if item.category.title == "simple" %}
+        {% if item.category_id == 2 %}
                 Комментарий: {{ item.comment }}<br>
         {% endif %}
-                Приемщик: {{ item.related_user }}<br>
+                Приемщик: {{ item.related_user__username }}<br>
 
         <!-- Related data -->
         {% for related_item in related_list %}
-                {% for order_uuid_key in item.uuid.all %}
-                {% if related_item.related_uuid and order_uuid_key.related_uuid == related_item.uuid and related_item.related_use == 'form' %}
+                {% if related_item.related_uuid and item.uuid__related_uuid == related_item.uuid and related_item.related_use == 'form' %}
                             {% if related_item.warning %}
                                 {% if related_item.warning == 'red' %}
                                     <!--begin::Alert-->
@@ -240,7 +237,6 @@
                             {% else %}
                                 <br><b>{{ related_item.module_name }}</b><br>
                             {% endif %}
-
                             {% for key, value in related_item.items %}
                                 {% if key != 'uuid' and key != 'html' and key != 'related_uuid' and key != 'module_name' and key != 'related_use' and key != 'warning' %}
                                     {{ key }}: {{ value }}<br>
@@ -251,7 +247,6 @@
                             {% endfor %}
 
                 {% endif %}
-                {% endfor %}
         {% endfor %}
 
     </div>
@@ -259,15 +254,13 @@
 <div class="card-footer">
 <b>Дополнительные данные</b><br>
                             {% for related_item in related_list %}
-                                {% for order_uuid_key in item.uuid.all %}
-                                    {% if related_item.related_uuid and order_uuid_key.related_uuid == related_item.uuid  and related_item.related_use == 'link'%}
+                                    {% if related_item.related_uuid and item.uuid__related_uuid == related_item.uuid  and related_item.related_use == 'link'%}
                                         {{ related_item.html | safe }}
                                         <a target="_blank" href=" {{ related_item.link }}{{ related_item.related_uuid }}">{{ related_item.module_name }}</a><br>
                                     {% endif %}
-                                    {% if related_item.related_uuid and order_uuid_key.related_uuid == related_item.uuid  and related_item.related_use == 'text'%}
+                                    {% if related_item.related_uuid and item.uuid__related_uuid == related_item.uuid  and related_item.related_use == 'text'%}
                                         {{ related_item.related_text }}<br>
                                     {% endif %}
-                                {% endfor %}
                             {% endfor %}
 
     </div>
@@ -339,7 +332,7 @@
 
         <!--begin::Body-->
         <div id="kt_accordion_2_item_1" class="fs-6 collapse show ps-10" data-bs-parent="#kt_accordion_2">
-            {{ related_list }}
+
         </div>
         <!--end::Body-->
     </div>

@@ -3,7 +3,7 @@ from django.http import HttpResponse, HttpResponseRedirect, JsonResponse
 from django.views.generic import ListView, DetailView, CreateView, FormView, TemplateView
 from django.urls import reverse_lazy
 from .forms import SimpleOrderAddForm, FastOrderAddForm, SettingDeviceAddForm, SettingServiceAddForm, SettingCategoryServiceAddForm, SettingStatusAddForm, SimpleOrderEditForm
-from .models import Orders, Service, Device, Category_service, Status
+from .models import Orders, Service, Device, Category_service, Status, RelatedUuid
 
 from plugins.models import Plugins
 import importlib
@@ -51,9 +51,14 @@ class OrdersHomeView(RelatedMixin, ListView):
         except EmptyPage:
             orders_page = paginator.page(paginator.num_pages)
 
-        context['related_list'] = self.getDataListRelated(querypage=orders_page)
-        context['main_list'] = list(orders_page.object_list.values())
-        print(' main_list', context['main_list'])
+        context['related_list'] = self.getDataListRelated(query=orders_page, method='query_paginator_page')
+        context['main_list'] = list(orders_page.object_list.values('id','serial','comment', 'created_at', 'updated_at', 'status__title',
+                                                                   'service__name', 'device__name', 'category_id', 'category_service__name',
+                                                                   'uuid__related_uuid', 'related_user__username'))
+        #print(' main_list', context['main_list'])
+        #print(' orders_page ', orders_page.object_list)
+        #print(' =========================== ')
+        #print(' dict_orders ', dict_orders)
         print(" --- %s seconds ---" % (time.time() - start_time))
         return context
 
@@ -158,16 +163,18 @@ class OrderAddView(RelatedMixin, TemplateView):
         #    form_list.append(v['form'])
 
         if formOne.is_valid() and is_valid_related_dict['is_valid']:
-            related_uuid = {shortuuid.uuid() : ''}
+            related_uuid = shortuuid.uuid()
             form_one = formOne.save(commit=False)
             #print('form.cleaned_data', form_update.cleaned_data['category'])
             form_one.category_id = self.getCategory()
             self.increaseUsed(category_service=form_one.category_service)
             self.increaseUsed(service=form_one.service)
             self.increaseUsed(device=form_one.device)
-
-            form_one.related_uuid = related_uuid
             form_one.related_user = request.user
+            make_uuid_obj = RelatedUuid(related_uuid=related_uuid)
+            make_uuid_obj.save()
+            form_one.save()
+            form_one.uuid.add(make_uuid_obj)
             form_one.save()
             #print('related_isValid_dict ', related_form_dict)
             #related form model add data
@@ -340,12 +347,14 @@ class OrderEditView(RelatedMixin, TemplateView):
     template_name = 'orders/order_edit.html'
 
     def get(self, request, *args, **kwargs):
+        start_time = time.time()
         context = super().get_context_data(**kwargs)
         get_order = Orders.objects.get(pk=context['order_id'])
         context['forms'] = self.getRelatedEditFormList(obj=get_order)
         formOne = SimpleOrderEditForm(request=self.request, instance=get_order)
         formOne.prefix = 'one_form'
         context.update({'formOne': formOne})
+        print(" --- %s seconds OrderEditView ---" % (time.time() - start_time))
         return self.render_to_response(context)
 
 
@@ -457,8 +466,10 @@ class OrdersOneView(RelatedMixin, TemplateView):
         context = super().get_context_data(**kwargs)
         context['title'] = 'Заказ'
         order = self.get_queryset(id=context['order_id'])
-        context['item'] = order
-        context['related_list'] = self.getDataListRelated(queryone=order, one='getobj')
+        context['item'] = list(order.values('id', 'serial', 'comment', 'created_at', 'updated_at', 'status__title',
+                                                                   'service__name', 'device__name', 'category_id', 'category_service__name',
+                                                                   'uuid__related_uuid', 'related_user__username'))
+        context['related_list'] = self.getDataListRelated(query=order, method='get_one_obj_by_qry')
         return context
 
 class SettingsView(RelatedMixin, ListView):
