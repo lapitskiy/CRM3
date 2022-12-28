@@ -20,6 +20,16 @@ import json
 from django.forms.models import model_to_dict
 import time
 
+import secrets
+
+class Aliens():
+    def __init__(self):
+        color_ = ['red', 'green']
+        self.color = secrets.choice(color_)
+
+    def take_over_another_planet(self):
+        print('%s alien sat in a starship and flight to destroy the earth' % (self.color))
+
 
 class OrdersHomeView(RelatedMixin, ListView):
     #model = Orders
@@ -141,13 +151,21 @@ class OrderAddView(RelatedMixin, TemplateView):
         formOne.prefix = 'one_form'
         context.update({'formOne': formOne})
         context.update({'tag': self.getVar()})
+        list_ = []
+        for a in range(10):
+            born = Aliens()
+            born.take_over_another_planet()
+            list_.append(born)
+
+
+
         return self.render_to_response(context)
 
     def post(self, request, *args, **kwargs):
         context = super().get_context_data(**kwargs)
         postCopy = self.ajaxConvert()
         formOne = self.getPostForm(request=self.request, postcopy=postCopy)
-        related_form_dict, is_valid_related_dict = self.checkRelatedFormDict(self.request.POST, doing='add', request=self.request)
+        related_form_dict, is_valid_related_dict = self.checkRelatedFormDict(request_post=self.request.POST, method='add', request=self.request)
         #print('related_isValid_dict', related_isValid_dict)
         #related = self.checkRelated()
         #if related:
@@ -178,7 +196,7 @@ class OrderAddView(RelatedMixin, TemplateView):
             form_one.save()
             #print('related_isValid_dict ', related_form_dict)
             #related form model add data
-            self.saveRelatedFormData(related_dict=related_form_dict, request=self.request, related_uuid=related_uuid)
+            self.saveRelatedFormData(related_form_dict=related_form_dict, request=self.request, related_uuid=related_uuid, method='add')
             '''
             for k, v  in related_form_dict.items():
                 form_from_dict = related_form_dict[k]['form']
@@ -360,38 +378,42 @@ class OrderEditView(RelatedMixin, TemplateView):
 
     def post(self, request, *args, **kwargs):
         context = super().get_context_data(**kwargs)
-        related = self.checkRelated()
-        form_list = []
+        #related = self.checkRelated()
+        #form_list = []
         #module_list = []
-        valid = True
-        flag_uuid = False
+        #valid = True
+        #flag_uuid = False
         get_order = Orders.objects.get(pk=context['order_id'])
+        uuid = get_order.uuid.all()
         formOne = SimpleOrderEditForm(self.request.POST, prefix='one_form', instance=get_order, request=self.request)
-        related_form_dict, is_valid_related_dict = self.checkRelatedFormDict(self.request.POST, doing='edit', uuid=get_order.related_uuid)
-        #relatedValid = True
-        #print('related_isValid_dict ', related_isValid_dict)
-        #print('related_isValid_dict ', related_isValid_dict)
-        #for k, v in related_isValid_dict.items():
-        #    if not related_isValid_dict[k]['valid']:
-        #        relatedValid = False
+        print('request ', self.request.POST)
+        related_form_dict, is_valid_related_dict = self.checkRelatedFormDict(self.request.POST, method='edit', uuid=uuid)
 
         if formOne.is_valid() and is_valid_related_dict['is_valid']:
             formOne.save()
+
+            self.saveRelatedFormData(related_form_dict=related_form_dict, request=self.request, related_uuid=uuid, method='edit')
+            '''
             for k, v  in related_form_dict.items():
                 #print('update ', related_form_dict[k]['update'])
                 if not related_form_dict[k]['update']:
                     form_from_dict = related_form_dict[k]['form']
                     form_add = form_from_dict.save(commit=False)
-                    form_add.related_uuid = get_order.related_uuid
-                    self.relatedDeleteMultipleUuid(dictt=related_form_dict[k], deleteUuid=get_order.related_uuid)
+                    form_add.uuid.add(uuid[0].pk)
+                    #self.relatedDeleteMultipleUuid(dictt=related_form_dict[k], deleteUuid=uuid)
                     form_add.save()
                 else:
                     form_from_dict = related_form_dict[k]['form']
                     form_add = form_from_dict.save(commit=False)
                     if related_form_dict[k]['convert']:
-                        self.relatedDeleteMultipleUuid(dictt=related_form_dict[k], deleteUuid=get_order.related_uuid)
-                        form_add.related_uuid = related_form_dict[k]['convert']
+                        self.relatedDeleteMultipleUuid(dictt=related_form_dict[k], deleteUuid=uuid)
+                        #form_add.uuid__related_uuid = uuid[0]
+                    relatedClass = related_form_dict[k]['class']
+                    make_uuid_obj = relatedClass.RelatedUuid(related_uuid=uuid.values_list('related_uuid', flat=True)[0])
+                    make_uuid_obj.save()
+                    form_add.uuid.add(ake_uuid_obj)
                     form_add.save()
+            '''
             #print('Valid')
             return HttpResponseRedirect(reverse_lazy('orders_one', kwargs={'order_id': context['order_id']}))
         else:

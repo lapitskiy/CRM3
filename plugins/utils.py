@@ -77,7 +77,8 @@ class RelatedMixin(object):
         related = self.checkRelated()
         form_list = []
         obj = kwargs['obj']
-        obj_uuid_list = obj.objects.values_list('uuid__related_uuid', flat=True)
+        #obj_uuid_list = obj.objects.values_list('uuid__related_uuid', flat=True)
+        obj_uuid_list = obj.uuid.all().values_list('related_uuid', flat=True)
         if related:
             for x in related:
                 imp_related = importlib.import_module(x.module_name + '.related')
@@ -107,6 +108,7 @@ class RelatedMixin(object):
     # [RU] переводить list dict uuid = [{'uuid', ''},] в _list = ['uuid',]
     # [RU] бывший getListUuidFromDictKeyRelated
     # [EN] list related apps
+    '''
     def dictUuidToList(self, uuid) -> list:
         _list = []
         if type(uuid) == dict:
@@ -123,6 +125,7 @@ class RelatedMixin(object):
                     for k, v in x.items():
                         _list.append(k)
         return _list
+    '''
 
     # [EN] return related data from class get_related_data() in app models
     # [RU] возвращает связанные данные на основе выборки qry или page
@@ -234,12 +237,12 @@ class RelatedMixin(object):
                         uudi_filter_related_list.append(z.related_uuid)
         return self.dictUuidToList(uudi_filter_related_list)
 
-
+    '''
     # return uuid related list for search query
     def relatedDeleteMultipleUuid(self, **kwargs):
         if 'dictt' in kwargs:
             dictt = kwargs['dictt']
-            print('dictt', dictt)
+            #print('dictt', dictt)
             dictt['deleteuuid'] = kwargs['deleteUuid']
             #imp_related = importlib.import_module(dictt['module'] + '.related')
             #getrelatedClass = getattr(imp_related, 'AppRelated')
@@ -247,7 +250,7 @@ class RelatedMixin(object):
             relatedClass = dictt['class']
             relatedClass.deleteRelatedMultipleUuid(dictt=dictt)
 
-
+    '''
     # [RU] отдает dict c формой переданного post для add или edit form, валидация, uuid, данные update
     # ? исползуется в выводе связанных моделуй
     # ? dict['update'] - может ли данный модуль иметь возможность создерать несколько uuid. Например один телефон для многих заказов. Возвращате true false
@@ -255,6 +258,8 @@ class RelatedMixin(object):
     def checkRelatedFormDict(self, request_post, **kwargs):
         related = self.checkRelated()
         related_form_dict = {}
+        if 'uuid' in kwargs:
+            uuid = list(kwargs['uuid'].values_list('related_uuid', flat=True))
         if related:
             for x in related:
                 _dict= dict()
@@ -263,23 +268,20 @@ class RelatedMixin(object):
                 relatedClass = getrelatedClass()
 
                 print('=================')
-                if 'add' in kwargs['doing'] and relatedClass.passAddUpdate():
+                if 'add' in kwargs['method'] and relatedClass.passAddUpdate():
                     continue
-                if 'edit' in kwargs['doing'] and relatedClass.passEditUpdate():
+                if 'edit' in kwargs['method'] and relatedClass.passEditUpdate():
                     continue
 
                 #_dict['module'] = x.module_name
-                _dict['update'] = relatedClass.checkUpdate(request_post=request_post)
-
+                #_dict['update'] = relatedClass.checkUpdate(request_post=request_post)
 
                 if 'uuid' in kwargs:
-                    _dict['convert'] = relatedClass.checkConvert(uuid=self.dictUuidToList(kwargs['uuid']),
-                                                             request_post=request_post)
-                    if 'edit' in kwargs['doing']:
-                        _dict2 = relatedClass.checkRelatedEditForm(request_post=request_post, uuid=self.dictUuidToList(kwargs['uuid']))
-                if 'add' in kwargs['doing']:
+                    if kwargs['method'] == 'edit':
+                        _dict2 = relatedClass.checkRelatedEditForm(request_post=request_post, uuid=uuid)
+                if 'add' in kwargs['method']:
                     _dict2 = relatedClass.checkRelatedAddForm(request_post=request_post, request=kwargs['request'])
-                    print('!self.request ', self.request)
+                    #print('!self.request ', self.request)
 
 
                 _dict['uuid'] = _dict2['uuid']
@@ -300,13 +302,10 @@ class RelatedMixin(object):
         return related_form_dict, is_valid_dict
 
     # [RU] получает dict из checkRelatedFormDict для сохранения формы в модель, после проверки валидности на этапе checkRelatedFormDict
-    #
-    #
-    #
     def saveRelatedFormData(self, request, **kwargs):
-        related_form_dict = kwargs['related_dict']
+        related_form_dict = kwargs['related_form_dict']
         related_uuid = kwargs['related_uuid']
-        print('related_form_dict', related_form_dict)
+        #print('related_form_dict', related_form_dict)
         for k, v in related_form_dict.items():
             #if related_form_dict[k]['update']:
             #    update_uuid_dict = related_uuid
@@ -316,7 +315,7 @@ class RelatedMixin(object):
             #    related_form_dict[k]['uuid'] = related_uuid
             related_form_dict[k]['uuid'] = related_uuid
             relatedClass = related_form_dict[k]['class']
-            relatedClass.saveForm(related_dict=related_form_dict[k], request=request)
+            relatedClass.saveForm(related_form_dict=related_form_dict[k], request=request, method=kwargs['method'])
         return
 
 

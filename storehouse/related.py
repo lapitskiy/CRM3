@@ -118,20 +118,26 @@ class AppRelated(object):
         return False
 
     def saveForm(self, **kwargs):
-        related_dict = kwargs['related_dict']
-        form_from_dict = related_dict['form']
-        #print('form - ', form_from_dict)
-        #form_add = form_from_dict.save(commit=False)
-        #form_add.related_uuid = related_dict['uuid']
-        #print('tyt - ', self.prefix)
-        #form_from_dict.save(related_uuid=related_dict['uuid'])
-        f = StoreRelated(
-            store=form_from_dict.cleaned_data['name'])
-        f.save()
-        make_uuid_obj = RelatedUuid(related_uuid=related_dict['uuid'])
-        make_uuid_obj.save()
-        f.uuid.add(make_uuid_obj)
-        f.save()
+        if kwargs['method'] == 'add':
+            related_dict = kwargs['related_form_dict']
+            form_from_dict = related_dict['form']
+            #print('form - ', form_from_dict)
+            #form_add = form_from_dict.save(commit=False)
+            #form_add.related_uuid = related_dict['uuid']
+            #print('tyt - ', self.prefix)
+            #form_from_dict.save(related_uuid=related_dict['uuid'])
+            f = StoreRelated(
+                store=form_from_dict.cleaned_data['name'])
+            f.save()
+            make_uuid_obj = RelatedUuid(related_uuid=related_dict['uuid'])
+            make_uuid_obj.save()
+            f.uuid.add(make_uuid_obj)
+            f.save()
+        if kwargs['method'] == 'edit':
+            related_dict = kwargs['related_form_dict']
+            form_from_dict = related_dict['form']
+            form_add = form_from_dict.save(commit=False)
+            form_add.save()
         #print('form save - ', self.prefix)
 
     def linkGetReleatedData(self, **kwargs):

@@ -3,7 +3,6 @@ from .models import Clients, RelatedUuid
 from django.core.exceptions import ObjectDoesNotExist
 from django.db.models import Q
 
-
 class AppRelated(object):
     prefix = 'clients'
     related_format = 'form'
@@ -36,13 +35,15 @@ class AppRelated(object):
     # return False or dict uudi convert
     def checkConvert(self, **kwargs):
         if kwargs['uuid']:
+            uuid = kwargs['uuid']
+            request = kwargs['request_post']
             try:
-                get_client_before = Clients.objects.get(Q(related_uuid__icontains=kwargs['uuid'][0]))
-                get_client_now = Clients.objects.get(phone=kwargs['request_post']['clients-phone'])
+                get_client_before = Clients.objects.get(uuid__related_uuid=uuid.values_list('related_uuid', flat=True)[0])
+                get_client_now = Clients.objects.get(phone=request.POST['clients-phone'])
                 if get_client_before.pk != get_client_now.pk:
-                    new_uuid_dict = get_client_now.related_uuid
-                    new_uuid_dict.update({kwargs['uuid'][0]:''})
-                    return new_uuid_dict
+                    #new_uuid_dict = get_client_now.related_uuid
+                    #new_uuid_dict.update({kwargs['uuid'][0]:''})
+                    return True
             except ObjectDoesNotExist:
                 return False
         return False
@@ -95,16 +96,19 @@ class AppRelated(object):
             context['valid'] = True
         else:
             context['valid'] = False
+
+        print('phone ', request_post['clients-phone'])
+        if request_post['clients-phone'] == '':
+            print('phone ', request_post['clients-phone'])
+            context['valid'] = True
         return context
 
     def deleteRelatedMultipleUuid(self, **kwargs):
         dictt = kwargs['dictt']
-        for k, v in dictt['deleteuuid'].items():
-            get_client = Clients.objects.get(Q(related_uuid__icontains=k))
-            changeUuid = get_client.related_uuid
-            changeUuid.pop(k)
-            get_client.related_uuid = changeUuid
-            get_client.save()
+        print('tt', dictt['uuid'].values_list('related_uuid', flat=True)[0])
+        get_relateduuid = RelatedUuid.objects.get(related_uuid=dictt['uuid'].values_list('related_uuid', flat=True)[0])
+        get_relateduuid.delete()
+
 
     def getAjaxRelatedList(self, **kwargs):
         if kwargs['data']:
@@ -119,20 +123,58 @@ class AppRelated(object):
         return True
 
     def saveForm(self, **kwargs):
-        related_dict = kwargs['related_dict']
-        form_from_dict = related_dict['form']
-        request = kwargs['request']
-        #print('valid ', form_from_dict.is_valid())
-        ##print('tyt 1 ', form_from_dict)
-        #print('tyt 2 ', form_from_dict.cleaned_data.get('id_clients-phone'))
-        #print('tyt 22 ', form_from_dict.cleaned_data.get('clients-phone'))
-        #print('tyt 23 ', form_from_dict.cleaned_data['phone'])
-        if request.POST['clients-phone'] == '':
-            pass
-        else:
-            form_add = form_from_dict.save(commit=False)
-            make_uuid_obj = RelatedUuid(related_uuid=related_dict['uuid'])
-            make_uuid_obj.save()
-            form_add.save()
-            form_add.uuid.add(make_uuid_obj)
-            form_add.save()
+        if kwargs['method'] == 'add':
+            related_dict = kwargs['related_form_dict']
+            form_from_dict = related_dict['form']
+            request = kwargs['request']
+            #print('valid ', form_from_dict.is_valid())
+            ##print('tyt 1 ', form_from_dict)
+            #print('tyt 2 ', form_from_dict.cleaned_data.get('id_clients-phone'))
+            #print('tyt 22 ', form_from_dict.cleaned_data.get('clients-phone'))
+            #print('tyt 23 ', form_from_dict.cleaned_data['phone'])
+            if request.POST['clients-phone'] == '':
+                pass
+            else:
+                form_add = form_from_dict.save(commit=False)
+                #print('rela ', related_dict['uuid'])
+                #make_uuid_obj = RelatedUuid.objects.create(related_uuid=related_dict['uuid'])
+                make_uuid_obj = RelatedUuid(related_uuid=related_dict['uuid'])
+                make_uuid_obj.save()
+                form_add.related_uuid = ''
+                form_add.save()
+                form_add.uuid.add(make_uuid_obj)
+                form_add.save()
+        if kwargs['method'] == 'edit':
+            related_form_dict = kwargs['related_form_dict']
+            form_from_dict = related_form_dict['form']
+            request = kwargs['request']
+            #print('valid ', form_from_dict.is_valid())
+            ##print('tyt 1 ', form_from_dict)
+            #print('tyt 2 ', form_from_dict.cleaned_data.get('id_clients-phone'))
+            #print('tyt 22 ', form_from_dict.cleaned_data.get('clients-phone'))
+            #print('tyt 23 ', form_from_dict.cleaned_data['phone'])
+            if request.POST['clients-phone'] == '':
+                pass
+            else:
+                uuid = related_form_dict['uuid']
+                if self.checkUpdate(request_post=request.POST):
+                    print('TYT 1')
+                    form_add = form_from_dict.save(commit=False)
+                    if self.checkConvert(uuid=uuid, request_post=request):
+                        print('tyt con')
+                        self.deleteRelatedMultipleUuid(dictt=related_form_dict, deleteUuid=uuid)
+                        make_uuid_obj = RelatedUuid(related_uuid=uuid.values_list('related_uuid', flat=True)[0])
+                        make_uuid_obj.save()
+                        form_add.uuid.add(make_uuid_obj)
+                    else:
+                        print('TYT 2')
+                        try:
+                            get_client_before = Clients.objects.get(uuid__related_uuid=uuid.values_list('related_uuid', flat=True)[0])
+                            get_client_now = Clients.objects.get(phone=request.POST['clients-phone'])
+                        except ObjectDoesNotExist:
+                            make_uuid_obj = RelatedUuid(related_uuid=uuid.values_list('related_uuid', flat=True)[0])
+                            make_uuid_obj.save()
+                            form_add.uuid.add(make_uuid_obj)
+                    form_add.related_uuid = ''
+                    form_add.save()
+

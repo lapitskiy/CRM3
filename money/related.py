@@ -53,7 +53,7 @@ class AppRelated(object):
             context['uuid'] = ''
             context['pk'] = ''
         else:
-            get_money = Money.objects.get(Q(related_uuid__icontains=kwargs['uuid'][0]))
+            get_money = Money.objects.get(uuid__related_uuid=kwargs['uuid'][0])
             related_form = RelatedAddForm(request_post, prefix=self.prefix, instance=get_money)
             related_form.prefix = self.prefix
             context['pk'] = get_money.pk
@@ -75,21 +75,27 @@ class AppRelated(object):
         return True
 
     def saveForm(self, **kwargs):
-        related_dict = kwargs['related_dict']
-        form_from_dict = related_dict['form']
-        form_add = form_from_dict.save(commit=False)
-        print('related_dict 1', related_dict['uuid'])
-        make_uuid_obj = RelatedUuid(related_uuid=related_dict['uuid'])
-        make_uuid_obj.save()
-        form_add.save()
-        form_add.uuid.add(make_uuid_obj)
-        form_add.save()
-        print('money saveform: ', form_from_dict.cleaned_data.get('is_pay'))
-        print('money pk: ', form_add.pk)
+        if kwargs['method'] == 'add':
+            related_dict = kwargs['related_form_dict']
+            form_from_dict = related_dict['form']
+            form_add = form_from_dict.save(commit=False)
+            print('related_dict 1', related_dict['uuid'])
+            make_uuid_obj = RelatedUuid(related_uuid=related_dict['uuid'])
+            make_uuid_obj.save()
+            form_add.save()
+            form_add.uuid.add(make_uuid_obj)
+            form_add.save()
+            print('money saveform: ', form_from_dict.cleaned_data.get('is_pay'))
+            print('money pk: ', form_add.pk)
 
-        if form_from_dict.cleaned_data.get('is_pay'):
-            prepay = Prepayment(money=form_add, prepayment=form_add.money)
-            prepay.save()
+            if form_from_dict.cleaned_data.get('is_pay'):
+                prepay = Prepayment(money=form_add, prepayment=form_add.money)
+                prepay.save()
+        if kwargs['method'] == 'edit':
+            related_dict = kwargs['related_form_dict']
+            form_from_dict = related_dict['form']
+            form_add = form_from_dict.save(commit=False)
+            form_add.save()
 
     def linkGetReleatedData(self, **kwargs):
         uudi_filter_related_list = []

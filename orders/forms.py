@@ -16,9 +16,10 @@ class ListTextWidget(forms.Select):
         return str(value)
 
 class ChoiceTxtField(forms.ModelChoiceField):
-    widget=ListTextWidget()
+    widget = ListTextWidget()
 
 #forms
+
 class SimpleOrderAddForm(forms.ModelForm):
     #service = forms.ModelChoiceField(queryset=Service.objects.all(), widget=ListTextWidget())
     service = ChoiceTxtField(queryset=Service.objects.order_by('-used'))
@@ -51,14 +52,6 @@ class SimpleOrderAddForm(forms.ModelForm):
             'comment': forms.Textarea(attrs={'class': 'form-control', 'rows': 5}),
         }
 
-    def clean(self):
-        cleaned_data = super(SimpleOrderAddForm, self).clean()
-        service = cleaned_data.get("service")
-
-    def clean_service(self):
-        name = self.cleaned_data['service']
-        #print('name ', str(self.cleaned_data['service'].pk))
-        return name
 
 #CHOICES = [(service.id, service.name) for service in Service.objects.all()]
 
@@ -68,7 +61,10 @@ class SimpleOrderEditForm(forms.ModelForm):
     #service = [(s.id, s.name) for s in service]
     service = ChoiceTxtField(queryset=Service.objects.order_by('-used'))
     #queryset = Service.objects.order_by('-used')
-    device = ChoiceTxtField(queryset=Device.objects.order_by('-used'))
+
+    device = ChoiceTxtField(queryset=Device.objects.order_by('-used'), widget=ListTextWidget())
+    #device = ModelChoiceField(queryset=Device.objects.all(),
+    #                          widget=ListTextWidget())
 
     def __init__(self, *args, **kwargs):
         self.request = kwargs.pop('request', None)
@@ -85,6 +81,9 @@ class SimpleOrderEditForm(forms.ModelForm):
     class Meta:
         model = Orders
         fields = ['category_service', 'device', 'serial', 'service', 'status', 'comment']
+        #field_classes = {
+        #    'service': service,
+        #}
         widgets = {
             #'category': forms.Select(attrs={'class': 'form-control'}),
                 #forms.HiddenInput(),
@@ -97,15 +96,12 @@ class SimpleOrderEditForm(forms.ModelForm):
         }
 
     def clean(self):
-        cleaned_data = super(SimpleOrderEditForm, self).clean()
-        service = cleaned_data.get("service")
-        #if service:
-            #print('service ', service)
-
-    def clean_service(self):
-        name = self.cleaned_data['service']
-        #print('name ', str(self.cleaned_data['service'].pk))
-        return name
+        print('service', self.cleaned_data)
+        print('service f', self.fields['service'])
+        #cleaned_data =
+        #self.cleaned_data['service'] = 1
+        #service = cleaned_data.get("service")
+        return super(SimpleOrderEditForm, self).clean()
 
 class FastOrderAddForm(forms.ModelForm):
     service = ChoiceTxtField(queryset=Service.objects.all().order_by('-id'))
