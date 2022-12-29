@@ -20,16 +20,6 @@ import json
 from django.forms.models import model_to_dict
 import time
 
-import secrets
-
-class Aliens():
-    def __init__(self):
-        color_ = ['red', 'green']
-        self.color = secrets.choice(color_)
-
-    def take_over_another_planet(self):
-        print('%s alien sat in a starship and flight to destroy the earth' % (self.color))
-
 
 class OrdersHomeView(RelatedMixin, ListView):
     #model = Orders
@@ -151,13 +141,6 @@ class OrderAddView(RelatedMixin, TemplateView):
         formOne.prefix = 'one_form'
         context.update({'formOne': formOne})
         context.update({'tag': self.getVar()})
-        list_ = []
-        for a in range(10):
-            born = Aliens()
-            born.take_over_another_planet()
-            list_.append(born)
-
-
 
         return self.render_to_response(context)
 

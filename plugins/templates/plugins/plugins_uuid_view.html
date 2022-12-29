@@ -1,19 +1,58 @@
 {% extends "base.html" %}
 {% block title %}{{ title }} - {{ block.super }}{% endblock %}
+
 {% block sidebar %}
 
 {% include 'include/_sidebar_plugins.html' %}
 {% endblock %}
 
+
+
 {% block content %}
-Перенос данных uuid c json в сlass RelatedUuid
+    {% block javascript %}
+    <script>
+    // var interval = 1000;
+    $(document).ready(function () {
+            $('#uuidgo').on('click', function(){
+                alert('onclick is working.');
+                console.log('onclick is working.')
+                var p1 = document.getElementById("uuid");
+                p1.textContent = 'Начался перенос данных, не обновляйте страницу. Тут появится результат переноса.';
+                //setTimeout(doAjax, interval);
+                doAjax()
+                return false;
+               });
+
+               function doAjax() {
+                    $.ajax({
+                        url: "{% url 'plugin_ajax_request' %}",
+                        success: function (response) {
+                            console.log(response)
+                            //alert(response.time);
+                            var p2 = document.getElementById("uuidres");
+                            p2.textContent += 'ПЕРЕНОС СДЕЛАН. Время - ' + response.time + ' секунд';
+                            },
+                        complete: function (response) {
+                                // Schedule the next
+                                //setTimeout(doAjax, interval);
+                        },
+                        error: function (response) {
+                            console.log(response.responseJSON.errors)
+                        }
+                    });
+                }
+            });
+
+    </script>
+{% endblock javascript %}
+Перенос данных uuid c json в сlass RelatedUuid<br><br>
+<a href="" class="btn btn-dark fw-bold" data-kt-menu-trigger="click" data-kt-menu-placement="bottom-end" id="uuidgo">Перенести uuid (ajax)</a>
 <br><br>
 <div class="card" style="width: 18rem;">
-    <div class="card-body">
-        <p class="card-text">
-            {{ resultUuid }}
+        <p class="card-text" id="uuid">
         </p>
-    </div>
+        <p class="card-text" id="uuidres">
+        </p>
 </div>
 <br><br>
 {% endblock %}

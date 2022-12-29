@@ -1,11 +1,12 @@
 from django.shortcuts import render, get_object_or_404, redirect
-from django.http import HttpResponse
+from django.http import HttpResponse, JsonResponse
 from django.views.generic import ListView, DetailView, CreateView
 from django.urls import reverse_lazy
 from .forms import RelatedPluginForm
 from .models import Plugins, PluginsCategory
 from plugins import settings_plugin
 from .utils import RelatedMixin
+import time
 
 import importlib
 
@@ -89,12 +90,14 @@ class PluginsUuidUpdateView(RelatedMixin, ListView):
         context = super().get_context_data(**kwargs)
         context['title'] = 'перенос uuid из версии v1 в версию v2'
 
-        context['resultUuid'] = self.checkUuid()
+        #context['resultUuid'] = self.checkUuid()
         #print('context ', context)
         return context
 
+    @classmethod
     def checkUuid(self, **kwargs):
-        related = self.checkRelated()
+        start_time = time.time()
+        #related = self.checkRelated()
         dict_ = {}
         module = Plugins.objects.all().values('module_name', 'related_class_name')
         for iterr in module:
@@ -105,6 +108,7 @@ class PluginsUuidUpdateView(RelatedMixin, ListView):
             cls_relateduuid = getattr(imp_model, 'RelatedUuid')
 
             obj_ = cls_model.objects.all()
+            print('go ', iterr['module_name'], ' ; count: ', len(obj_))
             for item in obj_:
                 related_json = item.related_uuid
                 #for item in obj:
@@ -125,14 +129,18 @@ class PluginsUuidUpdateView(RelatedMixin, ListView):
                     else:
                         for key, value in related_json.items():
                             #print('long uuid ', len(key), key)
-                            print('mtm related_uuid key ', key)
                             related_uuid = cls_relateduuid.objects.update_or_create(related_uuid=key)
-                            print('mtm related_uuid ', related_uuid)
                             item.uuid.add(related_uuid[0])
                             item.save()
 
-
+        dict_['time'] = time.time() - start_time
         return dict_
+
+def ajax_request(request):
+    """Check ajax"""
+    print('ajax')
+    response = PluginsUuidUpdateView.checkUuid()
+    return JsonResponse(response)
 
 
 class ViewPluginsByCategory(ListView):
