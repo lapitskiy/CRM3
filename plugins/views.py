@@ -104,7 +104,7 @@ class PluginsUuidUpdateView(RelatedMixin, ListView):
         #related = self.checkRelated()
         dict_ = {}
         module = Plugins.objects.all().values('module_name', 'related_class_name')
-        for iterr in module[1:]:
+        for iterr in module[1:2]:
             #print('key val ', iterr)
             dict_['module_name'] = iterr['module_name']
             modelPath = iterr['module_name'] + '.models'
