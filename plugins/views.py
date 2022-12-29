@@ -132,7 +132,7 @@ class PluginsUuidUpdateView(RelatedMixin, ListView):
                             related_uuid = cls_relateduuid.objects.update_or_create(related_uuid=key)
                             item.uuid.add(related_uuid[0])
                             item.save()
-
+            break
         dict_['time'] = time.time() - start_time
         return dict_
 
