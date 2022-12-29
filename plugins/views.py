@@ -79,6 +79,8 @@ class PluginsTestView(ListView):
     #def get_queryset(self):
     #    return Plugins.objects.filter(is_active=True)
 
+_my_global_count = 0
+
 class PluginsUuidUpdateView(RelatedMixin, ListView):
     model = Plugins
     template_name = 'plugins/plugins_uuid_view.html'
@@ -94,14 +96,17 @@ class PluginsUuidUpdateView(RelatedMixin, ListView):
         #print('context ', context)
         return context
 
+
     @classmethod
     def checkUuid(self, **kwargs):
+        global _my_global_count
         start_time = time.time()
         #related = self.checkRelated()
         dict_ = {}
         module = Plugins.objects.all().values('module_name', 'related_class_name')
-        for iterr in module:
+        for iterr in module[_my_global_count:]:
             #print('key val ', iterr)
+            dict_['module_name'] = iterr['module_name']
             modelPath = iterr['module_name'] + '.models'
             imp_model = importlib.import_module(modelPath)
             cls_model = getattr(imp_model, iterr['related_class_name'])
@@ -134,6 +139,12 @@ class PluginsUuidUpdateView(RelatedMixin, ListView):
                             item.save()
             break
         dict_['time'] = time.time() - start_time
+        dict_['count'] = _my_global_count+1
+        dict_['module_len'] = len(module)
+        if _my_global_count == int(dict_['module_len'])-1:
+            _my_global_count = 0
+        else:
+            _my_global_count += 1
         return dict_
 
 def ajax_request(request):

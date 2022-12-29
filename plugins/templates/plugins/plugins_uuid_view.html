@@ -11,10 +11,9 @@
 {% block content %}
     {% block javascript %}
     <script>
-    var interval = 1000;
+    // var interval = 30000;
     $(document).ready(function () {
             $('#uuidgo').on('click', function(){
-                alert('onclick is working.');
                 console.log('onclick is working.')
                 var p1 = document.getElementById("uuid");
                 p1.textContent = 'Начался перенос данных, не обновляйте страницу. Тут появится результат переноса.';
@@ -25,14 +24,24 @@
 
                function doAjax() {
                     $.ajax({
+                        response: ({}),
                         url: "{% url 'plugin_ajax_request' %}",
                         success: function (response) {
                             console.log(response)
                             //alert(response.time);
                             var p2 = document.getElementById("uuidres");
-                            p2.textContent += 'ПЕРЕНОС СДЕЛАН. Время - ' + response.time + ' секунд';
+                            p2.textContent += '['+ response.count +'/'+ response.module_len + '] ПЕРЕНОС '+ response.module_name
+                                +' СДЕЛАН. Время - ' + response.time + ' секунд \n\n ';
+                            if (response.count < response.module_len) {
+                                  doAjax()
+                                }
                             },
                         complete: function (response) {
+                            //console.log('count: '+ response.count)
+                            //if (count < 5) {
+                            //      doAjax()
+                            //    }
+
                                 // Schedule the next
                                 //setTimeout(doAjax, interval);
                         },
