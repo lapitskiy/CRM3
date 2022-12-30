@@ -101,10 +101,11 @@ class PluginsUuidUpdateView(RelatedMixin, ListView):
     def checkUuid(self, **kwargs):
         global _my_global_count
         start_time = time.time()
+        count = 0
         #related = self.checkRelated()
         dict_ = {}
         module = Plugins.objects.all().values('module_name', 'related_class_name')
-        for iterr in module[1:2]:
+        for iterr in module[_my_global_count:]:
             #print('key val ', iterr)
             dict_['module_name'] = iterr['module_name']
             modelPath = iterr['module_name'] + '.models'
@@ -123,6 +124,7 @@ class PluginsUuidUpdateView(RelatedMixin, ListView):
                 #print('dict_2: ', dict_2)
                 #print('type: ', type(dict_2))
                 #p = Person.objects.create(first_name="Bruce", last_name="Springsteen")
+                count += 1
                 if type(related_json) is dict:
                     if len(related_json) > 1:
                         for key in related_json.keys():
@@ -140,6 +142,7 @@ class PluginsUuidUpdateView(RelatedMixin, ListView):
             break
         dict_['time'] = time.time() - start_time
         dict_['count'] = _my_global_count+1
+        dict_['dbcount'] = count
         dict_['module_len'] = len(module)
         _my_global_count += 1
         #if _my_global_count == int(dict_['module_len'])-1:

@@ -352,14 +352,13 @@ class RelatedMixin(object):
             logger.info('%s related: %s', __name__, related)
             if related:
                 for x in related:
-                    logger.info('%s related for x: %s', __name__, x.module_name)
                     _dict= {}
                     imp_related = importlib.import_module(x.module_name + '.related')
                     getrelatedClass = getattr(imp_related, 'AppRelated')
                     relatedClass = getrelatedClass()
                     _dict['module'] = x.module_name
-                    print('relatedPostGetData module ', x.module_name)
-                    _dict['relateddata'] = self.dictUuidToList(relatedClass.linkGetReleatedData(request_get=request_get))
+                    #print('relatedPostGetData module ', x.module_name)
+                    _dict['relateddata'] = relatedClass.linkGetReleatedData(request_get=request_get)
                     related_dict[x.module_name] = _dict
                 return related_dict
         return related_dict

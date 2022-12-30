@@ -16,7 +16,7 @@ class CacheQuerysetMixin:
         return self._cached_queryset
 
     def _check_cached(self):
-        if not self._cached_queryset:
+        if self._cached_queryset is None:
             return False
         return True
 

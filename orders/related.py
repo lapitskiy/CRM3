@@ -91,8 +91,11 @@ class AppRelated():
                         #logger.info('%s related_result %s', __name__, type(intersection))
                         #print('intersection ', intersection)
                         for z in query:
-                            uudi_filter_related_list.append(z.related_uuid)
-
+                            uuid = z.uuid.all().values_list('related_uuid', flat=True)
+                            try:
+                                uudi_filter_related_list.append(uuid[0])
+                            except IndexError:
+                                pass
                     return uudi_filter_related_list
         return uudi_filter_related_list
 
