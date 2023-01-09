@@ -41,6 +41,7 @@ class OrdersHomeView(RelatedMixin, ListView):
         context['filter'] = self.requestGet('filter')
         context['date'] = self.requestGet('date')
         dict_orders = self.get_queryset()
+        print('dict_orders ', dict_orders)
         paginator = Paginator(dict_orders, self.paginate_by)
         page = self.request.GET.get('page')
         try:
@@ -72,15 +73,16 @@ class OrdersHomeView(RelatedMixin, ListView):
             return ''
 
     def getQuery(self):
+        results_filter_uuid = []
         if self.request.GET.get('date'):
             date_get = self.request.GET.get('date')
             # ~Q(related_uuid='') |
-            results_date_uuid = Orders.objects.filter(Q(created_at__icontains=date_get)).values_list('related_uuid')
+            results_date_uuid = Orders.objects.filter(Q(created_at__icontains=date_get)).values_list('pk')
 
         if self.request.GET.get('filter'):
             search_query = self.request.GET.get('filter')
             # ~Q(related_uuid='') |
-            results_query = Orders.objects.filter(Q(id__icontains=search_query) | Q(service__name__icontains=search_query) | Q(device__name__icontains=search_query) | Q(serial__icontains=search_query) | Q(comment__icontains=search_query)).values_list('related_uuid')
+            results_query = Orders.objects.filter(Q(id__icontains=search_query) | Q(service__name__icontains=search_query) | Q(device__name__icontains=search_query) | Q(serial__icontains=search_query) | Q(comment__icontains=search_query)).values_list('pk', flat=True)
 
 
             uudi_filter_related_list = self.getUuidListFilterRelated(search_query)
@@ -90,40 +92,42 @@ class OrdersHomeView(RelatedMixin, ListView):
             #related_query = Orders.objects.filter(related_uuid__in=uudi_filter_related_list).values_list('related_uuid')
             conds = Q()
             for q in uudi_filter_related_list:
-                conds |= Q(related_uuid__icontains=q)
+                conds |= Q(uuid__related_uuid=q)
             if conds:
-                related_query = Orders.objects.filter(conds).values_list('related_uuid', flat=True)
+                related_query = Orders.objects.filter(conds).values_list('pk', flat=True)
                 print('related_query ', related_query)
-                #print('related_query ', related_query)
-                #print('############')
-                #print('type: ',type(results_query),'results_query ', results_query)
-                if related_query:
-                    #conds = Q(related_uuid__in=results_query) | Q(related_uuid__in=related_query)
-                    q1 = self.dictUuidToList(list(results_query))
-                    #print('q1 ', q1)
-                    q2 = self.dictUuidToList(list(related_query))
-                    #print('q2 ', q2)
-                    conds = Q()
-                    for q in q1:
-                        conds |= Q(related_uuid__icontains=q)
-                    for q in q2:
-                        conds |= Q(related_uuid__icontains=q)
-                    results_filter_uuid = Orders.objects.filter(conds).values_list('related_uuid')
-                    #print('results_filter_uuid ', results_filter_uuid)
+                #conds = Q(related_uuid__in=results_query) | Q(related_uuid__in=related_query)
+                #q1 = list(results_query)
+                q1 = results_query
+                #print('q1 ', q1)
+                q2 = related_query
+                #print('q2 ', q2)
+                conds = Q()
+                for q in q1:
+                    conds |= Q(pk=q)
+                for q in q2:
+                    #conds |= Q(uuid__related_uuid=q)
+                    conds |= Q(pk=q)
+                print('conds ', conds)
+                results_filter_uuid = Orders.objects.filter(conds).values_list('pk')
+                print('results_filter_uuid 1 ', results_filter_uuid)
+                #print('results_filter_uuid ', results_filter_uuid)
             else:
                 results_filter_uuid = results_query
 
+        print('results_filter_uuid 2 ', results_filter_uuid)
 
         if self.request.GET.get('date') and self.request.GET.get('filter'):
-            conds = Q(related_uuid__in=results_date_uuid) | Q(related_uuid__in=results_filter_uuid)
+            #conds = Q(uuid__in=results_date_uuid) | Q(uuid__in=results_filter_uuid)
+            conds = Q(pk__in=results_date_uuid) & Q(pk__in=results_filter_uuid)
+            print('conds date and filter ', conds)
             return Orders.objects.filter(conds)
         else:
             if self.request.GET.get('filter'):
-                return Orders.objects.filter(Q(related_uuid__in=results_filter_uuid))
+                return Orders.objects.filter(Q(pk__in=results_filter_uuid))
             else:
                 if self.request.GET.get('date'):
-                    return Orders.objects.filter(Q(related_uuid__in=results_date_uuid))
-
+                    return Orders.objects.filter(pk__in=results_date_uuid)
         if self.request.GET.get('category'):
             return Orders.objects.filter(category__category=self.request.GET.get('category'))
         if self.request.GET.get('status'):

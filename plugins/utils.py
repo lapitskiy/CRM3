@@ -234,8 +234,10 @@ class RelatedMixin(object):
                 #print('####END')
                 if related_result:
                     for z in related_result:
-                        uudi_filter_related_list.append(z.related_uuid)
-        return self.dictUuidToList(uudi_filter_related_list)
+                        all_uuid = list(z.uuid.all().values_list('related_uuid', flat=True))
+                        for u in all_uuid:
+                            uudi_filter_related_list.append(u)
+        return uudi_filter_related_list
 
     '''
     # return uuid related list for search query

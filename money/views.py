@@ -40,10 +40,8 @@ class MoneyHomeView(RelatedMixin, ListView):
         getQ = self.getMoneyQuery()
         context['info'] = self.getInfo(getQ)
         context['title'] = 'Деньги'
-        #context['user'] = self.request.user
-        #print('user ', context['user'])
-
         list_orders = getQ
+        print('list_orders ', list_orders)
         paginator = Paginator(list_orders, self.paginate_by)
         page = self.request.GET.get('page')
         try:
@@ -56,6 +54,12 @@ class MoneyHomeView(RelatedMixin, ListView):
         #print('context info', context['info'])
         context['request'] = self.request
         context['get'] = self.request.GET
+        #context['money_list'] = list(orders_page.object.values('id','money', 'created_at', 'uuid'))
+        context['money_list'] = orders_page.object_list
+        #context['money_list'] = orders_page.object_list
+        getIdMoney = orders_page.object_list
+        print('getMoney ', getIdMoney)
+        getPrepay = Prepayment.objects.filter()
         #print('============================')
         #print('VIEW context', context)
         return context
