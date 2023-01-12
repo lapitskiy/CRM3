@@ -165,23 +165,30 @@ class RelatedMixin(object):
                     print('=================')
                     data_related_list.append(related_get)
                 if kwargs['method'] == 'get_one_obj_by_qry':
-                    if cls_related.related_format == 'form':
+                    if cls_related.related_data_format == 'form':
                         for uuid in qry_uuid_list:
                             try:
-                                print('uuid money ', qry_uuid_list)
+                                #print('uuid money ', qry_uuid_list)
                                 r_cls = cls_model.objects.get(uuid__related_uuid=uuid)
                                 related_get = r_cls.get_related_data()
                                 related_get['uuid'] = uuid
                                 data_related_list.append(related_get)
                             except ObjectDoesNotExist:
                                 pass
-                    if cls_related.related_format == 'link':
+                    if cls_related.related_data_format == 'link':
                         r_cls = cls_model()
                         related_get = r_cls.get_related_data(related_uuid=uuid)
                         related_get['uuid'] = uuid
                         data_related_list.append(related_get)
-                    if cls_related.related_format == 'select':
-                        logger.info('cls_model select utils %s', cls_model)
+                    if cls_related.related_data_format == 'text':
+                        for uuid in qry_uuid_list:
+                            try:
+                                r_cls = cls_model.objects.get(uuid__related_uuid=uuid)
+                                related_get = r_cls.get_related_data()
+                                related_get['uuid'] = uuid
+                                data_related_list.append(related_get)
+                            except ObjectDoesNotExist:
+                                pass
                 if kwargs['method'] == 'query_paginator_page':
                     #print('qry z ', qry.object_list)
                     #print('qry zч ', qry.__class__)

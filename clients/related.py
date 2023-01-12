@@ -6,6 +6,7 @@ from django.db.models import Q
 class AppRelated(object):
     prefix = 'clients'
     related_format = 'form'
+    related_data_format = 'form'
 
     # если переменная имеет возможность иметь несколько uuid на одну запись, тогда здесь идет обработка такой возможности
     # например на один номер телефона может быть два заказа, и тут идет  проветка нет ли такого телефона в базе уже

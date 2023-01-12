@@ -311,19 +311,20 @@
                                 {% if key == 'warn3' and value %}
                                     Не выданные заказы более 3 дней:<br>
                                     {% for item in value %}
-                                        <a href="#" class="btn btn-secondary ">{{ item }}</a>
+                                        <a href="one/{{ item }}" class="btn btn-secondary " target="_blank">{{ item }}</a>
+
                                     {% endfor %}
                                 {% endif %}
                                 {% if key == 'warn7' and value %}
                                     Не выданные заказы более 7 дней:<br>
                                     {% for item in value %}
-                                        <a href="#" class="btn btn-warning">{{ item }}</a>
+                                        <a href="one/{{ item }}" class="btn btn-warning" target="_blank">{{ item }}</a>
                                     {% endfor %}
                                 {% endif %}
                                 {% if key == 'warn14' and value %}
                                     Не выданные заказы более 14 дней:<br>
                                     {% for item in value %}
-                                        <a href="#" class="btn btn-danger me-1 mt-1">{{ item }}</a>
+                                        <a href="one/{{ item }}" class="btn btn-danger me-1 mt-1" target="_blank">{{ item }}</a>
                                     {% endfor %}
                                 {% endif %}
                                 <br><br>

@@ -5,6 +5,7 @@ from django.db.models import Q
 class AppRelated(object):
     prefix = 'money'
     related_format = 'form'
+    related_data_format = 'form'
 
     def checkUpdate(self, **kwargs):
         return False

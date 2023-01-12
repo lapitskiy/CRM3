@@ -11,6 +11,7 @@ logger = logging.getLogger('crm3_info')
 class AppRelated(object):
     prefix = 'storehouse'
     related_format = 'select'
+    related_data_format = 'text'
 
     # если переменная имеет возможность иметь несколько uuid на одну запись, тогда здесь идет обрабтока такой возможности и возвращается
     # true - пример сомтреть в модуле clients.related

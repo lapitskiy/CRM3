@@ -5,6 +5,7 @@ from django.db.models import Q
 class AppRelated(object):
     prefix = 'prints'
     related_format = 'link' # показывает это или форма будет или просто связанные данные в виде текста или ссылки
+    related_data_format = 'link'
 
     # если это связанный объект, который не имеет формы или не требует обновления, то возврщает True и пропускается в
     # utils checkRelatedIsValidDict, как не требующий добавления для проверки форимы и обновления текущей
