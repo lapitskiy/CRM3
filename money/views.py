@@ -70,10 +70,9 @@ class MoneyHomeView(RelatedMixin, ListView):
         #print('MONEY QUERY ', self.request.GET)
         if 'rdata_' in str(self.request.GET):
             relatedListUuid = self.relatedPostGetData(request_get=self.request.GET)
-            #print(relatedListUuid)
+            #print('relatedListUuid ', relatedListUuid)
             interslist = []
             for k, v in relatedListUuid.items():
-
                 if v['relateddata']:
                     interslist.append(v['relateddata'])
             #print('interslist ', interslist)
@@ -81,6 +80,7 @@ class MoneyHomeView(RelatedMixin, ListView):
             #print('peres ', interslist)
             if interslist:
                 query = self.get_related_query_icontains(interslist)
+                #print('query ', query)
                 return query
             else:
                 #print('TYT 0')
@@ -91,12 +91,10 @@ class MoneyHomeView(RelatedMixin, ListView):
         q_object = reduce(or_, (Q(uuid__related_uuid=value) for value in valuelist))
         # q_object = reduce(or_, (uuid__related_uuid=value for value in valuelist))
         money_obj = Money.objects.filter(q_object)
-
         if self.request.GET.get('date'):
             date_get = self.request.GET.get('date')
             end_date = datetime.strptime(date_get, '%Y-%m-%d') + timedelta(days=1)
-            date_obj = Prepayment.objects.filter(created_at__range=[date_get, end_date])
-            print('date ', date_get)
+            date_obj = Prepayment.objects.filter(created_at__range=[date_get, end_date], money__in=money_obj)
             return date_obj
         if self.request.GET.get('date2'):
             date2_get = self.request.GET.get('date2')
