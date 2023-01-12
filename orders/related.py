@@ -64,22 +64,23 @@ class AppRelated():
                         query = Orders.objects.filter(category__category='fast')
                     if request_get['orders'] == 'simple':
                         query = Orders.objects.filter(category__category='simple')
-                    if request_get['date'] and request_get['date2']:
-                        #print('DATE 1')
-                        end_date = datetime.strptime(request_get['date2'], '%Y-%m-%d') + timedelta(days=1)
-                        # print('end_date ', end_date)
-                        query2 = Orders.objects.filter(created_at__range=[request_get['date'],end_date])
-                    if request_get['date'] and not request_get['date2']:
-                        #print('DATE 2')
-                        #date = datetime.strptime(request_get['date'], '%Y-%m-%d') + timedelta(days=1)
+                    if 'date' in request_get:
+                        if request_get['date'] and request_get['date2']:
+                            #print('DATE 1')
+                            end_date = datetime.strptime(request_get['date2'], '%Y-%m-%d') + timedelta(days=1)
+                            # print('end_date ', end_date)
+                            query2 = Orders.objects.filter(created_at__range=[request_get['date'],end_date])
+                        if request_get['date'] and not request_get['date2']:
+                            #print('DATE 2')
+                            #date = datetime.strptime(request_get['date'], '%Y-%m-%d') + timedelta(days=1)
 
-                        #query2 = Orders.objects.filter(Q(created_at__icontains=date))
-                        #date = datetime.strptime(request_get['date'], '%Y-%m-%d')
-                        end_date = datetime.strptime(request_get['date'], '%Y-%m-%d') + timedelta(days=1)
-                        query2 = Orders.objects.filter(created_at__range=[request_get['date'],end_date])
-                    if not request_get['date'] and request_get['date2']:
-                        #print('DATE 3')
-                        query2 = Orders.objects.filter(Q(created_at__icontains=request_get['date2']))
+                            #query2 = Orders.objects.filter(Q(created_at__icontains=date))
+                            #date = datetime.strptime(request_get['date'], '%Y-%m-%d')
+                            end_date = datetime.strptime(request_get['date'], '%Y-%m-%d') + timedelta(days=1)
+                            query2 = Orders.objects.filter(created_at__range=[request_get['date'],end_date])
+                        if not request_get['date'] and request_get['date2']:
+                            #print('DATE 3')
+                            query2 = Orders.objects.filter(Q(created_at__icontains=request_get['date2']))
                     if query is not None:
                         #print('q1 ', query)
                         #print('q2 ', query2)

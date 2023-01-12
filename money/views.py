@@ -14,6 +14,8 @@ from django.http import HttpResponseRedirect
 from functools import reduce
 from operator import or_, and_
 
+from datetime import datetime, timedelta
+
 class MoneyHomeView(RelatedMixin, ListView):
     model = Money
     paginate_by = 10
@@ -41,7 +43,7 @@ class MoneyHomeView(RelatedMixin, ListView):
         context['info'] = self.getInfo(getQ)
         context['title'] = 'Деньги'
         list_orders = getQ
-        print('list_orders ', list_orders)
+        #print('list_orders ', list_orders)
         paginator = Paginator(list_orders, self.paginate_by)
         page = self.request.GET.get('page')
         try:
@@ -58,7 +60,7 @@ class MoneyHomeView(RelatedMixin, ListView):
         context['money_list'] = orders_page.object_list
         #context['money_list'] = orders_page.object_list
         getIdMoney = orders_page.object_list
-        print('getMoney ', getIdMoney)
+        #print('getMoney ', getIdMoney)
         getPrepay = Prepayment.objects.filter()
         #print('============================')
         #print('VIEW context', context)
@@ -67,8 +69,6 @@ class MoneyHomeView(RelatedMixin, ListView):
     def getMoneyQuery(self):
         #print('MONEY QUERY ', self.request.GET)
         if 'rdata_' in str(self.request.GET):
-            if self.request.GET.get('date'):
-                date_get = self.request.GET.get('date')
             relatedListUuid = self.relatedPostGetData(request_get=self.request.GET)
             #print(relatedListUuid)
             interslist = []
@@ -76,7 +76,7 @@ class MoneyHomeView(RelatedMixin, ListView):
 
                 if v['relateddata']:
                     interslist.append(v['relateddata'])
-            #print(interslist)
+            #print('interslist ', interslist)
             interslist = list(set.intersection(*map(set,interslist)))
             #print('peres ', interslist)
             if interslist:
@@ -85,11 +85,24 @@ class MoneyHomeView(RelatedMixin, ListView):
             else:
                 #print('TYT 0')
                 return Money.objects.none()
-        return Money.objects.all()
+        return Prepayment.objects.all()
 
     def get_related_query_icontains(self, valuelist):
         q_object = reduce(or_, (Q(uuid__related_uuid=value) for value in valuelist))
-        #q_object = reduce(or_, (uuid__related_uuid=value for value in valuelist))
+        # q_object = reduce(or_, (uuid__related_uuid=value for value in valuelist))
+        money_obj = Money.objects.filter(q_object)
+
+        if self.request.GET.get('date'):
+            date_get = self.request.GET.get('date')
+            end_date = datetime.strptime(date_get, '%Y-%m-%d') + timedelta(days=1)
+            date_obj = Prepayment.objects.filter(created_at__range=[date_get, end_date])
+            print('date ', date_get)
+            return date_obj
+        if self.request.GET.get('date2'):
+            date2_get = self.request.GET.get('date2')
+
+
+
         return Money.objects.filter(q_object)
 
     def getInfo(self, query):
@@ -99,11 +112,11 @@ class MoneyHomeView(RelatedMixin, ListView):
         info = {}
         for x in query:
             #print('money ', x.money)
-            allmoney = allmoney + x.money
-            #paymoney = paymoney + x.prepayment
-            paymoney = paymoney + Prepayment.get_all_prepayment_sum(id=x)
+            allmoney = allmoney + x.prepayment
+            paymoney = paymoney + x.prepayment
+            #paymoney = paymoney + Prepayment.get_all_prepayment_sum(id=x.money_id)
         info.update({'allmoney' : str(allmoney)})
-        info.update({'diffmoney': str(allmoney-paymoney)})
+        #info.update({'diffmoney': str(allmoney-paymoney)})
         info.update({'paymoney': str(paymoney)})
         return info
 

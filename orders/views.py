@@ -20,6 +20,8 @@ import json
 from django.forms.models import model_to_dict
 import time
 
+from datetime import datetime, timedelta
+
 
 class OrdersHomeView(RelatedMixin, ListView):
     #model = Orders
@@ -40,9 +42,9 @@ class OrdersHomeView(RelatedMixin, ListView):
         context['title'] = 'Все заказы'
         context['filter'] = self.requestGet('filter')
         context['date'] = self.requestGet('date')
-        dict_orders = self.get_queryset()
-        print('dict_orders ', dict_orders)
-        paginator = Paginator(dict_orders, self.paginate_by)
+        clean_orders = self.get_queryset()
+        #print('dict_orders ', dict_orders)
+        paginator = Paginator(clean_orders, self.paginate_by)
         page = self.request.GET.get('page')
         try:
             orders_page = paginator.page(page)
@@ -56,7 +58,8 @@ class OrdersHomeView(RelatedMixin, ListView):
         context['main_list'] = list(orders_page.object_list.values('id','serial','comment', 'created_at', 'updated_at', 'status__title',
                                                                    'service__name', 'device__name', 'category_id', 'category_service__name',
                                                                    'uuid__related_uuid', 'related_user__username'))
-        #print(' main_list', context['main_list'])
+        context['status_dict'] = self.getStatusInfo(query=clean_orders)
+        print(' status_dict', context['status_dict'])
         #print(' orders_page ', orders_page.object_list)
         #print(' =========================== ')
         #print(' dict_orders ', dict_orders)
@@ -68,9 +71,39 @@ class OrdersHomeView(RelatedMixin, ListView):
 
     def requestGet(self, req):
         if self.request.GET.get(req):
-            return self.request.GET.get('filter')
+            return self.request.GET.get(req)
         else:
             return ''
+
+    def getStatusInfo(self, query):
+        dict_={}
+        #print('date ', datetime.today())
+
+        #now = datetime.strptime(date, '%Y-%m-%d')
+        #print('now ', now)
+        #print('now 2', datetime.strptime(str(now), '%Y-%m-%d'))
+        start_date = datetime.now() + timedelta(days=-7)
+        end_date = datetime.now() + timedelta(days=-3)
+        #print('end_date ', end_date)
+        #end_date = datetime.strptime(now, '%Y-%m-%d') + timedelta(days=3)
+        #end_date = str(now) + timedelta(days=3)
+        getStatus = Orders.objects.filter(status__closed_status=False, created_at__range=[start_date, end_date], category__category='simple').values_list('pk', flat=True)
+        print('getStatus ', getStatus)
+        dict_['warn3'] = list(getStatus)
+        start_date = datetime.now() + timedelta(days=-14)
+        end_date = datetime.now() + timedelta(days=-7)
+        getStatus = Orders.objects.filter(status__closed_status=False, created_at__range=[start_date, end_date], category__category='simple').values_list('pk', flat=True)
+        print('getStatus 2 ', getStatus)
+        dict_['warn7'] = list(getStatus)
+        start_date = datetime.now() + timedelta(days=-365)
+        end_date = datetime.now() + timedelta(days=-14)
+        getStatus = query.filter(status__closed_status=False, created_at__range=[start_date, end_date], category__category='simple').values_list('pk', flat=True)
+        print('getStatus 4 ', getStatus)
+        dict_['warn14'] = list(getStatus)
+        #dict_.append(getStatus)
+        #getStatus = Orders.objects.filter(status__closed_status=False, category__category='simple').values_list('pk', flat=True)
+        #dict_.append(getStatus)
+        return dict_
 
     def getQuery(self):
         results_filter_uuid = []
@@ -181,7 +214,7 @@ class OrderAddView(RelatedMixin, TemplateView):
             form_one.save()
             form_one.uuid.add(make_uuid_obj)
             form_one.save()
-            #print('related_isValid_dict ', related_form_dict)
+            #print('self.request.GET ', self.request.GET.get('category'))
             #related form model add data
             self.saveRelatedFormData(related_form_dict=related_form_dict, request=self.request, related_uuid=related_uuid, method='add')
             '''

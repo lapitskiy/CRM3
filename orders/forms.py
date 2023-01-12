@@ -128,8 +128,6 @@ class FastOrderAddForm(forms.ModelForm):
             'category_service': forms.Select(attrs={'class': 'form-control', 'autocomplete': 'on'}),
         }
 
-
-
 class SettingServiceAddForm(forms.ModelForm):
     class Meta:
         model = Service
@@ -183,12 +181,15 @@ class SettingCategoryServiceAddForm(forms.ModelForm):
 class SettingStatusAddForm(forms.ModelForm):
     class Meta:
         model = Status
-        fields = ['title', 'active_creation']
+        fields = ['title', 'active_creation', 'closed_status']
         widgets = {
             'title': forms.TextInput(attrs={'class': 'form-control', 'autocomplete': 'off'}),
             'active_creation': forms.CheckboxInput(),
+            'closed_status': forms.CheckboxInput(),
+
         }
         labels = {
+            'closed_status': 'Статус закрывает заказ',
             'active_creation': 'Активно при создании заказа',
         }
 

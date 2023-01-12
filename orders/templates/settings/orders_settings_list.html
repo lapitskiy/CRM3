@@ -21,7 +21,8 @@
                             <div class="card border-light" >
                                 <div class="card-header bg-gradient">Номер: <span class="badge rounded-pill bg-info text-dark">{{ item.pk }}</span></div>
                                 <div class="card-body">
-                                    Активно: {{ item.active_creation }}<br>
+                                    Статус при создании заказа: {{ item.active_creation }}<br>
+                                    Статус который закрывает заказ: {{ item.closed_status }}<br>
                                 </div>
                             </div>
                             {% for related_item in related_list %}
