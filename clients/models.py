@@ -22,7 +22,8 @@ class Clients(models.Model):
         data = {
             'related_use': 'form',
             'module_name': 'Контакт',
-            'Телефон': self.phone,
+            'Телефон': '',
+            'html': '<a href="tel:' + self.phone + '" target="_blank">' + self.phone + '</a>',
             'related_uuid': list(self.uuid.values_list('related_uuid', flat=True)),
             }
         return data

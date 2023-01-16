@@ -26875,7 +26875,7 @@ textarea.form-control-lg {
   --kt-drawer-overlay-bg-color: rgba(0, 0, 0, 0.2);
   --kt-menu-dropdown-box-shadow: 0px 0px 50px 0px rgba(82, 63, 105, 0.15);
   --kt-menu-dropdown-bg-color: #ffffff;
-  --kt-menu-heading-color: #A1A5B7;
+  --kt-menu-heading-color: #000000;
   --kt-menu-link-color-hover: #009ef7;
   --kt-menu-link-color-show: #009ef7;
   --kt-menu-link-color-here: #009ef7;

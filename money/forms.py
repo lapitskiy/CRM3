@@ -40,7 +40,7 @@ class PrepayEditForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         self.request = kwargs.pop('request', None)
         super(PrepayEditForm, self).__init__(*args, **kwargs)
-        #self.fields['prepayment'].initial = ''
+        self.fields['prepayment'].initial = ''
 
     class Meta:
         model = Prepayment
@@ -50,7 +50,7 @@ class PrepayEditForm(forms.ModelForm):
             'comment': forms.TextInput(attrs={'class': 'form-control', 'autocomplete': 'off'}),
         }
         labels = {
-            'prepayment': 'Принять предоплату',
+            'prepayment': 'Принять оплату',
         }
 
     #def clean_prepayment(self):
