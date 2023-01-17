@@ -17,7 +17,6 @@ from operator import or_, and_
 from datetime import datetime, timedelta
 
 class MoneyHomeView(RelatedMixin, ListView):
-    model = Money
     paginate_by = 10
     template_name = 'money/money_list.html'
     context_object_name = 'money'
@@ -42,8 +41,10 @@ class MoneyHomeView(RelatedMixin, ListView):
         getQ = self.getMoneyQuery()
         context['info'] = self.getInfo(getQ)
         context['title'] = 'Деньги'
-        list_orders = getQ
+        list_orders = getQ.values()
         #print('list_orders ', list_orders)
+        #list_orders = list_orders.all()
+        #print('list_orders', list_orders.all())
         paginator = Paginator(list_orders, self.paginate_by)
         page = self.request.GET.get('page')
         try:
@@ -56,12 +57,14 @@ class MoneyHomeView(RelatedMixin, ListView):
         #print('context info', context['info'])
         context['request'] = self.request
         context['get'] = self.request.GET
-        #context['money_list'] = list(orders_page.object.values('id','money', 'created_at', 'uuid'))
-        context['money_list'] = orders_page.object_list
+        #page_list = orders_page.object_list.values()
+        #for x in page_list:
+        #print('x ', orders_page.object_list.values())
+        context['money_list'] = list(orders_page.object_list.values('pk', 'id', 'prepayment', 'created_at', 'money_id'))
         #context['money_list'] = orders_page.object_list
-        getIdMoney = orders_page.object_list
-        #print('getMoney ', getIdMoney)
-        getPrepay = Prepayment.objects.filter()
+        #getIdMoney = orders_page.object_list
+        print('money_list ', context['money_list'])
+        #getPrepay = Prepayment.objects.filter()
         #print('============================')
         #print('VIEW context', context)
         return context

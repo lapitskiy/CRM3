@@ -77,7 +77,6 @@ class AppRelated(object):
         self.request = kwargs['request']
         result_queryset = kwargs['queryset']
         filterStore = StoreRelated.objects.filter(store__user_permission=self.request.user)
-        #print('store perm ', len(filterStore))
         flat_qry = filterStore.values_list('uuid__related_uuid', flat=True)
         #uuid = StoreRelated.objects.filter(related_uuid__in=flat_qry).values_list('related', flat=True)
         #print('class ', result_queryset.__class__)

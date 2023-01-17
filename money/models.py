@@ -68,7 +68,7 @@ class Prepayment(models.Model):
     created_at = models.DateTimeField(auto_now_add=True, verbose_name='Создан')
 
     def __str__(self):
-        return str(self.prepayment)
+        return str(self.pk)
 
     class Meta:
         verbose_name = 'Предоплата'

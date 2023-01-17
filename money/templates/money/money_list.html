@@ -14,22 +14,21 @@
     <div class="row">
         <div class="col-4">
             <div class="list-group" id="list-tab" role="tablist">
-                {% for item in page_obj %}
+                {% for item in money_list %}
                     <a class="list-group-item list-group-item-action" id="list-{{ item.pk }}" data-bs-toggle="list" href="#id-list-{{ item.pk }}" role="tab" aria-controls="home">{{ item.prepayment }}</a>
                 {% endfor %}
             </div>
         </div>
         <div class="col-8">
             <div class="tab-content" id="nav-tabContent">
-                {% for item in page_obj %}
+                {% for item in money_list %}
                     <div class="tab-pane fade show" id="id-list-{{ item.pk }}" role="tabpanel" aria-labelledby="list-{{ item.pk }}">
 
                         <div class="shadow p-3 mb-5 bg-body rounded">
-                            Cумма: {{ item.money }}<br>
-                            Предоплата: {{ item.prepayment }}<br>
+                            Оплачено: {{ item.prepayment }}<br>
                             Дата создания: {{ item.created_at }}<br>
                                                     <button type="button" class="btn btn-sm btn-light">
-                            <a href="edit/{{ item.money.pk }}">Редактировать</a>
+                            <a href="edit/{{ item.money_id }}">Редактировать</a>
                         </button>
                         </div>
                     </div>
