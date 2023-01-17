@@ -70,14 +70,14 @@ class MoneyHomeView(RelatedMixin, ListView):
         #print('MONEY QUERY ', self.request.GET)
         if 'rdata_' in str(self.request.GET):
             relatedListUuid = self.relatedPostGetData(request_get=self.request.GET)
-            #print('relatedListUuid ', relatedListUuid)
+            print('relatedListUuid ', relatedListUuid)
             interslist = []
             for k, v in relatedListUuid.items():
                 if v['relateddata']:
                     interslist.append(v['relateddata'])
-            #print('interslist ', interslist)
+            print('interslist ', interslist)
             interslist = list(set.intersection(*map(set,interslist)))
-            #print('peres ', interslist)
+            print('peres ', interslist)
             if interslist:
                 query = self.get_related_query_icontains(interslist)
                 #print('query ', query)

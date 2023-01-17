@@ -59,11 +59,12 @@ class AppRelated():
                 _dict = getdata['submenu']
                 if _dict['category'] == 'filterform':
                     if request_get['orders'] == 'all':
-                        query = Orders.objects.all()
+                        query = Orders.objects.all().values_list('uuid__related_uuid', flat=True)
                     if request_get['orders'] == 'fast':
-                        query = Orders.objects.filter(category__category='fast')
+                        query = Orders.objects.filter(category__category='fast').values_list('uuid__related_uuid', flat=True)
                     if request_get['orders'] == 'simple':
-                        query = Orders.objects.filter(category__category='simple')
+                        query = Orders.objects.filter(category__category='simple').values_list('uuid__related_uuid', flat=True)
+                    '''    
                     if 'date' in request_get:
                         if request_get['date'] and request_get['date2']:
                             #print('DATE 1')
@@ -81,6 +82,7 @@ class AppRelated():
                         if not request_get['date'] and request_get['date2']:
                             #print('DATE 3')
                             query2 = Orders.objects.filter(Q(created_at__icontains=request_get['date2']))
+                    '''
                     if query is not None:
                         #print('q1 ', query)
                         #print('q2 ', query2)
@@ -91,12 +93,17 @@ class AppRelated():
                             #print('query result ', query)
                         #logger.info('%s related_result %s', __name__, type(intersection))
                         #print('intersection ', intersection)
+                        uudi_filter_related_list = query
+                        print('uudi_filter_related_list ', uudi_filter_related_list)
+
+                        '''
                         for z in query:
                             uuid = z.uuid.all().values_list('related_uuid', flat=True)
                             try:
                                 uudi_filter_related_list.append(uuid[0])
                             except IndexError:
                                 pass
+                        '''
                     return uudi_filter_related_list
         return uudi_filter_related_list
 
