@@ -64,7 +64,10 @@ class MoneyHomeView(RelatedMixin, ListView):
         #for x in page_list:
         #print('x ', orders_page.object_list.values())
         #test = orders_page.object_list.values()
-        context['money_list'] = list(orders_page.object_list.values('pk', 'id', 'prepayment', 'created_at', 'money_id'))
+        qry_page = orders_page
+        #print('qry_page ', qry_page.object_list.values_list('pk', flat=True))
+        #qry_uuid_list = list(qry.object_list.values_list('uuid__related_uuid', flat=True))
+        context['money_list'] = list(qry_page.object_list.values('pk', 'id', 'prepayment', 'created_at', 'money_id'))
         #context['money_list'] = orders_page.object_list
         #getIdMoney = orders_page.object_list
         #print('money_list ', context['money_list'])
