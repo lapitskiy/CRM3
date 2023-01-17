@@ -16,6 +16,8 @@ from operator import or_, and_
 
 from datetime import datetime, timedelta
 
+import time
+
 class MoneyHomeView(RelatedMixin, ListView):
     paginate_by = 10
     template_name = 'money/money_list.html'
@@ -32,6 +34,7 @@ class MoneyHomeView(RelatedMixin, ListView):
         return self.getMoneyQuery()
 
     def get_context_data(self, *, object_list=None, **kwargs):
+        start_time = time.time()
         #if self._check_cached() == False:
         #    getQ = self._caching_queryset(self.getMoneyQuery())
         #else:
@@ -64,10 +67,11 @@ class MoneyHomeView(RelatedMixin, ListView):
         context['money_list'] = list(orders_page.object_list.values('pk', 'id', 'prepayment', 'created_at', 'money_id'))
         #context['money_list'] = orders_page.object_list
         #getIdMoney = orders_page.object_list
-        print('money_list ', context['money_list'])
+        #print('money_list ', context['money_list'])
         #getPrepay = Prepayment.objects.filter()
         #print('============================')
         #print('VIEW context', context)
+        print(" --- %s seconds ---" % (time.time() - start_time))
         return context
 
     def getMoneyQuery(self):
