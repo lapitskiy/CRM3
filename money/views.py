@@ -41,7 +41,7 @@ class MoneyHomeView(RelatedMixin, ListView):
         getQ = self.getMoneyQuery()
         context['info'] = self.getInfo(getQ)
         context['title'] = 'Деньги'
-        list_orders = getQ.values()
+        list_orders = getQ.all()
         #print('list_orders ', list_orders)
         #list_orders = list_orders.all()
         #print('list_orders', list_orders.all())
@@ -60,6 +60,7 @@ class MoneyHomeView(RelatedMixin, ListView):
         #page_list = orders_page.object_list.values()
         #for x in page_list:
         #print('x ', orders_page.object_list.values())
+        #test = orders_page.object_list.values()
         context['money_list'] = list(orders_page.object_list.values('pk', 'id', 'prepayment', 'created_at', 'money_id'))
         #context['money_list'] = orders_page.object_list
         #getIdMoney = orders_page.object_list
