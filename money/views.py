@@ -41,7 +41,7 @@ class MoneyHomeView(RelatedMixin, ListView):
         getQ = self.getMoneyQuery()
         context['info'] = self.getInfo(getQ)
         context['title'] = 'Деньги'
-        list_orders = getQ.all()
+        list_orders = getQ.values()
         #print('list_orders ', list_orders)
         #list_orders = list_orders.all()
         #print('list_orders', list_orders.all())
