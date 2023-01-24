@@ -15,6 +15,7 @@ class Money(models.Model):
     #related_uuid = models.CharField(max_length=22, blank=True, verbose_name='uuid')
     related_uuid = models.JSONField(blank=True, null=True) # json dict
     uuid = models.ManyToManyField('RelatedUuid')
+    card_pay = models.BooleanField(default=False)
 
     def get_absolute_url(self):
         return reverse('view_money', kwargs={'pk': self.pk})
@@ -23,11 +24,15 @@ class Money(models.Model):
         prepayment = Prepayment.get_all_prepayment_sum(id=self.pk)
         if prepayment is None:
             prepayment = 0
+        pay_method = 'Наличные'
+        if self.card_pay == True:
+            pay_method = 'По карте'
         data = {
             'related_use': 'form',
             'module_name': 'Стоимость',
             'Сумма': self.money,
             'Оплачено': prepayment,
+            'Способ оплаты':  pay_method,
             'html': '<a href="/money/edit/'+str(self.pk)+'" target="_blank">Внести предоплату</a>',
             'related_uuid': list(self.uuid.values_list('related_uuid', flat=True)),
             }

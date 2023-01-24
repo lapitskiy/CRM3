@@ -86,6 +86,9 @@ class AppRelated(object):
             form_add.save()
             form_add.uuid.add(make_uuid_obj)
             form_add.save()
+            form_add.card_pay = form_from_dict.cleaned_data.get('card_pay')
+            print('card_pay ', form_from_dict.cleaned_data.get('card_pay'))
+            form_add.save()
             print('money saveform: ', form_from_dict.cleaned_data.get('is_pay'))
             print('money pk: ', form_add.pk)
 

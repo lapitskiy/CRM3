@@ -1,12 +1,16 @@
 from django import forms
 from .models import Money, Prepayment
 
-class SpecialCheckboxInput(forms.CheckboxInput):
+class is_pay_SpecialCheckboxInput(forms.CheckboxInput):
     template_name = "include/_forms_textinput.html"
+
+class card_pay_SpecialCheckboxInput(forms.CheckboxInput):
+    template_name = "include/_forms_textinput_card.html"
 
 class RelatedAddForm(forms.ModelForm):
     #money = MyInputText()
-    is_pay = forms.BooleanField(label=False, initial=True, required=False, widget=SpecialCheckboxInput(attrs={}))
+    is_pay = forms.BooleanField(label=False, initial=True, required=False, widget=is_pay_SpecialCheckboxInput(attrs={}))
+    card_pay = forms.BooleanField(label=False, initial={'card_pay':True}, required=False, widget=card_pay_SpecialCheckboxInput(attrs={}))
 
     def __init__(self, *args, **kwargs):
         self.request = kwargs.pop('request', None)
@@ -15,7 +19,7 @@ class RelatedAddForm(forms.ModelForm):
 
     class Meta:
         model = Money
-        fields = ['money', 'is_pay']
+        fields = ['money', 'card_pay', 'is_pay']
         widgets = {
             'money': forms.TextInput(attrs={'class': 'form-control', 'autocomplete':'off','placeholder': 'Стоимость'}),
             #'is_pay': forms.CheckboxInput(attrs={'class': 'text-danger', 'required': 'False'})
