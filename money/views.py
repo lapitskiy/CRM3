@@ -278,18 +278,18 @@ class MoneyEditView(RelatedMixin, TemplateView):
             if form_money.is_valid():
                 form_money.save()
             else:
-                print('tyt01')
+                #print('tyt01')
                 return self.form_invalid(form_money=form_money, form_prepay=form_prepay)
-        print('tyt0')
+        #print('tyt0')
         if self.request.GET['method'] == 'prepay':
             if form_prepay.is_valid():
-                print('tyt1')
+                #print('tyt1')
                 form = form_prepay.save(commit=False)
                 form.money_id = int(context['money_id'])
                 form.save()
-                print('tyt2')
+                #print('tyt2')
             else:
-                print('tyt3')
+                #print('tyt3')
                 return self.form_invalid(form_money=form_money, form_prepay=form_prepay)
         #print('tyt valid')
         return HttpResponseRedirect(reverse_lazy('money_edit', kwargs={'money_id': context['money_id']}))

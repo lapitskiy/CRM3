@@ -115,7 +115,7 @@ class FastOrderAddForm(forms.ModelForm):
     #print('tyt1 ')
 
     def __init__(self, *args, **kwargs):
-        print('tyt2 ')
+        #print('tyt2 ')
         self.request = kwargs.pop('request', None)
         super(FastOrderAddForm, self).__init__(*args, **kwargs)
         self.fields['category_service'].queryset = getCategoryServicePermission(user=self.request.user)
