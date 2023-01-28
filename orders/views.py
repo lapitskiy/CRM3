@@ -611,13 +611,13 @@ class SettingsAddView(TemplateView):
     def getForm(self):
         getadd = self.request.GET.get('model')
         if getadd:
-            if getadd == 'service':
+            if 'service' in getadd:
                 return SettingServiceAddForm
-            if getadd == 'device':
+            if 'device' in getadd:
                 return SettingDeviceAddForm
-            if getadd == 'category_service':
+            if 'category_service' in getadd:
                 return SettingCategoryServiceAddForm
-            if getadd == 'status':
+            if 'status' in getadd:
                 return SettingStatusAddForm
 
     def getPostForm(self, req):
