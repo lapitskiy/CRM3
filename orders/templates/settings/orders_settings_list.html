@@ -4,18 +4,18 @@
     {% include 'include/_sidebar_settings_orders.html' %}
 {% endblock %}
 {% block content %}
-
     <div class="row">
         <div class="col-4">
             <div class="list-group" id="list-tab" role="tablist">
                 {% for item in page_obj %}
-                    <a class="list-group-item list-group-item-action" id="list-{{ item.pk }}" data-bs-toggle="list" href="#id-list-{{ item.pk }}" role="tab" aria-controls="home">{{ item.name }}{{ item.title }}</a>
+                    <a class="list-group-item list-group-item-action" id="list-{{ item.pk }}" data-bs-toggle="list" href="#id-list-{{ item.pk }}" role="tab" aria-controls="home">{{ item.name }}{{ item.title }} ({{ item.category_service }})</a>
                 {% endfor %}
             </div>
         </div>
         <div class="col-8">
             <div class="tab-content" id="nav-tabContent">
                 {% for item in page_obj %}
+
                     <div class="tab-pane fade show" id="id-list-{{ item.pk }}" role="tabpanel" aria-labelledby="list-{{ item.pk }}">
                         <div class="shadow p-3 mb-5 bg-body rounded">
                             <div class="card border-light" >
