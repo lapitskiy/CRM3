@@ -1,4 +1,5 @@
 {% extends "base.html" %}
+{% load orders_template_tags %}
 {% block title %}{{ title }} - {{ block.super }}{% endblock %}
 {% block sidebar %}
     {% include 'include/_sidebar_settings_orders.html' %}
@@ -66,7 +67,8 @@
                     </li>
                 {% elif p > page_obj.number|add:-3 and p < page_obj.number|add:3 %}
                     <li class="page-item">
-                        <a class="page-link" href="?page={{ p }}&filter={{ filter }}">{{ p }}</a>
+                        <a class="page-link" href="?{% url_replace request page=p %}">{{ p }}</a>
+                    <!-- ?page={{ p }}&filter={{ filter }} -->
                     </li>
                 {% endif %}
             {% endfor %}
