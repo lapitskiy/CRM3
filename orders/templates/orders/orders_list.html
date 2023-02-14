@@ -172,12 +172,32 @@
                             {% if item.category_id == 2 %}
                             <div class="bullet bullet-dot me-2 h-10px w-10px" style="background-color:{{ item.status__color }};"></div>
                             {% endif %}
+                            {% for related_item in related_list %}
+                                {% if related_item.related_uuid and item.uuid__related_uuid == related_item.uuid and related_item.related_use == 'form' %}
+                                    {% if related_item.warning %}
+                                        {% if related_item.warning == 'red' %}
+                                            <i class="fa-solid fa-dollar-sign text-danger"></i>
+                                        {% endif %}
+                                    {% endif %}
+                                {% endif %}
+                             {% endfor %}
                         </div>
                 {% else %}
                         <div class="d-flex align-items-center mb-2">
                             <a id="list-{{ item.id }}" data-bs-toggle="list" href="#id-list-{{ item.id }}" role="tab" aria-controls="home" class="text-gray-900 text-hover-primary fs-2 fw-bold me-1">Заказ {{ item.id }}</a>
                             {% if item.category_id == 2 %}
                             <div class="bullet bullet-dot me-2 h-10px w-10px" style="background-color:{{ item.status__color }};"></div>
+
+                            {% for related_item in related_list %}
+                                {% if related_item.related_uuid and item.uuid__related_uuid == related_item.uuid and related_item.related_use == 'form' %}
+                                    {% if related_item.warning %}
+                                        {% if related_item.warning == 'red' %}
+                                            <i class="fa-solid fa-dollar-sign text-danger"></i>
+                                        {% endif %}
+                                    {% endif %}
+                                {% endif %}
+                             {% endfor %}
+
                             {% endif %}
                         </div>
 
