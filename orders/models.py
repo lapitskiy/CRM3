@@ -19,6 +19,7 @@ class Orders(models.Model):
     related_user = models.ForeignKey(User, related_name='order_user', null=True, blank=True, on_delete=models.PROTECT, verbose_name='Owner')
 
 
+
     def get_absolute_url(self):
         return reverse('view_orders', kwargs={'pk': self.pk})
 
@@ -62,6 +63,7 @@ class Status(models.Model):
     title = models.CharField(max_length=150, db_index=True, unique=True, verbose_name='Наименования статуса')
     active_creation = models.BooleanField(default=False)
     closed_status = models.BooleanField(default=False)
+    color = models.CharField(max_length=7, default='#ffc700')
 
     def __str__(self):
         return self.title

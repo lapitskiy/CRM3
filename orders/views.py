@@ -55,7 +55,7 @@ class OrdersHomeView(RelatedMixin, ListView):
             orders_page = paginator.page(paginator.num_pages)
 
         context['related_list'] = self.getDataListRelated(query=orders_page, method='query_paginator_page')
-        context['main_list'] = list(orders_page.object_list.values('id','serial','comment', 'created_at', 'updated_at', 'status__title',
+        context['main_list'] = list(orders_page.object_list.values('id','serial','comment', 'created_at', 'updated_at', 'status__title','status__color',
                                                                    'service__name', 'device__name', 'category_id', 'category_service__name',
                                                                    'uuid__related_uuid', 'related_user__username'))
         context['status_dict'] = self.getStatusInfo(query=clean_orders)
@@ -508,7 +508,7 @@ class OrdersOneView(RelatedMixin, TemplateView):
         context = super().get_context_data(**kwargs)
         context['title'] = 'Заказ'
         order = self.get_queryset(id=context['order_id'])
-        context['item'] = list(order.values('id', 'serial', 'comment', 'created_at', 'updated_at', 'status__title',
+        context['item'] = list(order.values('id', 'serial', 'comment', 'created_at', 'updated_at', 'status__title', 'status__color',
                                                                    'service__name', 'device__name', 'category_id', 'category_service__name',
                                                                    'uuid__related_uuid', 'related_user__username'))
         context['related_list'] = self.getDataListRelated(query=order, method='get_one_obj_by_qry')

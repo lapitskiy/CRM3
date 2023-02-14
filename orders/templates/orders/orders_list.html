@@ -167,9 +167,20 @@
             <div class="list-group list-group-flush" id="list-tab" role="tablist">
                 {% for item in main_list %}
                     {% if forloop.counter == 1 %}
-                        <a class="list-group-item list-group-item-action active" id="list-{{ item.id }}" data-bs-toggle="list" href="#id-list-{{ item.id }}" role="tab" aria-controls="home">Заказ {{ item.id }}</a>
+                            <!--begin::Bullet-->
+                            <!--end::Bullet-->
+                            <div class="d-flex align-items-center">
+                            <span class="bullet bullet-dot me-2 h-10px w-10px" style="background-color:{{ item.status__color }};"></span>
+                            <a class="list-group-item list-group-item-action active" id="list-{{ item.id }}" data-bs-toggle="list" href="#id-list-{{ item.id }}" role="tab" aria-controls="home">Заказ {{ item.id }}</a>
+                            <!--begin::Label-->
+                            <!--end::Label-->
+                            </div>
+
                     {% else %}
+                        <div class="d-flex align-items-center">
+                        <span class="bullet bullet-dot me-2 h-10px w-10px" style="background-color:{{ item.status__color }};"></span>
                         <a class="list-group-item list-group-item-action" id="list-{{ item.id }}" data-bs-toggle="list" href="#id-list-{{ item.id }}" role="tab" aria-controls="home">Заказ {{ item.id }}</a>
+                        </div>
                     {% endif %}
                 {% endfor %}
             </div>
@@ -193,7 +204,7 @@
             <b>{{ item.id }}</b> </h3>
         <div class="card-toolbar">
             {% if item.category_id == 2 %}
-                Статус: &nbsp;<span class="badge rounded-pill bg-warning text-dark"> {{ item.status__title }}</span>
+                Статус: &nbsp;<span class="badge rounded-pill text-dark" style="background-color: {{ item.status__color }}"> {{ item.status__title }}</span>
             {% endif %}
             &nbsp; Дата: &nbsp;<span class="badge rounded-pill bg-dark"> {{ item.created_at }} </span>&nbsp;&nbsp;
             <button type="button" class="btn btn-sm btn-light">

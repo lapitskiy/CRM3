@@ -55,7 +55,6 @@ class SimpleOrderAddForm(forms.ModelForm):
             'comment': forms.Textarea(attrs={'class': 'form-control', 'rows': 5}),
         }
 
-
 #CHOICES = [(service.id, service.name) for service in Service.objects.all()]
 
 #forms
@@ -192,12 +191,12 @@ class SettingCategoryServiceAddForm(forms.ModelForm):
 class SettingStatusAddForm(forms.ModelForm):
     class Meta:
         model = Status
-        fields = ['title', 'active_creation', 'closed_status']
+        fields = ['title', 'active_creation', 'closed_status', 'color']
         widgets = {
             'title': forms.TextInput(attrs={'class': 'form-control', 'autocomplete': 'off'}),
             'active_creation': forms.CheckboxInput(),
             'closed_status': forms.CheckboxInput(),
-
+            'color': forms.TextInput(attrs={'type': 'color'}),
         }
         labels = {
             'closed_status': 'Статус закрывает заказ',

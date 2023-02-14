@@ -173,7 +173,7 @@
             <b>{{ item.0.id }}</b></h3>
         <div class="card-toolbar">
             {% if item.0.category_id == 2 %}
-                Статус: &nbsp;<span class="badge rounded-pill bg-warning text-dark"> {{ item.0.status__title }}</span>
+                Статус: &nbsp;<span class="badge rounded-pill text-dark" style="background-color: {{ item.0.status__color }}"> {{ item.0.status__title }}</span>
             {% endif %}
             &nbsp; Дата: &nbsp;<span class="badge rounded-pill bg-dark"> {{ item.0.created_at }} </span>&nbsp;&nbsp;
             <button type="button" class="btn btn-sm btn-light">
