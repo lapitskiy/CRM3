@@ -166,22 +166,22 @@
         <div class="col-2">
             <div class="list-group list-group-flush" id="list-tab" role="tablist">
                 {% for item in main_list %}
-                    {% if forloop.counter == 1 %}
-                            <!--begin::Bullet-->
-                            <!--end::Bullet-->
-                            <div class="d-flex align-items-center">
-                            <span class="bullet bullet-dot me-2 h-10px w-10px" style="background-color:{{ item.status__color }};"></span>
-                            <a class="list-group-item list-group-item-action active" id="list-{{ item.id }}" data-bs-toggle="list" href="#id-list-{{ item.id }}" role="tab" aria-controls="home">Заказ {{ item.id }}</a>
-                            <!--begin::Label-->
-                            <!--end::Label-->
-                            </div>
-
-                    {% else %}
-                        <div class="d-flex align-items-center">
-                        <span class="bullet bullet-dot me-2 h-10px w-10px" style="background-color:{{ item.status__color }};"></span>
-                        <a class="list-group-item list-group-item-action" id="list-{{ item.id }}" data-bs-toggle="list" href="#id-list-{{ item.id }}" role="tab" aria-controls="home">Заказ {{ item.id }}</a>
+                {% if forloop.counter == 1 %}
+                        <div class="d-flex align-items-center mb-2">
+                            <a id="list-{{ item.id }}" data-bs-toggle="list" href="#id-list-{{ item.id }}" role="tab" aria-controls="home" class="active text-gray-900 text-hover-primary fs-2 fw-bold me-1">Заказ {{ item.id }}</a>
+                            {% if item.category_id == 2 %}
+                            <div class="bullet bullet-dot me-2 h-10px w-10px" style="background-color:{{ item.status__color }};"></div>
+                            {% endif %}
                         </div>
-                    {% endif %}
+                {% else %}
+                        <div class="d-flex align-items-center mb-2">
+                            <a id="list-{{ item.id }}" data-bs-toggle="list" href="#id-list-{{ item.id }}" role="tab" aria-controls="home" class="text-gray-900 text-hover-primary fs-2 fw-bold me-1">Заказ {{ item.id }}</a>
+                            {% if item.category_id == 2 %}
+                            <div class="bullet bullet-dot me-2 h-10px w-10px" style="background-color:{{ item.status__color }};"></div>
+                            {% endif %}
+                        </div>
+
+                {% endif %}
                 {% endfor %}
             </div>
         </div>

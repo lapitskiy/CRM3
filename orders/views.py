@@ -178,7 +178,6 @@ class OrderAddView(RelatedMixin, TemplateView):
         formOne.prefix = 'one_form'
         context.update({'formOne': formOne})
         context.update({'tag': self.getVar()})
-
         return self.render_to_response(context)
 
     def post(self, request, *args, **kwargs):
@@ -186,19 +185,6 @@ class OrderAddView(RelatedMixin, TemplateView):
         postCopy = self.ajaxConvert()
         formOne = self.getPostForm(request=self.request, postcopy=postCopy)
         related_form_dict, is_valid_related_dict = self.checkRelatedFormDict(request_post=self.request.POST, method='add', request=self.request)
-        #print('related_isValid_dict', related_isValid_dict)
-        #related = self.checkRelated()
-        #if related:
-        #    for x in related:
-                #related_form = related_isValid_dict[x.module_name]['form']
-                #form_list.append(related_form)
-        #        if not related_isValid_dict[x.module_name]['form'].is_valid():
-        #            valid = False
-        #related_is_valid = self.checkRelatedIsValidDict
-        #relatedValid = True # проверка связанных данных
-        #for k, v in related_isValid_dict.items():
-        #    if not v['valid']: relatedValid = False
-        #    form_list.append(v['form'])
 
         if formOne.is_valid() and is_valid_related_dict['is_valid']:
             related_uuid = shortuuid.uuid()
@@ -212,6 +198,7 @@ class OrderAddView(RelatedMixin, TemplateView):
             make_uuid_obj = RelatedUuid(related_uuid=related_uuid)
             make_uuid_obj.save()
             form_one.save()
+
             form_one.uuid.add(make_uuid_obj)
             form_one.save()
             #print('self.request.GET ', self.request.GET.get('category'))
@@ -267,6 +254,7 @@ class OrderAddView(RelatedMixin, TemplateView):
         if category_filter == 'simple':
             return 2
         return 1
+
 
     def increaseUsed(self, **kwargs):
         if 'category_service' in kwargs:
