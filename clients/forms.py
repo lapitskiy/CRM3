@@ -45,9 +45,6 @@ class RelatedAddForm(forms.ModelForm):
     class Meta:
         model = Clients
         fields = ['phone']
-        widgets = {
-            'phone': PhoneSelect2Widget,
-        }
 
 
 #my_field = forms.ModelChoiceField(queryset=MyModel.objects.all(), widget=ModelSelect2Widget(attrs={'class': 'select2'}), lookup_field='name')
