@@ -63,6 +63,7 @@ class Status(models.Model):
     title = models.CharField(max_length=150, db_index=True, unique=True, verbose_name='Наименования статуса')
     active_creation = models.BooleanField(default=False)
     closed_status = models.BooleanField(default=False)
+    fast_closed = models.BooleanField(default=False)
     color = models.CharField(max_length=7, default='#ffc700')
 
     def __str__(self):
@@ -108,7 +109,10 @@ class Service(models.Model):
     category_service = models.ForeignKey('Category_service', default=1, on_delete=models.SET_DEFAULT, null=True)
 
     def __str__(self):
-        return self.name
+        return str(self.name)
+
+    def __repr__(self):
+        return str(self.name)
 
     class Meta:
         verbose_name = 'Услуга'
@@ -121,7 +125,11 @@ class Device(models.Model):
     category_service = models.ForeignKey('Category_service', default=1, on_delete=models.SET_DEFAULT, null=True)
 
     def __str__(self):
-        return self.name
+        return str(self.name)
+
+    def __repr__(self):
+        return str(self.name)
+
 
 
     class Meta:

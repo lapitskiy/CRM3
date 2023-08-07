@@ -1,14 +1,25 @@
 {% block javascript %}
     <script>
-
-
-
     $(document).ready(function () {
 
-            $(document).on('click', '#list-item-{{ widget.name }}', function(e){
-               $('#ajax_input_{{ widget.name }}').val( $(this).text().trim());
-
-
+            $(document).on('click', '#status_update', function(e){
+               // $('#ajax_input_{{ widget.name }}').val( $(this).text().trim());
+               console.log('нажал')
+                $.ajax({
+                    data: $(this).serialize(), // get the form data
+                    url: "{% url 'ajax_request' %}?method=fast_status",
+                    // on success
+                    success: function (response) {
+                        console.log('tyt1')
+                        if (response.is_exist == true) {
+                            console.log('DEVICE')
+                        }
+                    },
+                    error: function (response) {
+                        console.log(response.responseJSON.errors)
+                    }
+                });
+                return false;
             });
 
             $('#ajax_input_{{ widget.name }}').keyup(function () {
@@ -79,23 +90,3 @@
 
     </script>
 {% endblock javascript %}
-
-<br>
-<input id="ajax_input_{{ widget.name }}" list="{{ widget.name }}" autocomplete="off"
-    {% if widget.value != None %} name="{{ widget.name }}" value="{{ widget.value|stringformat:'s' }}"{% endif %}
-    {% include "django/forms/widgets/attrs.html" %}>
-
-    {% for group_name, group_choices, group_index in widget.optgroups %}
-        {% if forloop.counter < 10 %}
-        {% for option in group_choices %}
-            <span class="badge rounded-pill bg-warning text-dark" id="list-item-{{ widget.name }}" name="list-item-{{ widget.name }}">
-                {% include option.template_name with widget=option %}</span>
-        {% endfor %}
-        {% endif %}
-            {% endfor %}
-<a href="/orders/settings/add/?model={{ widget.name }}" class="link-primary" target="_blank">Добавить</a>
-<datalist id="{{ widget.name }}">
-    <optgroup label="">
-    </optgroup>
-</datalist><br>
-

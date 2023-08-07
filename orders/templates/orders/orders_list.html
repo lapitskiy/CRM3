@@ -4,7 +4,7 @@
     {% include 'include/_sidebar_orders.html' %}
 {% endblock %}
 {% block content %}
-
+    {% include 'include/_ajax.html' %}
                             <!--begin::Toolbar-->
 							<div class="toolbar mb-5 mb-lg-7" id="kt_toolbar">
 								<!--begin::Page title-->
@@ -224,7 +224,7 @@
             <b>{{ item.id }}</b> </h3>
         <div class="card-toolbar">
             {% if item.category_id == 2 %}
-                Статус: &nbsp;<span class="badge rounded-pill text-dark" style="background-color: {{ item.status__color }}"> {{ item.status__title }}</span>
+                Статус: &nbsp<span class="badge rounded-pill text-dark" style="background-color: {{ item.status__color }}"> {{ item.status__title }} </span>&nbsp<a id="status_update" href="?id={{ item.id }}"><i class="fa-sharp fa-solid fa-lock-open"></i></a>
             {% endif %}
             &nbsp; Дата: &nbsp;<span class="badge rounded-pill bg-dark"> {{ item.created_at }} </span>&nbsp;&nbsp;
             <button type="button" class="btn btn-sm btn-light">

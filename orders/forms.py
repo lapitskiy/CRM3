@@ -75,10 +75,10 @@ class SimpleOrderEditForm(forms.ModelForm):
         status_excluded = ['','-']
         self.fields['status'].choices = [(k, v) for k, v in self.fields['status'].choices if k not in status_excluded]
         self.fields['category_service'].choices = [(k, v) for k, v in self.fields['category_service'].choices if k not in status_excluded]
-
         self.fields['device'] = ChoiceTxtField(queryset=Device.objects.filter(category_service__in=self.fields['category_service'].queryset).order_by('-used'))
         self.fields['service'] = ChoiceTxtField(queryset=Service.objects.filter(category_service__in=self.fields['category_service'].queryset).order_by('-used'))
-        self.fields['service'].choices = [(k, v) for k, v in self.fields['service'].choices if k not in status_excluded]
+        self.fields['service'].choices = [(v, k) for k, v in self.fields['service'].choices if k not in status_excluded]
+        #self.fields['service'].choices = [(k.id, str(k)) for k in self.fields['service'].choices if k not in status_excluded]
         self.fields['device'].choices = [(k, v) for k, v in self.fields['device'].choices if k not in status_excluded]
         self.fields['service'].label = 'Услуга'
         self.fields['device'].label = 'Устройство'
@@ -191,16 +191,18 @@ class SettingCategoryServiceAddForm(forms.ModelForm):
 class SettingStatusAddForm(forms.ModelForm):
     class Meta:
         model = Status
-        fields = ['title', 'active_creation', 'closed_status', 'color']
+        fields = ['title', 'active_creation', 'closed_status', 'fast_closed', 'color']
         widgets = {
             'title': forms.TextInput(attrs={'class': 'form-control', 'autocomplete': 'off'}),
             'active_creation': forms.CheckboxInput(),
             'closed_status': forms.CheckboxInput(),
+            'fast_closed': forms.CheckboxInput(),
             'color': forms.TextInput(attrs={'type': 'color'}),
         }
         labels = {
             'closed_status': 'Статус закрывает заказ',
             'active_creation': 'Активно при создании заказа',
+            'fast_closed': 'Быстрое закрытие заказов',
         }
 
     def clean_name(self):

@@ -24,6 +24,7 @@
                                 <div class="card-body">
                                     Статус при создании заказа: {{ item.active_creation }}<br>
                                     Статус который закрывает заказ: {{ item.closed_status }}<br>
+                                    Статус быстрого закрытия ajax: {{ item.fast_closed }}<br>
                                 </div>
                             </div>
                             {% for related_item in related_list %}

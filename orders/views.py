@@ -22,7 +22,6 @@ import time
 
 from datetime import datetime, timedelta
 
-
 class OrdersHomeView(RelatedMixin, ListView):
     #model = Orders
 
@@ -302,7 +301,12 @@ class OrderAddView(RelatedMixin, TemplateView):
 def ajax_request(request):
     """Check ajax"""
     model = request.GET.get('model')
-    #print('model ', model)
+    method = request.GET.get('method')
+    id = request.GET.get('id')
+
+    if method:
+        print('method ', method)
+        print('id ', id)
     if model:
         if 'service' in model:
             service = request.GET.get('one_form-service', None)
@@ -611,13 +615,13 @@ class SettingsAddView(TemplateView):
     def getPostForm(self, req):
         getadd = self.request.GET.get('model')
         if getadd:
-            if getadd == 'service':
+            if 'service' in getadd:
                 return SettingServiceAddForm(req, prefix='add_form')
-            if getadd == 'device':
+            if 'device' in getadd:
                 return SettingDeviceAddForm(req, prefix='add_form')
-            if getadd == 'category_service':
+            if 'category_service' in getadd:
                 return SettingCategoryServiceAddForm(req, prefix='add_form')
-            if getadd == 'status':
+            if 'status' in getadd:
                 return SettingStatusAddForm(req, prefix='add_form')
 
 
@@ -644,6 +648,10 @@ class SettingsEditView(TemplateView):
         context = super().get_context_data(**kwargs)
         formEdit = self.getPostForm()
         if formEdit.is_valid():
+            if self.request.GET.get('model') == 'status':
+                if formEdit.cleaned_data['fast_closed']:
+                    dd = {'fast_closed': False}
+                    Status.objects.all().update(**dd)
             formEdit.save()
             return HttpResponseRedirect(reverse_lazy('order_settings') + '?model=' + self.request.GET.get('model'))
         else:
