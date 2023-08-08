@@ -3,6 +3,21 @@ from django.urls import reverse
 from django.contrib.auth.models import User
 from django.forms.models import model_to_dict
 
+class Device(models.Model):
+    name = models.CharField(max_length=150, db_index=True, unique=True)
+    used = models.IntegerField(default=0)
+    category_service = models.ForeignKey('Category_service', default=1, on_delete=models.SET_DEFAULT, null=True)
+
+    def __str__(self):
+        return str(self.name)
+
+    def __repr__(self):
+        return str(self.name)
+
+    class Meta:
+        verbose_name = 'Устройство'
+        verbose_name_plural = 'Устройство'
+        ordering = ['name']
 
 # Create your models here.
 class Orders(models.Model):
@@ -12,7 +27,7 @@ class Orders(models.Model):
     updated_at = models.DateTimeField(auto_now=True, blank=True, null=True, verbose_name='Обновлен')
     status = models.ForeignKey('Status', default=1, on_delete = models.SET_DEFAULT, null=True, verbose_name='Статус', related_name='get_status')
     service = models.ForeignKey('Service', default=1, on_delete = models.SET_DEFAULT, null=True, verbose_name='Услуга', related_name='get_service')
-    device = models.ForeignKey('Device', default=1,  on_delete = models.SET_DEFAULT, null=True, verbose_name='Устройство', related_name='get_device')
+    device = models.ForeignKey(Device, default=1,  on_delete = models.SET_DEFAULT, null=True, verbose_name='Устройство', related_name='get_device')
     category = models.ForeignKey('Category', default=1, on_delete = models.SET_DEFAULT, null=True, verbose_name='Категория приемки', related_name='get_category') # fast or simple
     category_service = models.ForeignKey('Category_service', default=1, on_delete=models.SET_DEFAULT, null=True, verbose_name='Категория услуги', related_name='get_category_service')
     related_uuid = models.JSONField(blank=True, null=True) # json dict
@@ -118,24 +133,6 @@ class Service(models.Model):
     class Meta:
         verbose_name = 'Услуга'
         verbose_name_plural = 'Услуги'
-        ordering = ['name']
-
-class Device(models.Model):
-    name = models.CharField(max_length=150, db_index=True, unique=True, verbose_name='Устройство')
-    used = models.IntegerField(default=0)
-    category_service = models.ForeignKey('Category_service', default=1, on_delete=models.SET_DEFAULT, null=True)
-
-    def __str__(self):
-        return str(self.name)
-
-    def __repr__(self):
-        return str(self.name)
-
-
-
-    class Meta:
-        verbose_name = 'Устройство'
-        verbose_name_plural = 'Устройство'
         ordering = ['name']
 
 
