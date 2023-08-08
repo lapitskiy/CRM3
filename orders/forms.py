@@ -22,11 +22,13 @@ class ChoiceTxtField(forms.ModelChoiceField):
 #forms
 
 class DeviceSelect2Widget(s2forms.ModelSelect2Widget):
-    queryset = Device.objects.all().order_by('used')
+    #queryset = Device.objects.all().order_by('used')
+    queryset = Orders.objects.all().select_related('device').all()
     search_fields = ['name__icontains',]
 
 class SimpleOrderAddForm(forms.ModelForm):
-    device = forms.ModelChoiceField(widget=DeviceSelect2Widget(attrs={'class': 'select2'}), queryset=Device.objects.all().order_by('used'))
+    #device = forms.ModelChoiceField(widget=DeviceSelect2Widget(attrs={'class': 'select2'}), queryset=Device.objects.all().order_by('used'))
+    device = forms.ModelChoiceField(widget=DeviceSelect2Widget(attrs={'class': 'select2'}), queryset=Orders.objects.all().select_related('device').all())
 
     def __init__(self, *args, **kwargs):
         self.request = kwargs.pop('request', None)
