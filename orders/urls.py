@@ -10,5 +10,4 @@ urlpatterns = [
     path('settings/add/', SettingsAddView.as_view(), name='settings_add'),
     path('settings/edit/', SettingsEditView.as_view(), name='settings_edit'),
     path('ajax_request', ajax_request, name='ajax_request'),
-    path('select2/', include('django_select2.urls')),
 ]

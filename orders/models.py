@@ -3,6 +3,7 @@ from django.urls import reverse
 from django.contrib.auth.models import User
 from django.forms.models import model_to_dict
 
+
 # Create your models here.
 class Orders(models.Model):
     serial = models.CharField(max_length=150, blank=True, verbose_name='Серийный')

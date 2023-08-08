@@ -5,7 +5,7 @@ from .models import Clients
 # Register your models here.
 
 class ClientsAdmin(admin.ModelAdmin):
-    list_display = ('id','name','phone','created_at','updated_at','related_uuid')
+    list_display = ('id','name','phone','created_at','updated_at')
     list_display_links = ('id','name')
     search_fields = ('name','phone')
     list_editable = ('phone',)

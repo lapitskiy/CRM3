@@ -3,6 +3,7 @@ from .models import Orders, Service, Device, Category_service, Status
 import re
 from django.core.exceptions import ValidationError, ObjectDoesNotExist
 from .utils import getActiveStatus, getCategoryServicePermission
+from django_select2 import forms as s2forms
 
 #fields
 class ListTextWidget(forms.Select):
@@ -20,11 +21,45 @@ class ChoiceTxtField(forms.ModelChoiceField):
 
 #forms
 
-class SimpleOrderAddForm(forms.ModelForm):
-    #service = forms.ModelChoiceField(queryset=Service.objects.all(), widget=ListTextWidget())
-    #service = ChoiceTxtField(queryset=Service.objects.order_by('-used'))
-    #device = ChoiceTxtField(queryset=Device.objects.order_by('-used'))
+class DeviceSelect2Widget(s2forms.ModelSelect2Widget):
+    queryset = Device.objects.all().order_by('used')
+    search_fields = ['name__icontains',]
 
+class SimpleOrderAddForm(forms.ModelForm):
+    device = forms.ModelChoiceField(widget=DeviceSelect2Widget(attrs={'class': 'select2'}), queryset=Device.objects.all().order_by('used'))
+
+    def __init__(self, *args, **kwargs):
+        self.request = kwargs.pop('request', None)
+        super(SimpleOrderAddForm, self).__init__(*args, **kwargs)
+        self.fields['status'].queryset = getActiveStatus()
+        self.fields['category_service'].queryset = getCategoryServicePermission(user=self.request.user)
+        status_excluded = ['','-']
+        self.fields['status'].choices = [(k, v) for k, v in self.fields['status'].choices if k not in status_excluded]
+        self.fields['category_service'].choices = [(k, v) for k, v in self.fields['category_service'].choices if k not in status_excluded]
+
+        #self.fields['device'] = ChoiceTxtField(queryset=Device.objects.filter(category_service__in=self.fields['category_service'].queryset).order_by('-used'))
+        self.fields['service'] = ChoiceTxtField(queryset=Service.objects.filter(category_service__in=self.fields['category_service'].queryset).order_by('-used'))
+        self.fields['service'].choices = [(k, v) for k, v in self.fields['service'].choices if k not in status_excluded]
+        #self.fields['device'].choices = [(k, v) for k, v in self.fields['device'].choices if k not in status_excluded]
+        self.fields['service'].label = 'Услуга'
+        self.fields['device'].label = 'Устройство'
+
+    class Meta:
+        model = Orders
+        fields = ['category_service', 'device', 'serial', 'service', 'status', 'comment']
+        widgets = {
+            #'category': forms.Select(attrs={'class': 'form-control'}),
+                #forms.HiddenInput(),
+            #'device': forms.TextInput(attrs={'id':'ajax-device', 'class': 'form-control', 'autocomplete':'off'}),
+            #'service': forms.TextInput(attrs={'id':'ajax-service', 'class': 'form-control', 'autocomplete':'off'}),
+            'serial': forms.TextInput(attrs={'class': 'form-control', 'autocomplete':'off'}),
+            'status': forms.Select(attrs={'class': 'form-control', 'autocomplete':'on'}),
+            'category_service': forms.Select(attrs={'class': 'form-control', 'autocomplete': 'on'}),
+            'comment': forms.Textarea(attrs={'class': 'form-control', 'rows': 5}),
+        }
+
+
+class SimpleOrderAddForm_OLD_WITHOUT_SELECT2(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         self.request = kwargs.pop('request', None)
         super(SimpleOrderAddForm, self).__init__(*args, **kwargs)
@@ -55,19 +90,10 @@ class SimpleOrderAddForm(forms.ModelForm):
             'comment': forms.Textarea(attrs={'class': 'form-control', 'rows': 5}),
         }
 
-#CHOICES = [(service.id, service.name) for service in Service.objects.all()]
+
 
 #forms
 class SimpleOrderEditForm(forms.ModelForm):
-    #service = forms.ModelChoiceField(queryset=Service.objects.all(), widget=ListTextWidget())
-    #service = [(s.id, s.name) for s in service]
-    #service = ChoiceTxtField(queryset=Service.objects.order_by('-used'))
-    #queryset = Service.objects.order_by('-used')
-
-    #device = ChoiceTxtField(queryset=Device.objects.order_by('-used'), widget=ListTextWidget())
-    #device = ModelChoiceField(queryset=Device.objects.all(),
-    #                          widget=ListTextWidget())
-
     def __init__(self, *args, **kwargs):
         self.request = kwargs.pop('request', None)
         super(SimpleOrderEditForm, self).__init__(*args, **kwargs)
@@ -86,14 +112,8 @@ class SimpleOrderEditForm(forms.ModelForm):
     class Meta:
         model = Orders
         fields = ['category_service', 'device', 'serial', 'service', 'status', 'comment']
-        #field_classes = {
-        #    'service': service,
-        #}
+
         widgets = {
-            #'category': forms.Select(attrs={'class': 'form-control'}),
-                #forms.HiddenInput(),
-            #'device': forms.TextInput(attrs={'id':'ajax-device', 'class': 'form-control', 'autocomplete':'off'}),
-            #'service': forms.TextInput(attrs={'id':'ajax-service', 'class': 'form-control', 'autocomplete':'off'}),
             'serial': forms.TextInput(attrs={'class': 'form-control', 'autocomplete':'off'}),
             'status': forms.Select(attrs={'class': 'form-control', 'autocomplete':'on'}),
             'category_service': forms.Select(attrs={'class': 'form-control', 'autocomplete': 'on'}),
@@ -101,17 +121,9 @@ class SimpleOrderEditForm(forms.ModelForm):
         }
 
     def clean(self):
-        print('service', self.cleaned_data)
-        print('service f', self.fields['service'])
-        #cleaned_data =
-        #self.cleaned_data['service'] = 1
-        #service = cleaned_data.get("service")
         return super(SimpleOrderEditForm, self).clean()
 
 class FastOrderAddForm(forms.ModelForm):
-    #service = ChoiceTxtField(queryset=Service.objects.all().order_by('-used'))
-    #device = ChoiceTxtField(queryset=Device.objects.all().order_by('-used'))
-    #print('tyt1 ')
 
     def __init__(self, *args, **kwargs):
         #print('tyt2 ')
@@ -124,10 +136,8 @@ class FastOrderAddForm(forms.ModelForm):
         self.fields['service'] = ChoiceTxtField(queryset=Service.objects.filter(category_service__in=self.fields['category_service'].queryset).order_by('-used'))
         self.fields['service'].choices = [(k, v) for k, v in self.fields['service'].choices if k not in status_excluded]
         self.fields['device'].choices = [(k, v) for k, v in self.fields['device'].choices if k not in status_excluded]
-        #print('tyt - ', self.fields['device'].queryset)
         self.fields['service'].label = 'Услуга'
         self.fields['device'].label = 'Устройство'
-        print('tyt3 ')
 
 
     class Meta:

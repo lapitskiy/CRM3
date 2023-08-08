@@ -26,13 +26,16 @@ class ListTextWidget(forms.Select):
 #class ChoiceTxtField(forms.ModelChoiceField):
 #    widget=ListTextWidget()
 
+
 class PhoneInputField(forms.CharField):
     widget=ListTextWidget()
 
+'''
+варинат select2
 
 class PhoneSelect2Widget(s2forms.ModelSelect2Widget):
-    search_fields = ('phone__icontains',)
     queryset = Clients.objects.all().order_by('id')
+    search_fields = ('phone__icontains',)
 
 class RelatedAddForm(forms.ModelForm):
     phone = forms.ModelChoiceField(widget=PhoneSelect2Widget(attrs={'class': 'select2'}), queryset=Clients.objects.all())
@@ -45,12 +48,12 @@ class RelatedAddForm(forms.ModelForm):
     class Meta:
         model = Clients
         fields = ['phone']
+'''
 
 
 #my_field = forms.ModelChoiceField(queryset=MyModel.objects.all(), widget=ModelSelect2Widget(attrs={'class': 'select2'}), lookup_field='name')
 
-'''
-обычный рабчоий варинат!
+
 class RelatedAddForm(forms.ModelForm):
     phone = PhoneInputField()
 
@@ -114,6 +117,5 @@ class RelatedAddForm2(forms.ModelForm):
         }
         labels = {
         }
-
-
+'''
 
