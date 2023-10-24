@@ -20,6 +20,8 @@ import json
 from django.forms.models import model_to_dict
 import time
 
+from redis import Redis
+
 from datetime import datetime, timedelta
 
 class OrdersHomeView(RelatedMixin, ListView):
@@ -172,6 +174,12 @@ class OrderAddView(RelatedMixin, TemplateView):
 
     def get(self, request, *args, **kwargs):
         context = super().get_context_data(**kwargs)
+
+        redis_host = '127.0.0.1'
+        r = Redis(redis_host, socket_connect_timeout=1)  # short timeout for the tes
+        r.ping()
+        print('connected to redis "{}"'.format(redis_host))
+
         context['forms'] = self.getRelatedFormList(request=self.request)
         formOne = self.getForm()
         formOne.prefix = 'one_form'

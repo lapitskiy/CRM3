@@ -6,7 +6,7 @@
     module.exports = factory(require('jquery'))
   } else {
     // Browser globals
-    factory(jQuery)
+    factory(jQuery || window.django.jQuery)
   }
 }(function ($) {
   'use strict'
@@ -59,7 +59,7 @@
       }
       $element.on('select2:select', function (e) {
         var name = $(e.currentTarget).attr('name')
-        $('[data-select2-dependent-fields=' + name + ']').each(function () {
+        $('[data-select2-dependent-fields~=' + name + ']').each(function () {
           $(this).val('').trigger('change')
         })
       })
