@@ -1,5 +1,6 @@
 {% extends 'auth.html' %}
 {% load static %}
+{% load user_login_template_tags %}
 {% block title %}
 Login :: {{ block.super }}
 {% endblock %}
@@ -40,7 +41,10 @@ Login :: {{ block.super }}
 						<!--begin::Card body-->
 						<div class="card-body p-10 p-lg-20">
 							<!--begin::Form-->
-							<form class="form w-100" method="POST" novalidate="novalidate" id="kt_sign_in_form">
+                            {% show_error_login %}
+                        {{ error }}
+                            {% if 'superuser_is_none' not in error  %}
+                            <form class="form w-100" method="POST" novalidate="novalidate" id="kt_sign_in_form">
                                 {% csrf_token %}
 								<!--begin::Heading-->
 								<div class="text-center mb-11">
@@ -93,6 +97,7 @@ Login :: {{ block.super }}
 								<a href="../../demo14/dist/authentication/layouts/creative/sign-up.html" class="link-primary">Sign up</a></div>
 								<!--end::Sign up-->
 							</form>
+                            {% endif %}
 							<!--end::Form-->
 						</div>
 						<!--end::Card body-->

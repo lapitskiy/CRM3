@@ -2,4 +2,4 @@
 .gitignore
 __pycache__/
 venv/
-ServiceCRM3/settings.py
+ServiceCRM3/settings3.py

@@ -1,6 +1,5 @@
 from django import forms
 from .models import Clients
-from django_select2 import forms as s2forms
 import copy
 import re
 from django.core.exceptions import ValidationError
@@ -26,33 +25,8 @@ class ListTextWidget(forms.Select):
 #class ChoiceTxtField(forms.ModelChoiceField):
 #    widget=ListTextWidget()
 
-
 class PhoneInputField(forms.CharField):
     widget=ListTextWidget()
-
-'''
-варинат select2
-
-class PhoneSelect2Widget(s2forms.ModelSelect2Widget):
-    queryset = Clients.objects.all().order_by('id')
-    search_fields = ('phone__icontains',)
-
-class RelatedAddForm(forms.ModelForm):
-    phone = forms.ModelChoiceField(widget=PhoneSelect2Widget(attrs={'class': 'select2'}), queryset=Clients.objects.all())
-
-    def __init__(self, *args, **kwargs):
-        self.request = kwargs.pop('request', None)
-        super(RelatedAddForm, self).__init__(*args, **kwargs)
-        self.fields['phone'].label = 'Телефон'
-
-    class Meta:
-        model = Clients
-        fields = ['phone']
-'''
-
-
-#my_field = forms.ModelChoiceField(queryset=MyModel.objects.all(), widget=ModelSelect2Widget(attrs={'class': 'select2'}), lookup_field='name')
-
 
 class RelatedAddForm(forms.ModelForm):
     phone = PhoneInputField()
@@ -66,9 +40,9 @@ class RelatedAddForm(forms.ModelForm):
     #phone = ChoiceTxtField(queryset=Clients.objects.order_by('-phone'))
 
     class Meta:
-        model = Clients
-        fields = ['phone']
-        widgets = {
+         model = Clients
+         fields = ['phone']
+         widgets = {
             #'name': forms.TextInput(attrs={'class': 'form-control', 'autocomplete': 'off'}),
             # 'phone': forms.TextInput(attrs={'class': 'form-control', 'autocomplete':'off'}),
         }

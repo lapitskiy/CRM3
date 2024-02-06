@@ -7,14 +7,12 @@ from django.forms.models import model_to_dict
 # Create your models here.GHH
 class Clients(models.Model):
     name = models.CharField(max_length=150, blank=True, verbose_name='Имя')
-    #phone_regex = RegexValidator(regex=r'^\+?1?\d{9,15}$', message="Phone number must be entered in the format: '+79998887766'. Up to 15 digits allowed.")
-    #phone = models.CharField(validators=[phone_regex], max_length=17, verbose_name='Телефон') # validators should be a list
+    phone_regex = RegexValidator(regex=r'^\+?1?\d{9,15}$', message="Phone number must be entered in the format: '+79998887766'. Up to 15 digits allowed.")
+    phone = models.CharField(validators=[phone_regex], max_length=17, verbose_name='Телефон') # validators should be a list
     created_at = models.DateTimeField(auto_now_add=True, verbose_name='Создан')
     updated_at = models.DateTimeField(auto_now=True, verbose_name='Обновлен')
     #related_uuid = models.CharField(max_length=22, blank=True, verbose_name='uuid')
-    #related_uuid = models.JSONField(blank=True) # json dict
     uuid = models.ManyToManyField('RelatedUuid')
-    phone = models.ForeignKey('Phone', blank=True, on_delete=models.PROTECT, null=True, verbose_name='Phone', related_name='get_phone')
 
     def get_absolute_url(self):
         return reverse('view_clients', kwargs={'pk': self.pk})
@@ -56,10 +54,3 @@ class RelatedUuid(models.Model):
         verbose_name = 'uuid'
         verbose_name_plural = 'uuid'
         ordering = ['pk']
-
-class Phone(models.Model):
-    phone_regex = RegexValidator(regex=r'^\+?1?\d{9,15}$', message="Phone number must be entered in the format: '+79998887766'. Up to 15 digits allowed.")
-    phone = models.CharField(validators=[phone_regex], max_length=17, verbose_name='Phone') # validators should be a list
-
-    def __str__(self):
-        return str(self.phone)

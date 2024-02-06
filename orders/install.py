@@ -25,7 +25,7 @@ REPO_DATA = {
 }
 
 def demodata():
-    Category_service.objects.update_or_create(name='Часы', category='watch')
+    Category_service.objects.update_or_create(name='Часы')
     # category
     Category.objects.update_or_create(id=1, title='fast', category='fast')
     Category.objects.update_or_create(id=2, title='simple', category='simple')

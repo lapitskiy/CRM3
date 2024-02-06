@@ -54,6 +54,12 @@ def register(request):
     return render(request, 'users/register.html', {"form": form})
 
 def user_login(request):
+    context = {}
+    context['error'] = ''
+    superuser = User.objects.filter(is_superuser=True).first()
+    if superuser is None:
+        context['error'] = 'superuser_is_none'
+
     if request.method == 'POST':
         form = UserLoginForm(data=request.POST)
         if form.is_valid():
@@ -61,8 +67,8 @@ def user_login(request):
             login(request, user)
             return redirect('news_home')
     else:
-        form = UserLoginForm()
-    return render(request, 'users/login.html', {"form": form})
+        context['form'] = UserLoginForm()
+    return render(request, 'users/login.html', context)
 
 
 def user_logout(request):

@@ -36,6 +36,7 @@ class PluginsTestView(ListView):
             self.add_plugin_in_db(models=self.request.GET.get('models'))
         context['сountPluginDB'] = self.checkCountPluginDB()
         context['plugins_check'] = self.checkPluginStruc()
+        context['models_check'] = self.checkModelsStruc()
         #print('context ', context)
         return context
 
@@ -69,13 +70,27 @@ class PluginsTestView(ListView):
                 dictt[tag] = dict2
         return dictt
 
+    def checkModelsStruc(self, **kwargs):
+        ddict = {}
+        default_category = PluginsCategory.objects.filter(pk=1).first()
+        if default_category is None:
+            PluginsCategory.objects.update_or_create(pk=1, title='undefined')
+            ddict['error'] = 'default_category_is_none'
+        return ddict
+
     def add_plugin_in_db(self, **kwargs):
         if 'models' in kwargs:
             models = kwargs['models']
             cfgPath = models + '.install'
             cfg_lib = importlib.import_module(cfgPath)
             cfg = cfg_lib.REPO_DATA
+            print('cfg: ', cfg)
             Plugins.objects.update_or_create(title=cfg['title'], module_name=cfg['module_name'], description=cfg['description'], version=cfg['version'], related_class_name=cfg['related_class_name'])
+
+
+
+
+            print('Plugins.objects.update_or_create')
     #def get_queryset(self):
     #    return Plugins.objects.filter(is_active=True)
 

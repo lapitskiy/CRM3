@@ -1,0 +1,50 @@
+{% block javascript %}
+    <script>
+    $(document).ready(function () {
+            $('#ajax_phone_{{ widget.name }}').keyup(function () {
+                // create an AJAX call
+                $.ajax({
+                    data: $(this).serialize(), // get the form data
+                    url: "{% url 'ajax_request' %}?related=clients&data={{ widget.name }}",
+                    // on success
+                    success: function (response) {
+                        if (response.is_exist == true) {
+                            $("#ajax-{{ widget.name }}").text(response.is_taken.name);
+                            var dataList = document.getElementById('{{ widget.name }}');
+                            var input = document.getElementById('ajax_phone_{{ widget.name }}');
+                            var request = new XMLHttpRequest();
+                            document.getElementById('{{ widget.name }}').innerHTML = '';
+                            response.is_taken.forEach(function(item) {
+                                    console.log(item)
+                                    var option = document.createElement('option');
+                                    // Устанавливаем значение, используя элементы массива JSON.
+                                    option.value = item.phone;
+                                    option.title = item.name;
+                                    option.text = item.phone;
+                                    // Добавляем элемент <option> к <datalist>.
+                                    dataList.appendChild(option);
+                                  });
+                            input.placeholder = "e.g. datalist";
+                            input.placeholder = "Введите название...";
+                            }
+                    },
+                    error: function (response) {
+                        console.log(response.responseJSON.errors)
+                    }
+                });
+                return false;
+            });
+})
+
+    </script>
+{% endblock javascript %}
+<br>
+<input id="ajax_phone_{{ widget.name }}" list="{{ widget.name }}"
+    {% if widget.value != None %} name="{{ widget.name }}" value="{{ widget.value}}" {% endif %}
+    {% include "django/forms/widgets/attrs.html" %} autocomplete="off">
+    <span class="badge rounded-pill bg-warning text-dark" id="ajax-{{ widget.name }}" name="ajax-{{ widget.name }}"></span>
+
+<datalist id="{{ widget.name }}">
+    <optgroup label="">
+    </optgroup>
+</datalist><br>

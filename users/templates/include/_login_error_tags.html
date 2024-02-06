@@ -1,0 +1,9 @@
+<b>{{ error }}</b>
+
+{% if error == 'superuser_is_none' %}
+<ul>
+    <li>Отсуствует root пользователь, необходимо создать супер пользователя (superuser). Вы можете создать его в ручную через консоль
+        (python manage.py createsuperuser)
+    или использовать форму ниже</li>
+</ul>
+{% endif %}

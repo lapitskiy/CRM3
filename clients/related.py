@@ -66,8 +66,10 @@ class AppRelated(object):
         else:
             related_form = RelatedAddForm(request_post, prefix=self.prefix)
             related_form.prefix = self.prefix
+            print('request_post ', request_post)
             if related_form.is_valid():
                 context['valid'] = True
+                print('TYT zxc')
             else:
                 context['valid'] = False
             if request_post['clients-phone'] == '':

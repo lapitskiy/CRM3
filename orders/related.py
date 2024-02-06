@@ -112,3 +112,8 @@ class AppRelated():
 
     def passCleanQueryset(self, **kwargs):
         return True
+
+    # если это связанный объект, который не имеет формы или не требует обновления, то возврщает True и пропускается в
+    # utils checkRelatedIsValidDict, как не требующий добавления для проверки форимы и обновления текущей
+    def passAddUpdate(self, **kwargs):
+        return False

@@ -93,6 +93,7 @@ class Status(models.Model):
         verbose_name_plural = 'Статусы'
         ordering = ['title']
 
+# fast - быстрый заказ simple обычный
 class Category(models.Model):
     title = models.CharField(max_length=150, verbose_name='Наименования категории')
     category = models.CharField(max_length=150, db_index=True, unique=True, verbose_name='Категория')
