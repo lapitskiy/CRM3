@@ -226,7 +226,9 @@
             <b>{{ item.id }}</b> </h3>
         <div class="card-toolbar">
             {% if item.category_id == 2 %}
-                Статус: &nbsp<span class="badge rounded-pill text-dark" style="background-color: {{ item.status__color }}"> {{ item.status__title }} </span>&nbsp<a id="status_update" href="?id={{ item.id }}"><i class="fa-sharp fa-solid fa-lock-open"></i></a>
+                Статус:
+{% status_changer item.id  %}
+                &nbsp<span class="badge rounded-pill text-dark" style="background-color: {{ item.status__color }}"> {{ item.status__title }} </span>&nbsp<a id="status_update" href="?id={{ item.id }}"><i class="fa-sharp fa-solid fa-lock-open"></i></a>
             {% endif %}
             &nbsp; Дата: &nbsp;<span class="badge rounded-pill bg-dark"> {{ item.created_at }} </span>&nbsp;&nbsp;
             <button type="button" class="btn btn-sm btn-light">

@@ -1,8 +1,18 @@
 from django import template
 from django.utils.html import mark_safe
 from django.http import HttpRequest
+from ..models import Status, Orders
 
 register = template.Library()
+
+@register.inclusion_tag('include/_order_status_changer.html')
+def status_changer(id):
+    ddict = {}
+    order = Orders.objects.get(pk=id)
+    ddict['current_satus'] = order.status
+    ddict['all_status'] = Status.objects.all().exclude(pk=order.status.pk)
+
+    return ddict
 
 @register.simple_tag
 def url_replace(req, **kwargs):
