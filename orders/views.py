@@ -310,11 +310,31 @@ def ajax_request(request):
     """Check ajax"""
     model = request.GET.get('model')
     method = request.GET.get('method')
+    related = request.GET.get('related')
+    data = request.GET.get('data')
     id = request.GET.get('id')
-
     if method:
-        print('method ', method)
-        print('id ', id)
+        if 'update_status' in method:
+            status = request.GET.get('status')
+            print('id ', id)
+            print('status ', status)
+            if status and id:
+                print('tyt0')
+                get_status_obj = Status.objects.get(title=status)
+                print('tyt1')
+                Orders.objects.filter(pk=id).update(status=get_status_obj)
+                print('tyt2')
+                response = {
+                    'is_taken': 'Status update',
+                    'is_exist': True,
+                }
+            else:
+                response = {
+                    'is_taken': 'Status not update',
+                    'is_exist': False,
+                }
+            return JsonResponse(response)
+
     if model:
         if 'service' in model:
             service = request.GET.get('one_form-service', None)
@@ -356,12 +376,6 @@ def ajax_request(request):
             return JsonResponse(response)
 
     """Check ajax RELATED"""
-    related = request.GET.get('related')
-    data = request.GET.get('data')
-    #print('request.GET ', request.GET)
-    #print('related ', related)
-    #print('texgt ', request.GET.get('clients-phone'))
-    #print('data ', data)
 
     if related and data:
         formPath = related + '.related'

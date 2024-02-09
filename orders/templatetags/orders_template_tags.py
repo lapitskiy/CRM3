@@ -11,7 +11,7 @@ def status_changer(id):
     order = Orders.objects.get(pk=id)
     ddict['current_satus'] = order.status
     ddict['all_status'] = Status.objects.all().exclude(pk=order.status.pk)
-
+    ddict['id'] = id
     return ddict
 
 @register.simple_tag

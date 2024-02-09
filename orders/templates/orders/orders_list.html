@@ -225,11 +225,6 @@
             {% endif %}
             <b>{{ item.id }}</b> </h3>
         <div class="card-toolbar">
-            {% if item.category_id == 2 %}
-                Статус:
-{% status_changer item.id  %}
-                &nbsp<span class="badge rounded-pill text-dark" style="background-color: {{ item.status__color }}"> {{ item.status__title }} </span>&nbsp<a id="status_update" href="?id={{ item.id }}"><i class="fa-sharp fa-solid fa-lock-open"></i></a>
-            {% endif %}
             &nbsp; Дата: &nbsp;<span class="badge rounded-pill bg-dark"> {{ item.created_at }} </span>&nbsp;&nbsp;
             <button type="button" class="btn btn-sm btn-light">
                 <a href="edit/{{ item.id }}">Редактировать</a>
@@ -237,6 +232,14 @@
         </div>
     </div>
     <div class="card-body">
+    <div >
+          {% if item.category_id == 2 %}
+                Статус:
+{% status_changer item.id  %}
+                &nbsp<span class="badge rounded-pill text-dark" style="background-color: {{ item.status__color }}"> {{ item.status__title }} </span>&nbsp<a id="status_update" href="?id={{ item.id }}"><i class="fa-sharp fa-solid fa-lock-open"></i></a>
+            {% endif %}
+    </div><br>
+
         <i class="fa-solid fa-up-right-from-square"></i><a href="one/{{ item.id }}" target="_blank">Открыть в новом окне</a><br><br>
         Принято: {{ item.category_service__name }}<br>
         В ремонте: {{ item.device__name }}<br>
