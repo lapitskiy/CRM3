@@ -171,7 +171,7 @@
                         <div class="d-flex align-items-center mb-2">
                             <a id="list-{{ item.id }}" data-bs-toggle="list" href="#id-list-{{ item.id }}" role="tab" aria-controls="home" class="active text-gray-900 text-hover-primary fs-2 fw-bold me-1">№ {{ item.id }}</a>
                             {% if item.category_id == 2 %}
-                            <div class="bullet bullet-dot me-2 h-10px w-10px" style="background-color:{{ item.status__color }};"></div>
+                            <div id="status_color_{{ item.id }}" class="status_color_{{ item.id }} bullet bullet-dot me-2 h-10px w-10px" style="background-color:{{ item.status__color }};"></div>
                             {% endif %}
                             {% for related_item in related_list %}
                                 {% if related_item.related_uuid and item.uuid__related_uuid == related_item.uuid and related_item.related_use == 'form' %}
@@ -234,10 +234,10 @@
     <div class="card-body">
     <div >
           {% if item.category_id == 2 %}
-                Статус:
-{% status_changer item.id  %}
-                &nbsp<span class="badge rounded-pill text-dark" style="background-color: {{ item.status__color }}"> {{ item.status__title }} </span>&nbsp<a id="status_update" href="?id={{ item.id }}"><i class="fa-sharp fa-solid fa-lock-open"></i></a>
-            {% endif %}
+             Статус:
+             {% status_changer item.id  %}
+              <div class="status_color_{{ item.id }} bullet bullet-dot me-2 h-10px w-10px" style="background-color:{{ item.status__color }};"></div>
+          {% endif %}
     </div><br>
 
         <i class="fa-solid fa-up-right-from-square"></i><a href="one/{{ item.id }}" target="_blank">Открыть в новом окне</a><br><br>

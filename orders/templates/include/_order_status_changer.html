@@ -3,16 +3,18 @@
     $(document).ready(function () {
              $(document).on('change', '#update_status', function() {
                 var status = $(this).val();
-                alert(status);
                 // create an AJAX call
                 $.ajax({
                     data: $(this).serialize(), // get the form data
                     url: "{% url 'ajax_request' %}?method=update_status&id={{ id }}&status="+status,
                     // on success
                     success: function (response) {
-                        console.log(status)
                         if (response.is_exist == true) {
-                            console.log(response.is_taken)
+                            var BackgroundColor=response.color;
+                            var statusColor = document.getElementsByClassName("status_color_{{ id }}");
+                            statusColor[0].style.backgroundColor=BackgroundColor;
+                            statusColor[1].style.backgroundColor=BackgroundColor;
+                            console.log('ajax response true')
                         }
                     },
                     // on error
@@ -25,22 +27,13 @@
                 return false;
             });
 })
-    </script>
+</script>
 {% endblock javascript %}
 
-<style>
-select option:hover{
-  color: var(--hover-color);
-}
-select option:checked {
-    box-shadow: 0 0 10px 100px #5ab738 inset;
-}
-</style>
-id = {{ id }}
 <select id="update_status" class="selectpicker" >
-  <option style="color:{{ current_satus.color }};">{{ current_satus }} {{ current_satus.color }}</option>
+  <option>{{ current_satus }}</option>
   {% for status in all_status %}
-      <option style="--hover-color:red;">{{ status }} {{ status.color }}</option>
+      <option>{{ status }}</option>
   {% endfor %}
 </select>
 

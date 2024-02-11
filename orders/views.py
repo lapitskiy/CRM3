@@ -308,26 +308,26 @@ class OrderAddView(RelatedMixin, TemplateView):
 
 def ajax_request(request):
     """Check ajax"""
+    print('tyt0')
     model = request.GET.get('model')
     method = request.GET.get('method')
     related = request.GET.get('related')
     data = request.GET.get('data')
     id = request.GET.get('id')
     if method:
+        print('tyt1')
         if 'update_status' in method:
             status = request.GET.get('status')
-            print('id ', id)
-            print('status ', status)
             if status and id:
-                print('tyt0')
-                get_status_obj = Status.objects.get(title=status)
-                print('tyt1')
-                Orders.objects.filter(pk=id).update(status=get_status_obj)
                 print('tyt2')
+                get_status_obj = Status.objects.get(title=status)
+                Orders.objects.filter(pk=id).update(status=get_status_obj)
                 response = {
                     'is_taken': 'Status update',
+                    'color': get_status_obj.color,
                     'is_exist': True,
                 }
+                print('response ok')
             else:
                 response = {
                     'is_taken': 'Status not update',
