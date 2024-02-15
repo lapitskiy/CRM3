@@ -130,18 +130,26 @@ class RelatedMixin(object):
     # [EN] return related data from class get_related_data() in app models
     # [RU] возвращает связанные данные на основе выборки qry или page
     # 1) kwargs['page'] - возвращает связанные данные на основе полученного paginate page query
+    # query_paginator_page - метод для работы с query после функции paginator
     def getDataListRelated(self, **kwargs) -> list:
         data_related_list = []
         related = self.checkRelated()
-
         if kwargs['method'] == 'query_paginator_page':
-            qry = kwargs['query']
-            qry_uuid_list = list(qry.object_list.values_list('uuid__related_uuid', flat=True))
+            #print('tyt', qry.object_list.)
+            if 'qry_uuid_list' in kwargs:
+                qry_uuid_list = kwargs['qry_uuid_list']
+                print('qry_uuid_list ', qry_uuid_list)
+            else:
+                qry = kwargs['query']
+                qry_uuid_list = list(qry.object_list.values_list('uuid__related_uuid', flat=True))
             # q = q.value_list('uuid')
-            #rint('qry_uuid_list ', qry_uuid_list)
         if kwargs['method'] == 'get_one_obj_by_qry':
-            qry = kwargs['query']
-            qry_uuid_list = list(qry.values_list('uuid__related_uuid', flat=True))
+            if 'qry_uuid_list' in kwargs:
+                qry_uuid_list = kwargs['qry_uuid_list']
+                print('qry_uuid_list ', qry_uuid_list)
+            else:
+                qry = kwargs['query']
+                qry_uuid_list = list(qry.values_list('uuid__related_uuid', flat=True))
             # q = q.value_list('uuid')
 
         if related:

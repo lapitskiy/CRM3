@@ -48,6 +48,7 @@ class Orders(models.Model):
 
 
     def get_related_data(self):
+
         data = {
             'related_use': 'data',
             'module_name': 'Orders',

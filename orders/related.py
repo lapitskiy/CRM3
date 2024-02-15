@@ -94,7 +94,7 @@ class AppRelated():
                         #logger.info('%s related_result %s', __name__, type(intersection))
                         #print('intersection ', intersection)
                         uudi_filter_related_list = query
-                        print('uudi_filter_related_list ', uudi_filter_related_list)
+                        #print('uudi_filter_related_list ', uudi_filter_related_list)
 
                         '''
                         for z in query:

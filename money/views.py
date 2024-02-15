@@ -45,6 +45,12 @@ class MoneyHomeView(RelatedMixin, ListView):
         context['info'] = self.getInfo(getQ)
         context['title'] = 'Деньги'
         list_orders = getQ.values()
+        qry_uuid_list = list(getQ.values_list('money__uuid__related_uuid', flat=True))
+        print(type(getQ))
+        print(getQ)
+        print(type(getQ.values()))
+        print(getQ.values())
+        #list_orders = getQ
         #print('list_orders ', list_orders)
         #list_orders = list_orders.all()
         #print('list_orders', list_orders.all())
@@ -58,6 +64,8 @@ class MoneyHomeView(RelatedMixin, ListView):
         except EmptyPage:
             orders_page = paginator.page(paginator.num_pages)
         #print('context info', context['info'])
+        context['related_list'] = self.getDataListRelated(query=orders_page, qry_uuid_list=qry_uuid_list, method='query_paginator_page')
+        print('### money related_list ', context['related_list'])
         context['request'] = self.request
         context['get'] = self.request.GET
         #page_list = orders_page.object_list.values()
@@ -68,6 +76,7 @@ class MoneyHomeView(RelatedMixin, ListView):
         #print('qry_page ', qry_page.object_list.values_list('pk', flat=True))
         #qry_uuid_list = list(qry.object_list.values_list('uuid__related_uuid', flat=True))
         context['money_list'] = list(qry_page.object_list.values('pk', 'id', 'prepayment', 'created_at', 'money_id'))
+
         #context['money_list'] = orders_page.object_list
         #getIdMoney = orders_page.object_list
         #print('money_list ', context['money_list'])
