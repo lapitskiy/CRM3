@@ -14,7 +14,7 @@ from plugins.models import Plugins
 
 register = template.Library()
 
-@register.inclusion_tag('plugins/plugins_tags.html')
+@register.inclusion_tag('include/_plugins_detail_tags.html')
 def action_plugin(arg1=0, tag='', form=None):
     context = {}
     plugin = Plugins.objects.get(pk=arg1)

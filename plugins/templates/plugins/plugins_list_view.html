@@ -8,26 +8,24 @@
 {% block content %}
 
  {% for item in plugins %}
-                <div class="card" style="width: 18rem;">
+                <div class="card" style="width: 18rem; margin-bottom: 15px;">
                     <div class="card-header">
 
                         <h5 class="card-title">{{ item.title }}</h5>
                     </div>
                     <img src="{{ item.photo }}" class="card-img-top" alt="{{ item.title }}">
                     <div class="card-body">
-
-                        <p class="card-text">{{ item.description }}</p>
+                        Описание: <p class="card-text">{{ item.description }}</p>
                     </div>
 
                     <div class="card-body">
                     <p><a href="{{ item.get_absolute_url }}" class="btn btn-primary">Подробнее</a></p>
                     </div>
                     <div class="card-footer text-muted">
-                        Обновлено: {{ item.updated_at|date:"Y-m-d H:i" }}
+                        Обновлено: {{ item.updated_at|date:"Y-m-d H:i" }}<br>
                         Загрузок:  {{ item.loads }}
                     </div>
                 </div>
-<br><br>
             {% endfor %}
 
 

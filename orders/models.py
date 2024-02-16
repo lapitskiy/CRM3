@@ -47,21 +47,29 @@ class Orders(models.Model):
             pass
 
 
-    def get_related_data(self):
-
-        data = {
-            'related_use': 'data',
-            'module_name': 'Orders',
-            'Серийный': self.serial,
-            'Комментарий': self.comment,
-            'Создан': self.created_at,
-            'Статус': self.status,
-            'Услуга': self.service,
-            'Устройство': self.device,
-            'Категория приемки': self.category,
-            'Категория услуги': self.category_service,
-            'related_uuid': list(self.uuid.values_list('related_uuid', flat=True)),
+    def get_related_data(self, **kwargs):
+        data = {}
+        if 'link' in kwargs:
+            data['link'] = {
+                'related_use': 'link',
+                'html': '<a href="/orders/one/' + self.pk + '" target="_blank">Заказ ' + self.pk + '</a>',
+                'pk': self.pk,
+                'related_uuid': list(self.uuid.values_list('related_uuid', flat=True)),
             }
+        if 'value_dict' in kwargs:
+            data['value'] = {
+                'related_use': 'value',
+                'module_name': 'Orders',
+                'Серийный': self.serial,
+                'Комментарий': self.comment,
+                'Создан': self.created_at,
+                'Статус': self.status,
+                'Услуга': self.service,
+                'Устройство': self.device,
+                'Категория приемки': self.category,
+                'Категория услуги': self.category_service,
+                'related_uuid': list(self.uuid.values_list('related_uuid', flat=True)),
+                }
         return data
 
     def get_related_dict_data(self):

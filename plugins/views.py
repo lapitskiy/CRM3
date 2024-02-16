@@ -3,7 +3,7 @@ from django.http import HttpResponse, JsonResponse
 from django.views.generic import ListView, DetailView, CreateView
 from django.urls import reverse_lazy
 from .forms import RelatedPluginForm
-from .models import Plugins, PluginsCategory
+from .models import Plugins, PluginsCategory, RelatedFormat
 from plugins import settings_plugin
 from .utils import RelatedMixin
 import time
@@ -37,6 +37,7 @@ class PluginsTestView(ListView):
         context['сountPluginDB'] = self.checkCountPluginDB()
         context['plugins_check'] = self.checkPluginStruc()
         context['models_check'] = self.checkModelsStruc()
+        context['relatedformat_check'] = self.checkRelatedFormatExist()
         #print('context ', context)
         return context
 
@@ -76,6 +77,16 @@ class PluginsTestView(ListView):
         if default_category is None:
             PluginsCategory.objects.update_or_create(pk=1, title='undefined')
             ddict['error'] = 'default_category_is_none'
+        return ddict
+
+    def checkRelatedFormatExist(self, **kwargs):
+        ddict = {}
+        getObj = RelatedFormat.objects.filter(pk=1).first()
+        if getObj is None:
+            RelatedFormat.objects.update_or_create(pk=1, format='link')
+            RelatedFormat.objects.update_or_create(pk=2, format='value')
+            RelatedFormat.objects.update_or_create(pk=3, format='form')
+            ddict['error'] = 'default_related_format_is_none'
         return ddict
 
     def add_plugin_in_db(self, **kwargs):

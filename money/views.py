@@ -42,6 +42,8 @@ class MoneyHomeView(RelatedMixin, ListView):
         #    getQ = self._get_cached_queryset()
         context = super(MoneyHomeView, self).get_context_data(**kwargs)
         getQ = self.getMoneyQuery()
+        print('tyt11 ', type(getQ))
+        print('tyt22 ', getQ)
         context['info'] = self.getInfo(getQ)
         context['title'] = 'Деньги'
         list_orders = getQ.values()
@@ -122,7 +124,7 @@ class MoneyHomeView(RelatedMixin, ListView):
             end_date = datetime.strptime(date2_get, '%Y-%m-%d') + timedelta(days=1)
             date_obj = Prepayment.objects.filter(created_at__range=[date_get, end_date], money__in=money_obj)
             return date_obj
-        return Money.objects.filter(q_object)
+        return Prepayment.objects.all()
 
     def getInfo(self, query):
         #money

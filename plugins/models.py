@@ -13,6 +13,7 @@ class Plugins(models.Model):
     category = models.ForeignKey('PluginsCategory', default=1,  on_delete = models.SET_DEFAULT, null=True, verbose_name='Категория', related_name='get_category')
     is_migrate = models.BooleanField(default=False, verbose_name='Миграция')
     related = models.ManyToManyField('self')
+    related_format = models.ManyToManyField('RelatedFormat')
     related_class_name = models.CharField(max_length=150, blank=True, verbose_name='Имя класса для связи')
 
 
@@ -46,3 +47,14 @@ class PluginsCategory(models.Model):
         verbose_name = 'Категория'
         verbose_name_plural = 'Категории'
         ordering = ['title']
+
+class RelatedFormat(models.Model):
+    format = models.CharField(max_length=25, db_index=True, verbose_name='Наименования связанного формата')
+
+    def __str__(self):
+        return self.format
+
+    class Meta:
+        verbose_name = 'Связанный формат'
+        verbose_name_plural = 'Связанные форматы'
+        ordering = ['format']

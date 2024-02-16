@@ -13,7 +13,7 @@ logger = logging.getLogger('crm3_info')
 class AppRelated():
     prefix = 'orders'
     related_module_name = 'orders'
-    related_format = 'data'
+    related_format = 'value'
 
     # если переменная имеет возможность иметь несколько uuid на одну запись, тогда здесь идет обрабтока такой возможности
     def checkUpdate(self, **kwargs):

@@ -8,9 +8,9 @@
             {% else %}
                 <p><a href="{{ plugins_item.get_absolute_url }}demodata" class="btn btn-primary">Установить demo данные</a></p>
             {% endif %}
-            <p><a href="{{ plugins_item.get_absolute_url }}deactive" class="btn btn-primary">Деактивировать</a></p>
+            <p><a href="{{ plugins_item.get_absolute_url }}deactive" class="btn btn-primary">Деактивировать apps</a></p>
         {% else %}
-            <p><a href="{{ plugins_item.get_absolute_url }}active" class="btn btn-success">Активировать</a></p>
+            <p><a href="{{ plugins_item.get_absolute_url }}active" class="btn btn-success">Активировать apps</a></p>
             <p><a href="{{ plugins_item.get_absolute_url }}delete" class="btn btn-warning">Удалить</a></p>
         {% endif %}
 
