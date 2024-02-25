@@ -3,7 +3,8 @@ from .models import Prints
 from django.db.models import Q
 
 class AppRelated(object):
-    prefix = 'prints'
+    prefix = 'goods'
+    related_module_name = 'goods'
     related_format = 'link' # показывает это или форма будет или просто связанные данные в виде текста или ссылки
     related_data_format = 'link'
 

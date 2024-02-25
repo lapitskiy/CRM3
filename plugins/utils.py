@@ -198,8 +198,10 @@ class RelatedMixin(object):
                             except ObjectDoesNotExist:
                                 pass
                 if kwargs['method'] == 'query_paginator_page':
-                    #print('qry z ', qry.object_list)
-                    #print('qry zч ', qry.__class__)
+                    print('====================')
+                    print('module_name: ', cls_related.related_module_name)
+                    print('related_format: ', cls_related.related_format)
+
                     if cls_related.related_format == 'form':
                         for uuid in qry_uuid_list:
                             try:

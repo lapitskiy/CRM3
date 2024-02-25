@@ -1,3 +1,4 @@
+
 27.07: остановился на storehouse\utils и forms.py, надо добавить проверку querset через форму
 29.07: надо передать в форму request.user
 https://medium.com/analytics-vidhya/django-how-to-pass-the-user-object-into-form-classes-ee322f02948c
@@ -62,3 +63,14 @@ url_replace проблма
 259 --- 0.3261268138885498 seconds ---
 
 2)
+
+21.02
+добавить в поагины relayedvformat
+это список form, text, link итд
+в виде manytomany и выбирать какие форматы связей отдает аппс другим
+в настройках приложения сделать какой related format принимает apps
+
+25.02
+passAddUpdate надо удалить из проверки формы в utils getRelatedFormList, и сделать просто проверку наличия form в related_format
+
+в utils getDataListRelated подумать как выводить связанные данные из list

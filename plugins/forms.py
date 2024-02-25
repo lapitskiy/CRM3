@@ -1,5 +1,5 @@
 from django import forms
-from .models import Plugins
+from .models import Plugins, RelatedFormat
 from django.utils.safestring import mark_safe
 import re
 from django.core.exceptions import ValidationError
@@ -34,8 +34,12 @@ class RelatedPluginForm(forms.ModelForm):
             raise ValidationError('Название не должно начинаться с цифры')
         return title
 
+class RelatedFormatPluginForm(forms.ModelForm):
+    class Meta:
+        model = Plugins
+        fields = ['related_format',]
 
-   #relatedName = forms.ModelChoiceField(queryset=Plugins.objects.values_list('module_name'), required=False)
-    #related = forms.ModelChoiceField(queryset=Plugins.objects.all(), label='Плагин', empty_label='Выбрать',
-     #                                 widget=forms.Select(attrs={'class': 'form-control'}))
+    def __init__(self, *args, **kwargs):
+        super(RelatedFormatPluginForm, self).__init__(*args, **kwargs)
+        self.fields['related_format'] = forms.ModelChoiceField(label='', queryset=RelatedFormat.objects.all(), widget=forms.Select(attrs={'class': 'form-control'}))
 

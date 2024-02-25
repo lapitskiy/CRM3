@@ -5,6 +5,7 @@ from django.db.models import Q
 
 class AppRelated(object):
     prefix = 'clients'
+    related_module_name = 'clients'
     related_format = 'form'
     #related_data_format = 'form'
 

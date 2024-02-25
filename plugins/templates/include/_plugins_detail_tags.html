@@ -15,6 +15,7 @@
         {% endif %}
 
         <div class="card-footer">
+        <h1>Связанные приложения</h1>
             Плагин связан с:
             <div class="col-md-3">
                 {% for obj in isRelated %}
@@ -24,14 +25,31 @@
             Связать c этим плагином:
                 <form action="{{ plugins_item.get_absolute_url }}related" method="POST">
                     {% csrf_token %}
-                    {{ form.non_field_errors }}
-                    {{ form.as_p }}
+                    {{ form_related.non_field_errors }}
+                    {{ form_related.as_p }}
                     <button type="submit" name="related_add" class="btn btn-primary btn-block">Связать</button>
                     <button type="submit" name="related_del" class="btn btn-primary btn-block">Отвязать</button>
                 </form>
             </div>
         </div>
-
+        <div class="card-footer">
+        <h1>Связанные форматы</h1>
+            Форматы приложения:
+            <div class="col-md-3">
+                {% for obj in isRelatedFormat %}
+                    - {{ obj }}<br>
+                {% endfor %}
+            <br>
+            Указать форматы работы приложения:
+                <form action="{{ plugins_item.get_absolute_url }}relatedformat" method="POST">
+                    {% csrf_token %}
+                    {{ form_relatedformat.non_field_errors }}
+                    {{ form_relatedformat.as_p }}
+                    <button type="submit" name="relatedformat_add" class="btn btn-primary btn-block">Добавить</button>
+                    <button type="submit" name="relatedformat_del" class="btn btn-primary btn-block">Убрать</button>
+                </form>
+            </div>
+        </div>
     {% else %}
         <div class="alert alert-success" role="alert">
             Плагин удален

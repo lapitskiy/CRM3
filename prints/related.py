@@ -4,6 +4,7 @@ from django.db.models import Q
 
 class AppRelated(object):
     prefix = 'prints'
+    related_module_name = 'prints'
     related_format = 'link' # показывает это или форма будет или просто связанные данные в виде текста или ссылки
     related_data_format = 'link'
 

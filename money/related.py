@@ -1,10 +1,12 @@
 from .forms import RelatedAddForm
 from .models import Money, Prepayment, RelatedUuid
 from django.db.models import Q
+from plugins.models import Plugins
 
 class AppRelated(object):
     prefix = 'money'
-    related_format = 'form'
+    related_module_name = 'money'
+    related_format = Plugins.objects.get(module_name=related_module_name).related_format.values_list('format', flat=True)
     related_data_format = 'form'
 
     def checkUpdate(self, **kwargs):

@@ -10,6 +10,7 @@ logger = logging.getLogger('crm3_info')
 
 class AppRelated(object):
     prefix = 'storehouse'
+    related_module_name = 'storehouse'
     related_format = 'select'
     related_data_format = 'text'
 

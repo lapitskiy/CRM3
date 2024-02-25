@@ -2,7 +2,7 @@ from django.shortcuts import render, get_object_or_404, redirect
 from django.http import HttpResponse, JsonResponse
 from django.views.generic import ListView, DetailView, CreateView
 from django.urls import reverse_lazy
-from .forms import RelatedPluginForm
+from .forms import RelatedPluginForm, RelatedFormatPluginForm
 from .models import Plugins, PluginsCategory, RelatedFormat
 from plugins import settings_plugin
 from .utils import RelatedMixin
@@ -86,6 +86,7 @@ class PluginsTestView(ListView):
             RelatedFormat.objects.update_or_create(pk=1, format='link')
             RelatedFormat.objects.update_or_create(pk=2, format='value')
             RelatedFormat.objects.update_or_create(pk=3, format='form')
+            RelatedFormat.objects.update_or_create(pk=3, format='main')
             ddict['error'] = 'default_related_format_is_none'
         return ddict
 
@@ -207,30 +208,37 @@ class ViewCurrentPlugins(DetailView):
     def get_context_data(self, *, object_list=None, **kwargs):
         context = super().get_context_data(**kwargs)
         context['tag'] = self.kwargs['tag']
-        context['form'] = RelatedPluginForm()
+        context['form_related'] = RelatedPluginForm()
+        context['form_relatedformat'] = RelatedFormatPluginForm()
         return context
 
     def post(self, request, *args, **kwargs):
         self.object = self.get_object()
         context = super().get_context_data(**kwargs)
-
-        form = RelatedPluginForm(request.POST)
-        related_id = request.POST['related']
-        context['form'] = form
+        form_related = RelatedPluginForm(request.POST)
+        form_relatedformat = RelatedFormatPluginForm(request.POST)
+        print('request.POST ', request.POST)
+        context['form_related'] = form_related
+        context['form_relatedformat'] = form_relatedformat
         #print('request.POST', request.POST)
         #print('related_id', related_id)
 
-        if form.is_valid():
+        if form_related.is_valid():
             self.plugin = self.get_object()
             if 'related_add' in request.POST:
-                self.plugin.related.add(related_id)
+                self.plugin.related.add(request.POST['related'])
             elif 'related_del' in request.POST:
-                self.plugin.related.remove(related_id)
+                self.plugin.related.remove(request.POST['related'])
             self.plugin.save()
-            return self.render_to_response(context=context)
-        else:
-            return self.render_to_response(context=context)
 
+        if form_relatedformat.is_valid():
+            self.plugin = self.get_object()
+            if 'relatedformat_add' in request.POST:
+                self.plugin.related_format.add(request.POST['related_format'])
+            elif 'relatedformat_del' in request.POST:
+                self.plugin.related_format.remove(request.POST['related_format'])
+            self.plugin.save()
+        return self.render_to_response(context=context)
 ###
 ### VIEW GLOBAL PLUGIN
 ###
