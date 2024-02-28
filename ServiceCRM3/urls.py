@@ -22,6 +22,8 @@ from django.contrib.staticfiles.urls import staticfiles_urlpatterns
 
 
 urlpatterns = [
+    #owm
+    path('owm/', include('owm.urls')),
     path('', include('news.urls')),
     path('admin/', admin.site.urls),
     path('plugins/', include('plugins.urls')),
