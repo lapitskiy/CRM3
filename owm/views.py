@@ -204,7 +204,8 @@ class Store(View):
 
 class Create(View):
     def get(self, request, *args, **kwargs):
-        return render(request, 'create.html')
+        api_list_current_user = Parser.objects.filter(user=request.user).first()
+        return render(request, 'create.html', {'api_list_current_user': api_list_current_user})
 
     def post(self, request, *args, **kwargs):
         try:
@@ -213,13 +214,28 @@ class Create(View):
             wildberries_api = request.POST.get('wildberries_api')
             client_id = request.POST.get('client_id')
             ozon_api = request.POST.get('ozon_api')
-            Parser.objects.create(
-                moysklad_api=moysklad_api,
-                yandex_api=yandex_api,
-                wildberries_api=wildberries_api,
-                client_id=client_id,
-                ozon_api=ozon_api,
-            )
+            print('moysklad_api ', moysklad_api)
+            print('ozon_api ', ozon_api)
+            print('curr user ', request.user)
+            user_api_object = Parser.objects.filter(user=request.user)
+            if user_api_object:
+                user_api_object.update(
+                    moysklad_api=moysklad_api,
+                    yandex_api=yandex_api,
+                    wildberries_api=wildberries_api,
+                    client_id=client_id,
+                    ozon_api=ozon_api,
+                )
+            else:
+                Parser.objects.update_or_create(
+                    user=request.user,
+                    moysklad_api=moysklad_api,
+                    yandex_api=yandex_api,
+                    wildberries_api=wildberries_api,
+                    client_id=client_id,
+                    ozon_api=ozon_api,
+                )
             return HttpResponseRedirect('store')
         except Exception as ex:
+            print('exc ', str(ex))
             return render(request, 'create.html')

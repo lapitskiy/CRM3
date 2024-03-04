@@ -1,14 +1,14 @@
 import datetime
 import os
-
 import requests
 import yandex, ozon, wb
 import django
 
-os.environ['DJANGO_SETTINGS_MODULE'] = 'djangoProject2.settings'
+os.environ['DJANGO_SETTINGS_MODULE'] = 'ServiceCRM3.settings'
 os.environ["DJANGO_ALLOW_ASYNC_UNSAFE"] = "true"
 django.setup()
-from app.models import Parser
+
+from owm.models import Parser
 
 
 def update_all_stock(headers, stock_tuple, last_tuple):
@@ -48,7 +48,7 @@ def get_store_meta(headers):
 def get_stock_meta(headers):
     last_tuple = {}
     url = "https://api.moysklad.ru/api/remap/1.2/report/stock/all"
-    response = requests.get(url, headers=headers)
+    response = requests.get(url, headers=headers).json()
     for stock in response['rows']:
         last_tuple[stock['article']] = {
             'meta': stock['meta'],
@@ -60,7 +60,7 @@ def get_stock_meta(headers):
 def get_all_stock(headers):
     stock_tuple = {}
     url = "https://api.moysklad.ru/api/remap/1.2/report/stock/all"
-    response = requests.get(url, headers=headers)
+    response = requests.get(url, headers=headers).json()
     for stock in response['rows']:
         stock_tuple[stock['article']] = stock['stock']
     return stock_tuple
