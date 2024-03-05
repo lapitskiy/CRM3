@@ -10,7 +10,6 @@ django.setup()
 
 from owm.models import Parser
 
-
 def update_all_stock(headers, stock_tuple, last_tuple):
     positions = []
     url = 'https://api.moysklad.ru/api/remap/1.2/entity/loss'

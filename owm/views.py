@@ -186,21 +186,33 @@ def main(user, article, count, price):
     user.replenishment = False
     user.save()
 
+def get_all_moysklad_stock(headers):
+    stock_tuple = {}
+    url = "https://api.moysklad.ru/api/remap/1.2/report/stock/all"
+    response = requests.get(url, headers=headers).json()
+    for stock in response['rows']:
+        stock_tuple[stock['article']] = stock['stock']
+    return stock_tuple
 
 class Store(View):
     def get(self, request, *args, **kwargs):
-        return render(request, 'store.html')
+        context = {}
+        parser = Parser.objects.get(user=request.user)
+        headers = get_headers(parser)
+        stock = get_all_moysklad_stock(headers['moysklad_headers'])
+        context['stock'] = stock
+        print(f"stock {stock}")
+        return render(request, 'store.html', context)
 
     def post(self, request):
         article = request.POST.get('article')
         count = int(request.POST.get('count'))
         price = int(request.POST.get('price'))
-        parser = Parser.objects.get(id=1)
+        parser = Parser.objects.get(user=request.user)
         parser.replenishment = True
         parser.save()
         main(parser, article, count, price)
         return HttpResponseRedirect('store')
-
 
 class Create(View):
     def get(self, request, *args, **kwargs):
