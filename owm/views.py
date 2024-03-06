@@ -5,71 +5,52 @@ from django.http import HttpResponseRedirect
 from django.shortcuts import render
 from django.views import View
 from .models import Parser
+from .utils import *
 
 
-def get_organization_meta(headers):
-    url = 'https://api.moysklad.ru/api/remap/1.2/entity/organization'
+def get_prod_meta(headers, offer_dict):
+    #url = f'https://api.moysklad.ru/api/remap/1.2/entity/assortment?filter=article={article}'
+    url = f'https://api.moysklad.ru/api/remap/1.2/entity/assortment'
     response = requests.get(url, headers=headers).json()
-    return response['rows'][0]['meta']
-
-
-def get_store_meta(headers):
-    url = 'https://api.moysklad.ru/api/remap/1.2/entity/store'
-    response = requests.get(url, headers=headers).json()
-    return response['rows'][0]['meta']
-
-
-def get_prod_meta(headers, article, count, price):
-    url = f'https://api.moysklad.ru/api/remap/1.2/entity/assortment?filter=article={article}'
-    response = requests.get(url, headers=headers).json()
-    meta = response['rows'][0]['meta']
-    data = [
-        {
-            "quantity": count,
-            "price": price * 100,
-            "assortment": {
-                "meta": meta
-            },
-            "overhead": 0
-        },
-    ]
+    #print(f'get_prod_meta {response[']}')
+    data = []
+    for row in response['rows']:
+        if row['article'] in offer_dict:
+            data.append({
+                "quantity": float(offer_dict[row['article']]['stock']),
+                "price": float(offer_dict[row['article']]['price']) * 100,
+                "assortment": {
+                    "meta": row['meta']
+                },
+                "overhead": 0
+            },)
+        #print(f"{row['article']}")
+    #print(f'offer_dict {offer_dict}')
+    #meta = response['rows'][0]['meta']
+    # data = [
+    #     {
+    #         "quantity": count,
+    #         "price": price * 100,
+    #         "assortment": {
+    #             "meta": meta
+    #         },
+    #         "overhead": 0
+    #     },
+    # ]
     return data
 
-
-def update_stock_moysklad(headers, article, count, price):
+# оприходование товара
+def update_enter_moysklad(headers, offer_dict):
     url = 'https://api.moysklad.ru/api/remap/1.2/entity/enter'
     data = {
         'store': {"meta": get_store_meta(headers)},
         'organization': {'meta': get_organization_meta(headers)},
-        'positions': get_prod_meta(headers, article, count, price)
+        'positions': get_prod_meta(headers, offer_dict)
     }
     responce = requests.post(url=url, json=data, headers=headers)
+    print(f"responce moysklad {responce.json()}")
 
-
-def get_headers(user):
-    headers = {}
-    if user.moysklad_api:
-        headers['moysklad_headers'] = {
-            "Authorization": f"Bearer {user.moysklad_api}",
-        }
-    if user.yandex_api:
-        headers['yandex_headers'] = {
-            'Accept': 'application/json',
-            'Authorization': f'Bearer {user.yandex_api}'
-        }
-    if user.ozon_api and user.client_id:
-        headers['ozon_headers'] = {
-            'Client-Id': user.client_id,
-            'Api-Key': user.ozon_api
-        }
-    if user.wildberries_api:
-        headers['wildberries_headers'] = {
-            'Authorization': user.wildberries_api
-        }
-    return headers
-
-
-def update_stock_yandex(headers, article, count):
+def update_enter_yandex(headers, article, count):
     url = 'https://api.partner.market.yandex.ru/campaigns'
     response = requests.get(url, headers=headers).json()
     company_id = response['campaigns'][0]['id']
@@ -104,8 +85,7 @@ def update_stock_yandex(headers, article, count):
     }
     requests.put(url=url, json=data, headers=headers).json()
 
-
-def update_stock_ozon(headers, article, count):
+def update_enter_ozon(headers, article, count):
     url = 'https://api-seller.ozon.ru/v3/product/info/stocks'
     data = {
         'filter': {
@@ -129,10 +109,9 @@ def update_stock_ozon(headers, article, count):
         'stocks': stocks
     }
     requests.post(url, headers=headers, json=data).json()
-    print(response)
+    #print(response)
 
-
-def update_stock_wb(headers, article, count):
+def update_enter_wb(headers, article, count):
     url = 'https://suppliers-api.wildberries.ru/content/v2/get/cards/list'
     data = {
         'settings': {
@@ -142,7 +121,7 @@ def update_stock_wb(headers, article, count):
         }
     }
     response = requests.post(url, json=data, headers=headers).json()
-    print(response.text)
+    #print(response.text)
     barcode = response['cards'][0]['sizes'][0]['skus'][0]
     url = 'https://suppliers-api.wildberries.ru/api/v3/warehouses'
     response = requests.get(url, headers=headers).json()
@@ -164,60 +143,97 @@ def update_stock_wb(headers, article, count):
     }
     response = requests.put(url, json=data, headers=headers)
 
-
-def main(user, article, count, price):
+# добавляем (оприходуем) товары на мойсклад и обновляем остатки на маркетплейсах
+def enter_moysklad(user, offer_dict):
     headers = get_headers(user)
+    update_enter_moysklad(headers['moysklad_headers'], offer_dict)
+    # try:
+    #     update_stock_moysklad(headers['moysklad_headers'], offer_dict)
+    # except Exception as ex:
+    #     print(f'update_stock_moysklad {ex}')
     try:
-        update_stock_moysklad(headers['moysklad_headers'], article, count, price)
-    except Exception as ex:
-        print(f'update_stock_moysklad {ex}')
-    try:
-        update_stock_yandex(headers['yandex_headers'], article, count)
+        update_enter_yandex(headers['yandex_headers'], offer_dict)
     except Exception as ex:
         print(f'update_stock_yandex {ex}')
     try:
-        update_stock_ozon(headers['ozon_headers'], article, count)
+        update_enter_ozon(headers['ozon_headers'], offer_dict)
     except Exception as ex:
         print(f'update_stock_ozon {ex}')
     try:
-        update_stock_wb(headers['wildberries_headers'], article, count)
+        update_enter_wb(headers['wildberries_headers'], offer_dict)
     except Exception as ex:
         print(f'update_stock_wb {ex}')
     user.replenishment = False
     user.save()
 
-def get_all_moysklad_stock(headers):
-    stock_tuple = {}
-    url = "https://api.moysklad.ru/api/remap/1.2/report/stock/all"
-    response = requests.get(url, headers=headers).json()
-    for stock in response['rows']:
-        stock_tuple[stock['article']] = stock['stock']
-    return stock_tuple
+# создание dict из POST запроса для Оприходования(enter)
+def enter_POST_to_offer_dict(post):
+    offer_dict = {}
+    for key, value in post.items():
+        if value == 'offer_id':
+            stock = post[key+'_stock'] # convert float format from ',' to '.'
+            if float(stock.replace(',', '.')) == 0:
+                continue
+            price = post[key+'_price']
+            offer_dict[key] = {'stock' : stock.replace(',', '.'), 'price' : price.replace(',', '.')}
+    return offer_dict
 
-class Store(View):
+# оприходование
+class Enter(View):
     def get(self, request, *args, **kwargs):
         context = {}
         parser = Parser.objects.get(user=request.user)
         headers = get_headers(parser)
         stock = get_all_moysklad_stock(headers['moysklad_headers'])
         context['stock'] = stock
-        print(f"stock {stock}")
-        return render(request, 'store.html', context)
+        #print(f"stock {stock}")
+        return render(request, 'owm/enter.html', context)
 
     def post(self, request):
-        article = request.POST.get('article')
-        count = int(request.POST.get('count'))
-        price = int(request.POST.get('price'))
+        #print(f"post {request.POST.dict()}")
+        offer_dict = enter_POST_to_offer_dict(request.POST.dict())
+        #print(f"offer {offer_dict}")
+        #article = request.POST.get('article')
+        #count = int(request.POST.get('count'))
+        #price = int(request.POST.get('price'))
         parser = Parser.objects.get(user=request.user)
         parser.replenishment = True
         parser.save()
-        main(parser, article, count, price)
+        enter_moysklad(parser, offer_dict)
+        #main(parser, article, count, price)
+        #main(parser, article, count)
+        return HttpResponseRedirect('store')
+
+# инвентаризация c автоматическим оприходованием и списанием
+class Inventory(View):
+    def get(self, request, *args, **kwargs):
+        context = {}
+        parser = Parser.objects.get(user=request.user)
+        headers = get_headers(parser)
+        stock = get_all_moysklad_stock(headers['moysklad_headers'])
+        context['stock'] = stock
+        #print(f"stock {stock}")
+        return render(request, 'owm/inventory.html', context)
+
+    def post(self, request):
+        #print(f"post {request.POST.dict()}")
+        offer_dict = inventory_POST_to_offer_dict(request.POST.dict())
+        #print(f"offer {offer_dict}")
+        #article = request.POST.get('article')
+        #count = int(request.POST.get('count'))
+        #price = int(request.POST.get('price'))
+        parser = Parser.objects.get(user=request.user)
+        parser.replenishment = True
+        parser.save()
+        inventory_moysklad(parser, offer_dict)
+        #main(parser, article, count, price)
+        #main(parser, article, count)
         return HttpResponseRedirect('store')
 
 class Create(View):
     def get(self, request, *args, **kwargs):
         api_list_current_user = Parser.objects.filter(user=request.user).first()
-        return render(request, 'create.html', {'api_list_current_user': api_list_current_user})
+        return render(request, 'owm/create.html', {'api_list_current_user': api_list_current_user})
 
     def post(self, request, *args, **kwargs):
         try:
@@ -247,7 +263,7 @@ class Create(View):
                     client_id=client_id,
                     ozon_api=ozon_api,
                 )
-            return HttpResponseRedirect('store')
+            return HttpResponseRedirect('')
         except Exception as ex:
             print('exc ', str(ex))
             return render(request, 'create.html')

@@ -1,8 +1,0 @@
-{% extends "base.html" %}
-{% block title %}{{ title }} - {{ block.super }}{% endblock %}
-{% block content %}
-    {% for offer_id, count in stock.items %}
-
-        {{ offer_id }}: {{ count }}<br>
-    {% endfor %}
-{% endblock %}

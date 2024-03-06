@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+{% block title %}{{ title }} - {{ block.super }}{% endblock %}
+{% block sidebar %}
+    {% include 'include/_sidebar_owm.html' %}
+{% endblock %}
+{% block content %}
+    <h1>ИНВЕНТАРИЗАЦИЯ</h1>
+    <form action="#" method="POST">
+        <button type="submit" class="btn btn-primary btn-block">Установить api</button>
+        {% for offer_id, value in stock.items %}
+            {% csrf_token %}
+            <div class="input-group mb-5">
+                <span class="input-group-text" name="basic-addon3">{{ offer_id }}</span>
+                <input type="hidden" id="{{ offer_id }}" name="{{ offer_id }}" value="offer_id" />
+                <input type="text" class="form-control" name="{{ offer_id }}_stock" id="{{ offer_id }}" aria-describedby="basic-addon3" value="{{ value.stock }}"/>
+            </div>
+        {% endfor %}
+        <button type="submit" class="btn btn-primary btn-block">Установить api</button>
+    </form>
+{% endblock %}
