@@ -6,7 +6,7 @@
 {% block content %}
     <h1>ОПРИХОДОВАНИЕ</h1>
     <form action="#" method="POST">
-        <button type="submit" class="btn btn-primary btn-block">Установить api</button>
+        <button type="submit" class="btn btn-primary btn-block">Обновить</button>
         {% for offer_id, value in stock.items %}
             {% csrf_token %}
             <div class="input-group mb-5">
@@ -16,6 +16,6 @@
                 <input type="text" class="form-control" name="{{ offer_id }}_price" aria-describedby="basic-addon3" value="{{ value.price }}"/>
             </div>
         {% endfor %}
-        <button type="submit" class="btn btn-primary btn-block">Установить api</button>
+        <button type="submit" class="btn btn-primary btn-block">Обновить</button>
     </form>
 {% endblock %}

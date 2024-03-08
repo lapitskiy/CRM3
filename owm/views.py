@@ -217,17 +217,11 @@ class Inventory(View):
 
     def post(self, request):
         #print(f"post {request.POST.dict()}")
-        offer_dict = inventory_POST_to_offer_dict(request.POST.dict())
-        #print(f"offer {offer_dict}")
-        #article = request.POST.get('article')
-        #count = int(request.POST.get('count'))
-        #price = int(request.POST.get('price'))
+        invent_dict = inventory_POST_to_offer_dict(request.POST.dict())
         parser = Parser.objects.get(user=request.user)
         parser.replenishment = True
         parser.save()
-        inventory_moysklad(parser, offer_dict)
-        #main(parser, article, count, price)
-        #main(parser, article, count)
+        inventory_moysklad(parser, invent_dict)
         return HttpResponseRedirect('store')
 
 class Create(View):

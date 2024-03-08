@@ -44,23 +44,58 @@ def get_all_moysklad_stock(headers):
         stock_tuple[stock['article']] = {'stock': stock['stock'], 'price' : stock['salePrice']/100 }
     return stock_tuple
 
+def sort_stock_and_invent(invent_dict, stock):
+    #print(f"invent_dict {invent_dict}")
+    #print(f"stock {stock}")
+    loss_dict = {}
+    enter_dict = {}
+    for key, value in stock.items():
+        #print(f"key {key};   value {value};   invent dict {invent_dict[key]}")
+        if key in invent_dict and float(value['stock']) > float(invent_dict[key]['stock']):
+            loss_dict[key] = {}
+            loss_dict[key]['stock'] = float(value['stock'])-float(invent_dict[key]['stock'])
+        if key in invent_dict and float(value['stock']) < float(invent_dict[key]['stock']):
+            enter_dict[key] = {}
+            enter_dict[key]['stock'] = float(invent_dict[key]['stock'])-float(value['stock'])
+    return enter_dict, loss_dict
+
+
 # добавляем (оприходуем) товары на мойсклад и обновляем остатки на маркетплейсах
-def inventory_moysklad(user, offer_dict):
+def inventory_moysklad(user, invent_dict):
     headers = get_headers(user)
-    update_inventory_moysklad(headers['moysklad_headers'], offer_dict)
+    stock = get_all_moysklad_stock(headers['moysklad_headers'])
+    enter_dict, loss_dict = sort_stock_and_invent(invent_dict, stock)
+    update_inventory_moysklad(headers['moysklad_headers'], enter_dict, loss_dict)
     user.replenishment = False
     user.save()
 
 # инвентаризация товара
-def update_inventory_moysklad(headers, offer_dict):
-    url = 'https://api.moysklad.ru/api/remap/1.2/entity/inventory'
+def update_inventory_moysklad(headers, enter_dict, loss_dict):
+    url = 'https://api.moysklad.ru/api/remap/1.2/entity/enter'
     data = {
         'store': {"meta": get_store_meta(headers)},
         'organization': {'meta': get_organization_meta(headers)},
-        'positions': get_inventory_row_data(headers, offer_dict)
+        'positions': get_inventory_row_data(headers, enter_dict)
     }
     responce = requests.post(url=url, json=data, headers=headers)
     print(f"responce moysklad {responce.json()}")
+
+    url = 'https://api.moysklad.ru/api/remap/1.2/entity/loss'
+    data = {
+        'store': {"meta": get_store_meta(headers)},
+        'organization': {'meta': get_organization_meta(headers)},
+        'positions': get_inventory_row_data(headers, loss_dict)
+    }
+    responce = requests.post(url=url, json=data, headers=headers)
+    print(f"responce moysklad {responce.json()}")
+    # url = 'https://api.moysklad.ru/api/remap/1.2/entity/inventory'
+    # data = {
+    #     'store': {"meta": get_store_meta(headers)},
+    #     'organization': {'meta': get_organization_meta(headers)},
+    #     'positions': get_inventory_row_data(headers, offer_dict)
+    # }
+    # responce = requests.post(url=url, json=data, headers=headers)
+    #print(f"responce moysklad {responce.json()}")
 
 def get_inventory_row_data(headers, offer_dict):
     #url = f'https://api.moysklad.ru/api/remap/1.2/entity/assortment?filter=article={article}'
