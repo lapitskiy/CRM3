@@ -84,7 +84,7 @@ def update_inventory_moysklad(headers, enter_dict, loss_dict):
         'positions': get_inventory_row_data(headers, enter_dict)
     }
     responce = requests.post(url=url, json=data, headers=headers)
-    print(f"responce moysklad {responce.json()}")
+    #print(f"responce moysklad {responce.json()}")
 
     url = 'https://api.moysklad.ru/api/remap/1.2/entity/loss'
     data = {
@@ -93,7 +93,7 @@ def update_inventory_moysklad(headers, enter_dict, loss_dict):
         'positions': get_inventory_row_data(headers, loss_dict)
     }
     responce = requests.post(url=url, json=data, headers=headers)
-    print(f"responce status {type(responce.status_code)}")
+    #print(f"responce status {type(responce.status_code)}")
     return responce
 
     # url = 'https://api.moysklad.ru/api/remap/1.2/entity/inventory'
@@ -125,8 +125,8 @@ def update_inventory_ozon(headers,stock):
 def update_inventory_yandex(headers, stock):
     url = 'https://api.partner.market.yandex.ru/campaigns'
     response = requests.get(url, headers=headers).json()
-    print(f'yandex response {response}')
-    print(f'yandex headers {headers}')
+    #print(f'yandex response {response}')
+    #print(f'yandex headers {headers}')
     company_id = response['campaigns'][0]['id']
     businessId = response['campaigns'][0]['business']['id']
     url = f'https://api.partner.market.yandex.ru/businesses/{businessId}/warehouses'
@@ -150,27 +150,41 @@ def update_inventory_yandex(headers, stock):
     data = {
         'skus': sku
     }
-    print(f"skus {data['skus'][0]}")
+    #print(f"skus {data['skus'][0]}")
     response = requests.put(url=url, json=data, headers=headers).json()
-    print(f'yandex response 2 {response}')
+    #print(f'yandex response 2 {response}')
 
 # инвентаризация товара яндекс
 def update_inventory_wb(headers, stock):
     url = 'https://suppliers-api.wildberries.ru/content/v2/get/cards/list'
+    #url = 'https://content-api-sandbox.wildberries.ru/content/v2/get/cards/list'
     data = {
         'settings': {
             'cursor': {
-                'limit': 20
-            },
+                'limit': 10,
+            }
         }
     }
-    response = requests.post(url, json=data, headers=headers).json()
-    print(f'wb article response {response}')
-    for item in response['cards']:
-        if item['vendorCode'] in stock:
-            stock[item['vendorCode']]['sku'] = item['sizes'][0]['skus']
-
-    print(f'stock {stock}')
+    while True:
+        print(f"data {data}")
+        response = requests.post(url, json=data, headers=headers).json()
+        print(f"wb article response {response['cursor']}")
+        print(f"total {response['cursor']['total']}")
+        print(f"response {response}")
+        for item in response['cards']:
+            if item['vendorCode'] in stock:
+                stock[item['vendorCode']]['sku'] = item['sizes'][0]['skus']
+        data = {
+            'settings': {
+                'cursor': {
+                    'updatedAt': response['cursor']['updatedAt'],
+                    'nmID': response['cursor']['nmID'],
+                    'limit': 10,
+                }
+            }
+        }
+        if response['cursor']['total'] < 10: break
+    print(f'stock {len(stock)}')
     url = 'https://suppliers-api.wildberries.ru/api/v3/warehouses'
     response = requests.get(url, headers=headers).json()
     warehouseId = response[0]['id']
