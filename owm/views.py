@@ -115,6 +115,9 @@ def update_enter_wb(headers, article, count):
     url = 'https://suppliers-api.wildberries.ru/content/v2/get/cards/list'
     data = {
         'settings': {
+            'cursor': {
+                'limit': 1
+            },
             'filter': {
                 'textSearch': article
             }
@@ -221,7 +224,7 @@ class Inventory(View):
         parser = Parser.objects.get(user=request.user)
         parser.replenishment = True
         parser.save()
-        inventory_moysklad(parser, invent_dict)
+        inventory_update(parser, invent_dict)
         return HttpResponseRedirect('store')
 
 class Create(View):
