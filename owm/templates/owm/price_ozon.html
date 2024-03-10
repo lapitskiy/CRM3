@@ -1,0 +1,41 @@
+{% extends "base.html" %}
+{% block title %}{{ title }} - {{ block.super }}{% endblock %}
+{% block sidebar %}
+    {% include 'include/_sidebar_owm.html' %}
+{% endblock %}
+{% block content %}
+    <h1>Обновить цены</h1>
+    <form action="#" method="POST">
+        <button type="submit" class="btn btn-primary btn-block">Обновить цены</button>
+
+            <div class="table-responsive">
+<table class="table table-rounded table-striped border gy-7 gs-7">
+		<thead>
+			<tr class="fw-semibold fs-6 text-gray-800 border-bottom border-gray-200">
+				<th>Артикул</th>
+				<th>Цена</th>
+				<th>Акционная цена</th>
+				<th>Доставка</th>
+			</tr>
+		</thead>
+
+		<tbody>
+
+        {% for offer_id, value in price.items %}
+            {% csrf_token %}
+
+			<tr>
+				<td>{{ offer_id }}</td>
+				<td><input type="hidden" id="{{ offer_id }}" name="{{ offer_id }}" value="offer_id" />
+                <input type="text" class="form-control" name="{{ offer_id }}_price" id="{{ offer_id }}" aria-describedby="basic-addon3" value="{{ value.price }}"/>
+                </td>
+				<td>{{ value.marketing_seller_price }}</td>
+				<td>{{ value.delivery_price }}</td>
+			</tr>
+        {% endfor %}
+        		</tbody>
+	</table>
+</div>
+        <button type="submit" class="btn btn-primary btn-block">Обновить цены</button>
+    </form>
+{% endblock %}

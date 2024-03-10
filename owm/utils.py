@@ -238,3 +238,44 @@ def inventory_POST_to_offer_dict(post):
             stock = post[key+'_stock'] # convert float format from ',' to '.'
             offer_dict[key] = {'stock' : stock.replace(',', '.')}
     return offer_dict
+
+def get_moysklad_opt_price(headers):
+    stock_tuple = {}
+    url = "https://api.moysklad.ru/api/remap/1.2/entity/product"
+    params = [
+        ("limit", 1000)
+    ]
+    response = requests.get(url, headers=headers, params=params).json()
+    return response
+
+def get_all_price_ozon(headers):
+    opt_price = get_moysklad_opt_price(headers['moysklad_headers'])
+    print(f'opt_price {opt_price}')
+    url = "https://api-seller.ozon.ru/v4/product/info/prices"
+    data = {
+        "filter": {
+            "visibility": "IN_SALE",
+        },
+            "last_id": "",
+            "limit": 1000
+        }
+    response = requests.post(url, headers=headers['ozon_headers'], json=data).json()
+    #print(f"response {response['result']}")
+    result = {}
+    for item in response['result']['items']:
+        delivery_price = float(item['price']['marketing_seller_price'])/100 * float(item['commissions']['sales_percent_fbs'])
+        delivery_price = delivery_price + float(item['commissions']['fbs_direct_flow_trans_min_amount']) \
+                         + float(item['commissions']['fbs_deliv_to_customer_amount']) + \
+                         float(item['price']['marketing_seller_price'])/100*1 # эквайринг 1% и 10% для средней цены
+        delivery_price = delivery_price + 15 # средняя цена доставки товара
+        #print(f"{item['offer_id']} {delivery_price}")
+
+        result[item['offer_id']] = {
+            'price' : int(float(item['price']['price'])),
+            'marketing_seller_price': int(float(item['price']['marketing_seller_price'])),
+            'delivery_price' : int(delivery_price),
+        }
+
+
+    #print(f'result ozon price {result}')
+    return result

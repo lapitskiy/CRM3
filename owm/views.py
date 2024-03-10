@@ -264,3 +264,46 @@ class Create(View):
         except Exception as ex:
             print('exc ', str(ex))
             return render(request, 'create.html')
+
+class PriceOzon(View):
+    def get(self, request, *args, **kwargs):
+        context = {}
+        parser = Parser.objects.get(user=request.user)
+        headers = get_headers(parser)
+        price = get_all_price_ozon(headers)
+        context['price'] = price
+        #print(f"stock {stock}")
+        return render(request, 'owm/price_ozon.html', context)
+
+    def post(self, request, *args, **kwargs):
+        try:
+            moysklad_api = request.POST.get('moysklad_api')
+            yandex_api = request.POST.get('yandex_api')
+            wildberries_api = request.POST.get('wildberries_api')
+            client_id = request.POST.get('client_id')
+            ozon_api = request.POST.get('ozon_api')
+            print('moysklad_api ', moysklad_api)
+            print('ozon_api ', ozon_api)
+            print('curr user ', request.user)
+            user_api_object = Parser.objects.filter(user=request.user)
+            if user_api_object:
+                user_api_object.update(
+                    moysklad_api=moysklad_api,
+                    yandex_api=yandex_api,
+                    wildberries_api=wildberries_api,
+                    client_id=client_id,
+                    ozon_api=ozon_api,
+                )
+            else:
+                Parser.objects.update_or_create(
+                    user=request.user,
+                    moysklad_api=moysklad_api,
+                    yandex_api=yandex_api,
+                    wildberries_api=wildberries_api,
+                    client_id=client_id,
+                    ozon_api=ozon_api,
+                )
+            return HttpResponseRedirect('')
+        except Exception as ex:
+            print('exc ', str(ex))
+            return render(request, 'create.html')
