@@ -161,7 +161,7 @@ def update_inventory_wb(headers, stock):
     data = {
         'settings': {
             'cursor': {
-                'limit': 10,
+                'limit': 1000,
             }
         }
     }
@@ -179,11 +179,11 @@ def update_inventory_wb(headers, stock):
                 'cursor': {
                     'updatedAt': response['cursor']['updatedAt'],
                     'nmID': response['cursor']['nmID'],
-                    'limit': 10,
+                    'limit': 20,
                 }
             }
         }
-        if response['cursor']['total'] < 10: break
+        if response['cursor']['total'] < 20: break
     print(f'stock {len(stock)}')
     url = 'https://suppliers-api.wildberries.ru/api/v3/warehouses'
     response = requests.get(url, headers=headers).json()
@@ -250,7 +250,33 @@ def get_moysklad_opt_price(headers):
 
 def get_all_price_ozon(headers):
     opt_price = get_moysklad_opt_price(headers['moysklad_headers'])
-    print(f'opt_price {opt_price}')
+    #print(f"opt_price {opt_price['rows'][0]['buyPrice']['value']}")
+    #print(f"opt_price {opt_price['rows'][0]['article']}")
+    opt_price_clear = {}
+    for item in opt_price['rows']:
+        #opt_price_clear['article'] = item['article']
+        #print(f"opt_price {item['buyPrice']['value']/100}")
+        opt_price_clear[item['article']] = {
+            'opt_price' : int(float(item['buyPrice']['value']) / 100),
+            }
+
+    url = "https://api-seller.ozon.ru/v1/finance/realization"
+    now = datetime.datetime.now()
+    lastmonth_date = now - datetime.timedelta(days=now.day)
+    data = {
+        "date": lastmonth_date.strftime('%Y-%m')
+        }
+    response = requests.post(url, headers=headers['ozon_headers'], json=data).json()
+    #print(f"date resp {response}")
+    realization = {}
+    for item in response['result']['rows']:
+        if item['offer_id'] in realization:
+            realization[item['offer_id']]['sale_qty'] = realization[item['offer_id']]['sale_qty'] + item['sale_qty']
+        else:
+            realization[item['offer_id']] = {'sale_qty': item['sale_qty']}
+    print(f"realization {realization}")
+    #print(f"date resp {response}")
+
     url = "https://api-seller.ozon.ru/v4/product/info/prices"
     data = {
         "filter": {
@@ -263,19 +289,30 @@ def get_all_price_ozon(headers):
     #print(f"response {response['result']}")
     result = {}
     for item in response['result']['items']:
+        if item['offer_id'] not in opt_price_clear:
+            continue
+        if item['offer_id'] not in realization:
+            realization[item['offer_id']] = {'sale_qty': 0}
         delivery_price = float(item['price']['marketing_seller_price'])/100 * float(item['commissions']['sales_percent_fbs'])
         delivery_price = delivery_price + float(item['commissions']['fbs_direct_flow_trans_min_amount']) \
                          + float(item['commissions']['fbs_deliv_to_customer_amount']) + \
                          float(item['price']['marketing_seller_price'])/100*1 # эквайринг 1% и 10% для средней цены
         delivery_price = delivery_price + 15 # средняя цена доставки товара
         #print(f"{item['offer_id']} {delivery_price}")
-
+        #print(f"opt_price {item['offer_id']}")
+        profit_price = int(float(item['price']['marketing_seller_price'])) - \
+                       int(delivery_price) - opt_price_clear[item['offer_id']]['opt_price']
+        profit_percent = profit_price / opt_price_clear[item['offer_id']]['opt_price'] * 100
+        print(f"offer_id {item}")
         result[item['offer_id']] = {
-            'price' : int(float(item['price']['price'])),
+            'price': int(float(item['price']['price'])),
             'marketing_seller_price': int(float(item['price']['marketing_seller_price'])),
-            'delivery_price' : int(delivery_price),
+            'delivery_price': int(delivery_price),
+            'opt_price': opt_price_clear[item['offer_id']]['opt_price'],
+            'profit_price': profit_price,
+            'profit_percent': int(profit_percent),
+            'sale_qty': realization[item['offer_id']]['sale_qty']
         }
-
 
     #print(f'result ozon price {result}')
     return result
