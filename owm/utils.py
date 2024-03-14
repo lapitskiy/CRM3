@@ -161,44 +161,60 @@ def update_inventory_wb(headers, stock):
     data = {
         'settings': {
             'cursor': {
-                'limit': 1000,
+                'limit': 100,
+            },
+            'filter': {
+                'withPhoto': 1
             }
         }
     }
+
     while True:
         print(f"data {data}")
-        response = requests.post(url, json=data, headers=headers).json()
+        while True:
+            try:
+                response = requests.post(url, json=data, headers=headers).json()
+                print(f"response try")
+                break
+            except requests.exceptions.JSONDecodeError:
+                print(f"exc")
         print(f"wb article response {response['cursor']}")
         print(f"total {response['cursor']['total']}")
-        print(f"response {response}")
+        #print(f"response {response}")
         for item in response['cards']:
             if item['vendorCode'] in stock:
-                stock[item['vendorCode']]['sku'] = item['sizes'][0]['skus']
+                stock[item['vendorCode']]['sku'] = item['sizes'][0]['skus'][0]
         data = {
             'settings': {
                 'cursor': {
                     'updatedAt': response['cursor']['updatedAt'],
                     'nmID': response['cursor']['nmID'],
-                    'limit': 20,
+                    'limit': 100,
+                },
+                'filter': {
+                    'withPhoto': 1
                 }
             }
         }
-        if response['cursor']['total'] < 20: break
+        if response['cursor']['total'] < 100: break
     print(f'stock {len(stock)}')
     url = 'https://suppliers-api.wildberries.ru/api/v3/warehouses'
     response = requests.get(url, headers=headers).json()
     warehouseId = response[0]['id']
     url = f'https://suppliers-api.wildberries.ru/api/v3/stocks/{warehouseId}'
     sku = []
+    print(f'stock {stock}')
     for key, value in stock.items():
-        sku.append({
-            'sku': key,
-            'amount': int(value['stock'])
-            })
+        if 'sku' in value:
+            sku.append({
+                'sku': value['sku'],
+                'amount': int(value['stock'])
+                })
     data = {
         'stocks': sku
     }
     response = requests.put(url, json=data, headers=headers)
+    print(f'wb response status {response.status_code}')
     #print(f'wb response {response.json()}')
 
 def get_inventory_row_data(headers, offer_dict):
@@ -274,7 +290,7 @@ def get_all_price_ozon(headers):
             realization[item['offer_id']]['sale_qty'] = realization[item['offer_id']]['sale_qty'] + item['sale_qty']
         else:
             realization[item['offer_id']] = {'sale_qty': item['sale_qty']}
-    print(f"realization {realization}")
+    #print(f"realization {realization}")
     #print(f"date resp {response}")
 
     url = "https://api-seller.ozon.ru/v4/product/info/prices"
