@@ -14,10 +14,11 @@
 			<tr class="fw-semibold fs-6 text-gray-800 border-bottom border-gray-200">
 				<th>Артикул</th>
 				<th>Цена</th>
-				<th>Акционная цена</th>
-				<th>Доставка</th>
+                <th>Мин. цена (30%)</th>
+				<th>Акция</th>
+				<th>FBS/FBO</th>
                 <th>Оптовая</th>
-                <th>Прибыль</th>
+                <th>Прибыль FBS/FBO</th>
                 <th>Продано (пред. месяц)</th>
 			</tr>
 		</thead>
@@ -28,9 +29,14 @@
             {% csrf_token %}
 
 			<tr>
+
 				<td>{{ offer_id }}</td>
-				<td><input type="hidden" id="{{ offer_id }}" name="{{ offer_id }}" value="offer_id" />
+				<td>
+                    <input type="hidden" id="{{ offer_id }}" name="{{ offer_id }}" value="offer_id" />
                 <input type="text" class="form-control" name="{{ offer_id }}_price" id="{{ offer_id }}" aria-describedby="basic-addon3" value="{{ value.price }}"/>
+                </td>
+            <td>
+                <input type="text" class="form-control" name="{{ offer_id }}_min_price" id="{{ offer_id }}" aria-describedby="basic-addon3" value="{{ value.min_price }}"/>
                 </td>
 				<td>{{ value.marketing_seller_price }}</td>
 				<td>{{ value.delivery_price }}</td>

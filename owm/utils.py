@@ -302,7 +302,7 @@ def get_all_price_ozon(headers):
             "limit": 1000
         }
     response = requests.post(url, headers=headers['ozon_headers'], json=data).json()
-    #print(f"response {response['result']}")
+    print(f"response {response['result']['items'][0]}")
     result = {}
     for item in response['result']['items']:
         if item['offer_id'] not in opt_price_clear:
@@ -319,9 +319,12 @@ def get_all_price_ozon(headers):
         profit_price = int(float(item['price']['marketing_seller_price'])) - \
                        int(delivery_price) - opt_price_clear[item['offer_id']]['opt_price']
         profit_percent = profit_price / opt_price_clear[item['offer_id']]['opt_price'] * 100
-        print(f"offer_id {item}")
+        min_price = int(delivery_price) + (opt_price_clear[item['offer_id']]['opt_price']/100*30) + opt_price_clear[item['offer_id']]['opt_price']
+
+        #print(f"offer_id {item}")
         result[item['offer_id']] = {
             'price': int(float(item['price']['price'])),
+            'min_price': int(min_price),
             'marketing_seller_price': int(float(item['price']['marketing_seller_price'])),
             'delivery_price': int(delivery_price),
             'opt_price': opt_price_clear[item['offer_id']]['opt_price'],
@@ -332,3 +335,26 @@ def get_all_price_ozon(headers):
 
     #print(f'result ozon price {result}')
     return result
+
+# обновление цены товара озон
+def update_price_ozon(obj, offer_dict):
+    url = 'https://api-seller.ozon.ru/v1/product/import/prices'
+    headers = get_headers(obj)
+    ozon_price = []
+    for key, value in offer_dict.items():
+        ozon_price.append({
+            'auto_action_enabled': 'ENABLED',
+            'min_price': str(value['min_price']),
+            'offer_id': key,
+            'old_price': str(int(float(value['price']) * 2)),
+            'price': str(value['price']),
+            'price_strategy_enabled': 'ENABLED'
+            })
+
+    for i in range(0, len(ozon_price), 1000):
+        data = {
+            'prices': ozon_price[i:i+999],
+        }
+        response = requests.post(url, headers=headers['ozon_headers'], json=data)
+    print(f'ozon price response {response.status_code}')
+    print(f'ozon price json {response.json()}')

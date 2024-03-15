@@ -181,6 +181,17 @@ def enter_POST_to_offer_dict(post):
             offer_dict[key] = {'stock' : stock.replace(',', '.'), 'price' : price.replace(',', '.')}
     return offer_dict
 
+# создание dict из POST запроса для обновления цены (price)
+def price_POST_to_offer_dict(post):
+    offer_dict = {}
+    for key, value in post.items():
+        if value == 'offer_id':
+            price = post[key+'_price']
+            min_price = post[key + '_min_price']
+            offer_dict[key] = {'price': price.replace(',', '.'), 'min_price': min_price}
+    #print(f"offer_dict {offer_dict}")
+    return offer_dict
+
 # оприходование
 class Enter(View):
     def get(self, request, *args, **kwargs):
@@ -276,34 +287,8 @@ class PriceOzon(View):
         return render(request, 'owm/price_ozon.html', context)
 
     def post(self, request, *args, **kwargs):
-        try:
-            moysklad_api = request.POST.get('moysklad_api')
-            yandex_api = request.POST.get('yandex_api')
-            wildberries_api = request.POST.get('wildberries_api')
-            client_id = request.POST.get('client_id')
-            ozon_api = request.POST.get('ozon_api')
-            print('moysklad_api ', moysklad_api)
-            print('ozon_api ', ozon_api)
-            print('curr user ', request.user)
-            user_api_object = Parser.objects.filter(user=request.user)
-            if user_api_object:
-                user_api_object.update(
-                    moysklad_api=moysklad_api,
-                    yandex_api=yandex_api,
-                    wildberries_api=wildberries_api,
-                    client_id=client_id,
-                    ozon_api=ozon_api,
-                )
-            else:
-                Parser.objects.update_or_create(
-                    user=request.user,
-                    moysklad_api=moysklad_api,
-                    yandex_api=yandex_api,
-                    wildberries_api=wildberries_api,
-                    client_id=client_id,
-                    ozon_api=ozon_api,
-                )
-            return HttpResponseRedirect('')
-        except Exception as ex:
-            print('exc ', str(ex))
-            return render(request, 'create.html')
+        context = {}
+        parser = Parser.objects.get(user=request.user)
+        offer_dict = price_POST_to_offer_dict(request.POST.dict())
+        update_price_ozon(parser, offer_dict)
+        return render(request, 'owm/price_ozon.html', context)
