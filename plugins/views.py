@@ -2,8 +2,8 @@ from django.shortcuts import render, get_object_or_404, redirect
 from django.http import HttpResponse, JsonResponse
 from django.views.generic import ListView, DetailView, CreateView
 from django.urls import reverse_lazy
-from .forms import RelatedPluginForm, RelatedFormatPluginForm
-from .models import Plugins, PluginsCategory, RelatedFormat
+from .forms import RelatedPluginForm, RelatedFormatPluginForm, RelatedDesignPositionForm
+from .models import Plugins, PluginsCategory, RelatedFormat, DesignPosition, DesignRelatedPlugin
 from plugins import settings_plugin
 from .utils import RelatedMixin
 import time
@@ -38,6 +38,7 @@ class PluginsTestView(ListView):
         context['plugins_check'] = self.checkPluginStruc()
         context['models_check'] = self.checkModelsStruc()
         context['relatedformat_check'] = self.checkRelatedFormatExist()
+        context['designposition_check'] = self.checkDesignPositionExist()
         #print('context ', context)
         return context
 
@@ -77,6 +78,16 @@ class PluginsTestView(ListView):
         if default_category is None:
             PluginsCategory.objects.update_or_create(pk=1, title='undefined')
             ddict['error'] = 'default_category_is_none'
+        return ddict
+
+    def checkDesignPositionExist(self, **kwargs):
+        ddict = {}
+        getObj = DesignPosition.objects.filter(pk=1).first()
+        if getObj is None:
+            DesignPosition.objects.update_or_create(pk=1, position='first')
+            DesignPosition.objects.update_or_create(pk=2, position='second')
+            DesignPosition.objects.update_or_create(pk=3, position='third')
+            ddict['error'] = 'default_design_position_is_none'
         return ddict
 
     def checkRelatedFormatExist(self, **kwargs):
@@ -210,16 +221,22 @@ class ViewCurrentPlugins(DetailView):
         context['tag'] = self.kwargs['tag']
         context['form_related'] = RelatedPluginForm()
         context['form_relatedformat'] = RelatedFormatPluginForm()
+        context['form_designposition'] = RelatedDesignPositionForm()
+
+        print(f"context {context['form_designposition']}")
         return context
 
     def post(self, request, *args, **kwargs):
         self.object = self.get_object()
+        print(f'obj ', self.object)
         context = super().get_context_data(**kwargs)
         form_related = RelatedPluginForm(request.POST)
         form_relatedformat = RelatedFormatPluginForm(request.POST)
+        form_designposition = RelatedDesignPositionForm(request.POST)
         print('request.POST ', request.POST)
         context['form_related'] = form_related
         context['form_relatedformat'] = form_relatedformat
+        context['form_designposition'] = form_designposition
         #print('request.POST', request.POST)
         #print('related_id', related_id)
 
@@ -238,6 +255,16 @@ class ViewCurrentPlugins(DetailView):
             elif 'relatedformat_del' in request.POST:
                 self.plugin.related_format.remove(request.POST['related_format'])
             self.plugin.save()
+
+        if form_designposition.is_valid():
+            getDesignObj = DesignRelatedPlugin.objects.get(position__position=request.POST['position'],
+                                                           related_plugin=self.object)
+            if 'designposition_add' in request.POST:
+                print(f'obj {getDesignObj }')
+                getDesignObj.related_many_plugin.add(request.POST['related_many_plugin'])
+            elif 'designposition_del' in request.POST:
+                getDesignObj.related_many_plugin.remove(request.POST['related_many_plugin'])
+            getDesignObj.save()
         return self.render_to_response(context=context)
 ###
 ### VIEW GLOBAL PLUGIN

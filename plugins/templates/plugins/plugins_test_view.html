@@ -26,8 +26,38 @@
     </div>
     <!--end::Wrapper-->
 </div>
+{% else %}
+    Ошибки в default категорий: нет
+<br><br>
 <!--end::Alert-->
 {% endif %}
+
+{% if 'default_design_position_is_none' in designposition_check.error %}
+    <!--begin::Alert-->
+<div class="alert alert-success d-flex align-items-center p-5">
+    <!--begin::Icon-->
+    <i class="ki-duotone ki-shield-tick fs-2hx text-success me-4"><span class="path1"></span><span class="path2"></span></i>
+    <!--end::Icon-->
+
+    <!--begin::Wrapper-->
+    <div class="d-flex flex-column">
+        <!--begin::Title-->
+        <h4 class="mb-1 text-dark">Обновление базы данных</h4>
+        <!--end::Title-->
+
+        <!--begin::Content-->
+        <span>Автоматически была создана запись позиции дизайна по умолчанию</span>
+        <!--end::Content-->
+    </div>
+    <!--end::Wrapper-->
+</div>
+{% else %}
+    Ошибки в default категорий: нет
+<br><br>
+<!--end::Alert-->
+{% endif %}
+
+
 {% if 'default_related_format_is_none' in relatedformat_check.error %}
     <!--begin::Alert-->
 <div class="alert alert-success d-flex align-items-center p-5">
@@ -48,6 +78,8 @@
     <!--end::Wrapper-->
 </div>
 <!--end::Alert-->
+{% else %}
+Связанные форматы: присутствуют<br><br>
 {% endif %}
 
 Количество приложений указаных в базе данных: {{ сountPluginDB }}

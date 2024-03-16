@@ -10,21 +10,23 @@ import os
 import shutil
 import importlib
 
-from plugins.models import Plugins
+from plugins.models import Plugins, DesignRelatedPlugin
 
 register = template.Library()
 
 @register.inclusion_tag('include/_plugins_detail_tags.html')
-def action_plugin(arg1=0, tag='', form_related=None, form_relatedformat=None):
+def action_plugin(arg1=0, tag='', form_related=None, form_relatedformat=None, form_designposition=None):
     context = {}
     plugin = Plugins.objects.get(pk=arg1)
     context['id'] = arg1
     context['tag'] = tag
     context['form_related'] = form_related
     context['form_relatedformat'] = form_relatedformat
+    context['form_designposition'] = form_designposition
     context['active_check'] = plugin.is_active
     context['isRelated'] = plugin.related.all()
     context['isRelatedFormat'] = plugin.related_format.all()
+    context['isDesignRelatedPlugin'] = DesignRelatedPlugin.objects.filter(related_plugin=arg1)
     context['delete_check'] = False
     context['copydata'] = False
     if tag == 'active' and not context['active_check']:
@@ -94,7 +96,7 @@ def action_plugin(arg1=0, tag='', form_related=None, form_relatedformat=None):
 
     if tag == 'demodata':
         print('DEMODATA')
-        modulePath = plugin.module_name + '.install'
+        modulePath = plugin.module_name + '.settings'
         app_module = importlib.import_module(modulePath)
         context['info'] = app_module.demodata()
         context['plugin_url'] = plugin.get_absolute_url()

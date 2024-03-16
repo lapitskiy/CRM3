@@ -50,6 +50,28 @@
                 </form>
             </div>
         </div>
+        <div class="card-footer">
+        <h1>Позиции дизайна</h1>
+             {% for obj in isDesignRelatedPlugin %}
+                 Позиция {{ obj.position }}:
+            <div class="col-md-3">
+                    {% for item in obj.related_many_plugin.all %}
+                        - {{ item }}<br>
+                    {% endfor %}
+
+            <br>
+            Указать позицию дизайна:
+                <form action="{{ plugins_item.get_absolute_url }}designposition" method="POST">
+                    {% csrf_token %}
+                    {{ form_designposition.non_field_errors }}
+                    {{ form_designposition.as_p }}
+                    <input type="hidden" name="position" value="{{ obj.position }}" />
+                    <button type="submit" name="designposition_add" class="btn btn-primary btn-block">Добавить</button>
+                    <button type="submit" name="designposition_del" class="btn btn-primary btn-block">Убрать</button>
+                </form>
+            </div>
+         {% endfor %}
+        </div>
     {% else %}
         <div class="alert alert-success" role="alert">
             Плагин удален

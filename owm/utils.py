@@ -302,7 +302,7 @@ def get_all_price_ozon(headers):
             "limit": 1000
         }
     response = requests.post(url, headers=headers['ozon_headers'], json=data).json()
-    print(f"response {response['result']['items'][0]}")
+    #print(f"response {response['result']['items'][0]}")
     result = {}
     for item in response['result']['items']:
         if item['offer_id'] not in opt_price_clear:
@@ -314,7 +314,8 @@ def get_all_price_ozon(headers):
                          + float(item['commissions']['fbs_deliv_to_customer_amount']) + \
                          float(item['price']['marketing_seller_price'])/100*1 # эквайринг 1% и 10% для средней цены
         delivery_price = delivery_price + 15 # средняя цена доставки товара
-        #print(f"{item['offer_id']} {delivery_price}")
+        if item['offer_id'] == 'renata_371':
+            print(f"371 {item}")
         #print(f"opt_price {item['offer_id']}")
         profit_price = int(float(item['price']['marketing_seller_price'])) - \
                        int(delivery_price) - opt_price_clear[item['offer_id']]['opt_price']
@@ -332,6 +333,7 @@ def get_all_price_ozon(headers):
             'profit_percent': int(profit_percent),
             'sale_qty': realization[item['offer_id']]['sale_qty']
         }
+
 
     #print(f'result ozon price {result}')
     return result
@@ -356,5 +358,5 @@ def update_price_ozon(obj, offer_dict):
             'prices': ozon_price[i:i+999],
         }
         response = requests.post(url, headers=headers['ozon_headers'], json=data)
-    print(f'ozon price response {response.status_code}')
+    #print(f'ozon price response {response.status_code}')
     print(f'ozon price json {response.json()}')

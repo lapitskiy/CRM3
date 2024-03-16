@@ -5,7 +5,7 @@ from django.urls import reverse
 class Plugins(models.Model):
     title = models.CharField(max_length=150, verbose_name='Название')
     id_in_rep = models.IntegerField(default=0, blank=True, verbose_name='Id в репозитории')
-    module_name = models.CharField(max_length=150, blank=True, verbose_name='Имя модуля')
+    module_name = models.CharField(max_length=150, blank=True, unique=True, verbose_name='Имя модуля')
     version = models.IntegerField(default=1, verbose_name='Версия')
     description = models.TextField(blank=True, verbose_name='Описание')
     photo = models.ImageField(upload_to='photos/%Y/%m/%d/', blank=True, verbose_name='Фото')
@@ -58,3 +58,20 @@ class RelatedFormat(models.Model):
         verbose_name = 'Связанный формат'
         verbose_name_plural = 'Связанные форматы'
         ordering = ['format']
+
+class DesignRelatedPlugin(models.Model):
+    position = models.ForeignKey('DesignPosition', default=1, on_delete = models.SET_DEFAULT, null=True, related_name='get_position')
+    related_plugin = models.ForeignKey('Plugins', default=1, on_delete = models.SET_DEFAULT, null=True, related_name='get_plugin')
+    related_many_plugin = models.ManyToManyField('Plugins')
+
+    def __str__(self):
+        return self.position.position
+
+class DesignPosition(models.Model):
+    position = models.CharField(max_length=25, db_index=True, verbose_name='Наименования связанного формата')
+
+    def __str__(self):
+        return self.position
+
+
+

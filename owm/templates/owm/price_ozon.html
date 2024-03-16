@@ -4,7 +4,41 @@
     {% include 'include/_sidebar_owm.html' %}
 {% endblock %}
 {% block content %}
-    <h1>Обновить цены</h1>
+
+<script>
+function input() {
+  var IDs = [];
+  $(".table").find("tr").each(function(){ IDs.push(this.id); });
+
+  var input_taker = document.getElementById('search').value;
+
+  if (input_taker != '')
+      {
+    $("tr").each(function (i, el) {
+         //It'll be an array of elements
+        $(this).hide();
+     });
+} else {
+    $("tr").each(function (i, el) {
+         //It'll be an array of elements
+        $(this).show();
+     });
+}
+
+
+  $("tr[id*=" + input_taker + "]").each(function (i, el) {
+         //It'll be an array of elements
+        $(this).show();
+     });
+
+
+
+}
+</script>
+
+    <h1>Обновить цены OZON</h1>
+<input type="text" id="search" onkeyup="input()">
+<p id="block"></p>
     <form action="#" method="POST">
         <button type="submit" class="btn btn-primary btn-block">Обновить цены</button>
 
@@ -28,7 +62,7 @@
         {% for offer_id, value in price.items %}
             {% csrf_token %}
 
-			<tr>
+			<tr id="{{ offer_id }}">
 
 				<td>{{ offer_id }}</td>
 				<td>

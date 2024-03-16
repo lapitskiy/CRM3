@@ -1,5 +1,5 @@
 from django import forms
-from .models import Plugins, RelatedFormat
+from .models import Plugins, RelatedFormat, DesignRelatedPlugin, DesignPosition
 from django.utils.safestring import mark_safe
 import re
 from django.core.exceptions import ValidationError
@@ -28,11 +28,6 @@ class RelatedPluginForm(forms.ModelForm):
         super(RelatedPluginForm, self).__init__(*args, **kwargs)
         self.fields['related'] = forms.ModelChoiceField(label='', queryset=Plugins.objects.all(), widget=forms.Select(attrs={'class': 'form-control'}))
 
-    def clean_title(self):
-        title = self.cleaned_data['title']
-        if re.match(r'\d', title):
-            raise ValidationError('Название не должно начинаться с цифры')
-        return title
 
 class RelatedFormatPluginForm(forms.ModelForm):
     class Meta:
@@ -42,4 +37,13 @@ class RelatedFormatPluginForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         super(RelatedFormatPluginForm, self).__init__(*args, **kwargs)
         self.fields['related_format'] = forms.ModelChoiceField(label='', queryset=RelatedFormat.objects.all(), widget=forms.Select(attrs={'class': 'form-control'}))
+
+class RelatedDesignPositionForm(forms.ModelForm):
+    class Meta:
+        model = DesignRelatedPlugin
+        fields = ['related_many_plugin',]
+
+    def __init__(self, *args, **kwargs):
+        super(RelatedDesignPositionForm, self).__init__(*args, **kwargs)
+        self.fields['related_many_plugin'] = forms.ModelChoiceField(label='', queryset=Plugins.objects.all(), widget=forms.Select(attrs={'class': 'form-control'}))
 
