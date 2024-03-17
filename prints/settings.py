@@ -1,3 +1,5 @@
+from plugins.models import DesignPosition, DesignRelatedPlugin, Plugins
+
 # файл удаляется после установки
 MODULE_NAME = 'prints'
 MODULE_CLASS_NAME = 'Prints'
@@ -24,5 +26,13 @@ REPO_DATA = {
         }
 
 def demodata():
-    context = 'Данных для установки нет'
+    # DesignPosition
+    plugin = Plugins.objects.get(module_name=MODULE_NAME)
+    check_plugin = DesignRelatedPlugin.objects.filter(related_plugin=plugin)
+    if not check_plugin:
+        design_obj = DesignPosition.objects.all()
+        for obj in design_obj:
+            DesignRelatedPlugin.objects.create(position=obj, related_plugin=plugin)
+
+    context = 'Данные установлены'
     return context

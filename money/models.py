@@ -4,6 +4,8 @@ from django.db.models import Q
 from decimal import Decimal
 from django.db.models import Sum
 from django.forms.models import model_to_dict
+from plugins.models import DesignRelatedPlugin
+from .settings import MODULE_NAME
 
 # Create your models here.
 class Money(models.Model):
@@ -22,6 +24,7 @@ class Money(models.Model):
 
     def get_related_data(self, **kwargs):
         prepayment = Prepayment.get_all_prepayment_sum(id=self.pk)
+        #design_position = list(DesignRelatedPlugin.objects.filter(related_plugin__module_name=MODULE_NAME).values_list())
         if prepayment is None:
             prepayment = 0
         pay_method = 'Наличные'
@@ -29,6 +32,7 @@ class Money(models.Model):
             pay_method = 'По карте'
         data = {
             'related_use': 'form',
+            #'position': design_position,
             'module_name': 'Стоимость',
             'Сумма': self.money,
             'Оплачено': prepayment,

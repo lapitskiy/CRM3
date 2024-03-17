@@ -60,7 +60,7 @@ class OrdersHomeView(RelatedMixin, ListView):
                                                                    'service__name', 'device__name', 'category_id', 'category_service__name',
                                                                    'uuid__related_uuid', 'related_user__username'))
         context['status_dict'] = self.getStatusInfo(query=clean_orders)
-        print(' status_dict', context['status_dict'])
+        print(f" related_list {context['related_list']}")
         #print(' orders_page ', orders_page.object_list)
         #print(' =========================== ')
         #print(' dict_orders ', dict_orders)
