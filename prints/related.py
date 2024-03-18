@@ -2,10 +2,11 @@
 from .models import Prints
 from django.db.models import Q
 
+
 class AppRelated(object):
     prefix = 'prints'
     related_module_name = 'prints'
-    related_format = 'link' # показывает это или форма будет или просто связанные данные в виде текста или ссылки
+    related_format = ''
     related_data_format = 'link'
 
     # если это связанный объект, который не имеет формы или не требует обновления, то возврщает True и пропускается в

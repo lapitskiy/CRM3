@@ -28,16 +28,6 @@ class RelatedPluginForm(forms.ModelForm):
         super(RelatedPluginForm, self).__init__(*args, **kwargs)
         self.fields['related'] = forms.ModelChoiceField(label='', queryset=Plugins.objects.all(), widget=forms.Select(attrs={'class': 'form-control'}))
 
-
-class RelatedFormatPluginForm(forms.ModelForm):
-    class Meta:
-        model = Plugins
-        fields = ['related_format',]
-
-    def __init__(self, *args, **kwargs):
-        super(RelatedFormatPluginForm, self).__init__(*args, **kwargs)
-        self.fields['related_format'] = forms.ModelChoiceField(label='', queryset=RelatedFormat.objects.all(), widget=forms.Select(attrs={'class': 'form-control'}))
-
 class RelatedDesignPositionForm(forms.ModelForm):
     class Meta:
         model = DesignRelatedPlugin
@@ -45,5 +35,15 @@ class RelatedDesignPositionForm(forms.ModelForm):
 
     def __init__(self, *args, **kwargs):
         super(RelatedDesignPositionForm, self).__init__(*args, **kwargs)
-        self.fields['related_many_plugin'] = forms.ModelChoiceField(label='', queryset=Plugins.objects.all(), widget=forms.Select(attrs={'class': 'form-control'}))
+        self.fields['related_many_plugin'] = forms.ModelChoiceField(label='', queryset=Plugins.objects.all(),
+                                                                    widget=forms.Select(attrs={'class': 'form-control'}))
 
+class RelatedFormatPositionForm(forms.ModelForm):
+    class Meta:
+        model = DesignRelatedPlugin
+        fields = ['related_format',]
+
+    def __init__(self, *args, **kwargs):
+        super(RelatedFormatPositionForm, self).__init__(*args, **kwargs)
+        self.fields['related_format'] = forms.ModelChoiceField(label='', queryset=RelatedFormat.objects.all(),
+                                                                    widget=forms.Select(attrs={'class': 'form-control'}))

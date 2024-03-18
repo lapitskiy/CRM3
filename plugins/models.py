@@ -13,7 +13,6 @@ class Plugins(models.Model):
     category = models.ForeignKey('PluginsCategory', default=1,  on_delete = models.SET_DEFAULT, null=True, verbose_name='Категория', related_name='get_category')
     is_migrate = models.BooleanField(default=False, verbose_name='Миграция')
     related = models.ManyToManyField('self')
-    related_format = models.ManyToManyField('RelatedFormat')
     related_class_name = models.CharField(max_length=150, blank=True, verbose_name='Имя класса для связи')
 
 
@@ -63,6 +62,7 @@ class DesignRelatedPlugin(models.Model):
     position = models.ForeignKey('DesignPosition', default=1, on_delete = models.SET_DEFAULT, null=True, related_name='get_position')
     related_plugin = models.ForeignKey('Plugins', default=1, on_delete = models.SET_DEFAULT, null=True, related_name='get_plugin')
     related_many_plugin = models.ManyToManyField('Plugins')
+    related_format = models.ManyToManyField('RelatedFormat')
 
     def __str__(self):
         return self.position.position

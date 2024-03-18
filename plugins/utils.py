@@ -1,4 +1,4 @@
-from .models import Plugins
+from .models import Plugins, DesignRelatedPlugin
 import importlib
 from django.core.exceptions import ObjectDoesNotExist
 from django.db.models import Q
@@ -12,7 +12,7 @@ logger = logging.getLogger('crm3_error')#('crm3_info')
 class RelatedMixin(object):
     related_module_name = ''
 
-    def checkRelated(self):
+    def checkRelated(self) -> object:
         """Проверка связанных данных
 
         Функция возвращает все связанные приложения с указанным приложеним в переменной related_module_name.
@@ -20,7 +20,7 @@ class RelatedMixin(object):
         то есть список из модели manytomany, который потом обычным перебором проверять.
         Пример в приложении orders в views
 
-        :rtype: object
+        :rtype: object get
         """
         try:
             related = Plugins.objects.get(module_name=self.related_module_name)
@@ -30,6 +30,23 @@ class RelatedMixin(object):
                 logger.error('csl checkRelated. Не указан related_module_name')
             else:
                 logger.error('csl checkRelated. Приложение не установлено. Записи нет в базе данных.')
+
+    def relatedFormat(self) -> object:
+        """
+        Позиции дизайна
+
+        :rtype: object filter
+        """
+        print(f"position")
+        try:
+            position = DesignRelatedPlugin.objects.filter(related_many_plugin__module_name=self.related_module_name)
+            print(f"position {position.values()}")
+            return position
+        except DesignRelatedPlugin.DoesNotExist:
+            if self.related_module_name == '':
+                logger.error('csl checkRelated. Не указан related_module_name')
+            else:
+                logger.error('DesignRelatedPlugin. Приложение не установлено. Записи нет в базе данных.')
 
     # [RU] возвращает все связанные формы
     # [EN] list related forms
@@ -133,7 +150,8 @@ class RelatedMixin(object):
     # query_paginator_page - метод для работы с query после функции paginator
     def getDataListRelated(self, **kwargs) -> list:
         data_related_list = []
-        related = self.checkRelated()
+        related = self.checkRelated() # obj get
+        format = self.relatedFormat() # obj filter
         if kwargs['method'] == 'query_paginator_page':
             #print('tyt', qry.object_list.)
             if 'qry_uuid_list' in kwargs:
@@ -200,7 +218,6 @@ class RelatedMixin(object):
                 if kwargs['method'] == 'query_paginator_page':
                     print('====================')
                     print('module_name: ', cls_related.related_module_name)
-                    print('related_format: ', cls_related.related_format)
 
                     if cls_related.related_format == 'form':
                         for uuid in qry_uuid_list:
@@ -211,15 +228,18 @@ class RelatedMixin(object):
                                 data_related_list.append(related_get)
                             except ObjectDoesNotExist:
                                 pass
-
-                    if cls_related.related_format == 'link':
-                        # print('cls_model link', cls_model)
-                        #cls_related2 = cls_model()
-                        for uuid in qry_uuid_list:
-                            cls_related2 = cls_model()
-                            related_get = cls_related2.get_related_data(related_uuid=uuid)
-                            related_get['uuid'] = uuid
-                            data_related_list.append(related_get)
+                    if format:
+                        for k in format:
+                            if k.related_plugin == x:
+                                all_format = k.related_format.all()
+                            if k.related_plugin == x:
+                                for z in all_format:
+                                    if z.format == 'link':
+                                        for uuid in qry_uuid_list:
+                                            cls_related2 = cls_model()
+                                            related_get = cls_related2.get_related_data(related_uuid=uuid)
+                                            related_get['uuid'] = uuid
+                                            data_related_list.append(related_get)
 
                     if cls_related.related_format == 'select':
                         logger.info('cls_model select utils %s', cls_model)

@@ -2,7 +2,7 @@ from django.shortcuts import render, get_object_or_404, redirect
 from django.http import HttpResponse, JsonResponse
 from django.views.generic import ListView, DetailView, CreateView
 from django.urls import reverse_lazy
-from .forms import RelatedPluginForm, RelatedFormatPluginForm, RelatedDesignPositionForm
+from .forms import RelatedPluginForm, RelatedDesignPositionForm, RelatedFormatPositionForm
 from .models import Plugins, PluginsCategory, RelatedFormat, DesignPosition, DesignRelatedPlugin
 from plugins import settings_plugin
 from .utils import RelatedMixin
@@ -220,7 +220,7 @@ class ViewCurrentPlugins(DetailView):
         context = super().get_context_data(**kwargs)
         context['tag'] = self.kwargs['tag']
         context['form_related'] = RelatedPluginForm()
-        context['form_relatedformat'] = RelatedFormatPluginForm()
+        context['form_relatedformat'] = RelatedFormatPositionForm()
         context['form_designposition'] = RelatedDesignPositionForm()
 
         print(f"context {context['form_designposition']}")
@@ -231,7 +231,8 @@ class ViewCurrentPlugins(DetailView):
         print(f'obj ', self.object)
         context = super().get_context_data(**kwargs)
         form_related = RelatedPluginForm(request.POST)
-        form_relatedformat = RelatedFormatPluginForm(request.POST)
+        form_relatedformat = RelatedFormatPositionForm(request.POST)
+
         form_designposition = RelatedDesignPositionForm(request.POST)
         print('request.POST ', request.POST)
         context['form_related'] = form_related
@@ -249,12 +250,14 @@ class ViewCurrentPlugins(DetailView):
             self.plugin.save()
 
         if form_relatedformat.is_valid():
-            self.plugin = self.get_object()
+            getDesignObj = DesignRelatedPlugin.objects.get(position__position=request.POST['position'],
+                                                           related_plugin=self.object)
             if 'relatedformat_add' in request.POST:
-                self.plugin.related_format.add(request.POST['related_format'])
+
+                getDesignObj.related_format.add(request.POST['related_format'])
             elif 'relatedformat_del' in request.POST:
-                self.plugin.related_format.remove(request.POST['related_format'])
-            self.plugin.save()
+                getDesignObj.related_format.remove(request.POST['related_format'])
+            getDesignObj.save()
 
         if form_designposition.is_valid():
             getDesignObj = DesignRelatedPlugin.objects.get(position__position=request.POST['position'],

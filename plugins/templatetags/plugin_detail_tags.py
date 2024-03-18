@@ -10,7 +10,7 @@ import os
 import shutil
 import importlib
 
-from plugins.models import Plugins, DesignRelatedPlugin
+from plugins.models import Plugins, DesignRelatedPlugin, RelatedFormat
 
 register = template.Library()
 
@@ -25,7 +25,7 @@ def action_plugin(arg1=0, tag='', form_related=None, form_relatedformat=None, fo
     context['form_designposition'] = form_designposition
     context['active_check'] = plugin.is_active
     context['isRelated'] = plugin.related.all()
-    context['isRelatedFormat'] = plugin.related_format.all()
+    context['isRelatedFormat'] = RelatedFormat.objects.all()
     context['isDesignRelatedPlugin'] = DesignRelatedPlugin.objects.filter(related_plugin=arg1)
     context['delete_check'] = False
     context['copydata'] = False
