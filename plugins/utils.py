@@ -234,23 +234,13 @@ class RelatedMixin(object):
                                 all_format = k.related_format.all()
                             if k.related_plugin == x:
                                 for z in all_format:
-                                    if z.format == 'link':
+                                    if z.format == 'html':
                                         for uuid in qry_uuid_list:
                                             cls_related2 = cls_model()
                                             related_get = cls_related2.get_related_data(related_uuid=uuid)
                                             related_get['uuid'] = uuid
+                                            related_get['position'] = k.position.position
                                             data_related_list.append(related_get)
-
-                    if cls_related.related_format == 'select':
-                        logger.info('cls_model select utils %s', cls_model)
-                        for uuid in qry_uuid_list:
-                            try:
-                                cls2 = cls_model.objects.get(uuid__related_uuid=uuid)
-                                related_get = cls2.get_related_data()
-                                related_get['uuid'] = uuid
-                                data_related_list.append(related_get)
-                            except ObjectDoesNotExist:
-                                pass
         #print('======= data_related_list')
         #print(data_related_list)
         return data_related_list

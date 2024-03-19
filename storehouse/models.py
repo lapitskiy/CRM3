@@ -31,11 +31,12 @@ class StoreRelated(models.Model):
     uuid = models.ManyToManyField('RelatedUuid')
 
     def get_related_data(self, **kwargs):
+        obj = StoreRelated.objects.get(uuid__related_uuid=kwargs['related_uuid'])
         data = {
             'related_use': 'text',
             'module_name': 'Отделения',
-            'related_text': 'Отделение '+self.store.name,
-            'related_uuid': list(self.uuid.values_list('related_uuid', flat=True)),
+            'related_text': 'Отделение '+ obj.store.name, #self.store.name,
+            'related_uuid': list(obj.uuid.values_list('related_uuid', flat=True)), #list(self.uuid.values_list('related_uuid', flat=True)),
             }
         return data
 

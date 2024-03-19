@@ -292,8 +292,9 @@
 <div class="card-footer">
 <b>Дополнительные данные</b><br>
                             {% for related_item in related_list %}
-                                    {% if related_item.related_uuid and item.uuid__related_uuid == related_item.uuid  and related_item.related_use == 'link'%}
-                                        {{ related_item.html | safe }}
+
+                                    {% if related_item.related_uuid and item.uuid__related_uuid == related_item.uuid  and related_item.related_use == 'link' and related_item.position == 'second'%}
+                                        {{ related_item.html | safe }}<br>
                                     {% endif %}
                                     {% if related_item.related_uuid and item.uuid__related_uuid == related_item.uuid  and related_item.related_use == 'text'%}
                                         {{ related_item.related_text }}<br>

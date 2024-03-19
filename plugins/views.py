@@ -93,11 +93,10 @@ class PluginsTestView(ListView):
     def checkRelatedFormatExist(self, **kwargs):
         ddict = {}
         getObj = RelatedFormat.objects.filter(pk=1).first()
-        if getObj is None:
-            RelatedFormat.objects.update_or_create(pk=1, format='link')
+        if getObj:
+            RelatedFormat.objects.update_or_create(pk=1, format='html')
             RelatedFormat.objects.update_or_create(pk=2, format='value')
-            RelatedFormat.objects.update_or_create(pk=3, format='form')
-            RelatedFormat.objects.update_or_create(pk=3, format='main')
+            RelatedFormat.objects.update_or_create(pk=3, format='htmlnotuuid')
             ddict['error'] = 'default_related_format_is_none'
         return ddict
 

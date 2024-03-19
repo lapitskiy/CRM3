@@ -12,7 +12,7 @@ class AppRelated(object):
     prefix = 'storehouse'
     related_module_name = 'storehouse'
     related_format = 'select'
-    related_data_format = 'text'
+    related_data_format = 'html'
 
     # если переменная имеет возможность иметь несколько uuid на одну запись, тогда здесь идет обрабтока такой возможности и возвращается
     # true - пример сомтреть в модуле clients.related
