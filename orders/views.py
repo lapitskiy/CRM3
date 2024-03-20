@@ -20,9 +20,11 @@ import json
 from django.forms.models import model_to_dict
 import time
 
+
 # from redis import Redis
 
 from datetime import datetime, timedelta
+from django.utils import timezone
 
 class OrdersHomeView(RelatedMixin, ListView):
     #model = Orders
@@ -78,28 +80,20 @@ class OrdersHomeView(RelatedMixin, ListView):
 
     def getStatusInfo(self, query):
         dict_={}
-        #print('date ', datetime.today())
-
-        #now = datetime.strptime(date, '%Y-%m-%d')
-        #print('now ', now)
-        #print('now 2', datetime.strptime(str(now), '%Y-%m-%d'))
         start_date = datetime.now() + timedelta(days=-7)
         end_date = datetime.now() + timedelta(days=-3)
-        #print('end_date ', end_date)
-        #end_date = datetime.strptime(now, '%Y-%m-%d') + timedelta(days=3)
-        #end_date = str(now) + timedelta(days=3)
         getStatus = query.filter(status__closed_status=False, created_at__range=[start_date, end_date], category__category='simple').values_list('pk', flat=True)
-        print('getStatus ', getStatus)
+        #print('getStatus ', getStatus)
         dict_['warn3'] = list(getStatus)
         start_date = datetime.now() + timedelta(days=-14)
         end_date = datetime.now() + timedelta(days=-7)
         getStatus = query.filter(status__closed_status=False, created_at__range=[start_date, end_date], category__category='simple').values_list('pk', flat=True)
-        print('getStatus 2 ', getStatus)
+        #print('getStatus 2 ', getStatus)
         dict_['warn7'] = list(getStatus)
         start_date = datetime.now() + timedelta(days=-365)
         end_date = datetime.now() + timedelta(days=-14)
         getStatus = query.filter(status__closed_status=False, created_at__range=[start_date, end_date], category__category='simple').values_list('pk', flat=True)
-        print('getStatus 4 ', getStatus)
+        #print('getStatus 4 ', getStatus)
         dict_['warn14'] = list(getStatus)
         #dict_.append(getStatus)
         #getStatus = Orders.objects.filter(status__closed_status=False, category__category='simple').values_list('pk', flat=True)

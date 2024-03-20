@@ -24,6 +24,7 @@ class Money(models.Model):
 
     def get_related_data(self, **kwargs):
         prepayment = Prepayment.get_all_prepayment_sum(id=self.pk)
+        obj = Money.objects.get(uuid__related_uuid=kwargs['related_uuid'])
         #design_position = list(DesignRelatedPlugin.objects.filter(related_plugin__module_name=MODULE_NAME).values_list())
         if prepayment is None:
             prepayment = 0
@@ -31,18 +32,17 @@ class Money(models.Model):
         if self.card_pay == True:
             pay_method = 'По карте'
         data = {
-            'related_use': 'form',
             #'position': design_position,
-            'module_name': 'Стоимость',
-            'Сумма': self.money,
+            'title': 'Стоимость',
+            'Сумма': obj.money, #self.money,
             'Оплачено': prepayment,
             'Способ оплаты':  pay_method,
-            'html': '<a href="/money/edit/'+str(self.pk)+'" target="_blank">Внести предоплату</a>',
-            'related_uuid': list(self.uuid.values_list('related_uuid', flat=True)),
+            '$': '<a href="/money/edit/'+str(self.pk)+'" target="_blank">Редактировать цену или внести предоплату</a>',
+            #'related_uuid': list(obj.uuid.values_list('related_uuid', flat=True)), #list(self.uuid.values_list('related_uuid', flat=True)),
             }
 
-        if self.money != prepayment:
-            data['warning'] = 'red'
+        if obj.money != prepayment: #self.money != prepayment:
+            data['title'] = 'Стоимость (не оплачено)'
         return data
 
     def get_related_dict_data(self):

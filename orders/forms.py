@@ -10,6 +10,9 @@ class ListTextWidget(forms.Select):
     template_name = 'include/_forms_orders_datalist.html'
 
     def format_value(self, value):
+        #print(f"value {label}")
+        if type(value) == int:
+            print(f"value {type(value)}")
         if value == '' or value is None:
             return ''
         if self.is_localized:
@@ -17,6 +20,15 @@ class ListTextWidget(forms.Select):
         return str(value)
 
 class ChoiceTxtField(forms.ModelChoiceField):
+    def label_from_instance(self, obj):
+        """
+        Convert objects into strings and generate the labels for the choices
+        presented by this object. Subclasses can override this method to
+        customize the display of the choices.
+        """
+        print(f"v3 {obj.name}")
+        return str(obj)
+
     widget = ListTextWidget()
 
 #forms
@@ -68,11 +80,14 @@ class SimpleOrderEditForm(forms.ModelForm):
         status_excluded = ['','-']
         self.fields['status'].choices = [(k, v) for k, v in self.fields['status'].choices if k not in status_excluded]
         self.fields['category_service'].choices = [(k, v) for k, v in self.fields['category_service'].choices if k not in status_excluded]
-        self.fields['device'] = ChoiceTxtField(queryset=Device.objects.filter(category_service__in=self.fields['category_service'].queryset).order_by('-used'))
+        device_query = Device.objects.filter(category_service__in=self.fields['category_service'].queryset).order_by('-used')
+        print(f"device_query {device_query}")
+        self.fields['device'] = ChoiceTxtField(queryset=device_query)
         self.fields['service'] = ChoiceTxtField(queryset=Service.objects.filter(category_service__in=self.fields['category_service'].queryset).order_by('-used'))
         self.fields['service'].choices = [(v, k) for k, v in self.fields['service'].choices if k not in status_excluded]
         #self.fields['service'].choices = [(k.id, str(k)) for k in self.fields['service'].choices if k not in status_excluded]
         self.fields['device'].choices = [(k, v) for k, v in self.fields['device'].choices if k not in status_excluded]
+        self.fields['device'].initial = 'name'
         self.fields['service'].label = 'Услуга'
         self.fields['device'].label = 'Устройство'
 

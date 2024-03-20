@@ -1,16 +1,9 @@
 {% block javascript %}
     <script>
-
-
-
     $(document).ready(function () {
-
             $(document).on('click', '#list-item-{{ widget.name }}', function(e){
                $('#ajax_input_{{ widget.name }}').val( $(this).text().trim());
-
-
             });
-
             $('#ajax_input_{{ widget.name }}').keyup(function () {
                 console.log('{{ widget.name }}')
                 // create an AJAX call
@@ -51,9 +44,6 @@
                             // Обновляем текст заполнителя.
                             input.placeholder = "Введите название...";
 
-                            // Настраиваем и выполняем запрос.
-                            //request.open('GET', 'html-elements.json', true);
-                            //request.send();
 
 
                         }
@@ -81,6 +71,7 @@
 {% endblock javascript %}
 
 <br>
+{{ widget }}
 <input id="ajax_input_{{ widget.name }}" list="{{ widget.name }}" autocomplete="off"
     {% if widget.value != None %} name="{{ widget.name }}" value="{{ widget.value|stringformat:'s' }}"{% endif %}
     {% include "django/forms/widgets/attrs.html" %}>

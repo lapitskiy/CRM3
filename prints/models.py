@@ -20,10 +20,8 @@ class Prints(models.Model):
         data = {}
         if 'related_uuid' in kwargs:
             data = {
-                'related_use': 'link',
-                'html': '<a href="/prints/form/?uuid='+kwargs['related_uuid']+'" target="_blank">Распечатать</a>',
-                'form': self.pk,
-                'related_uuid': kwargs['related_uuid'],
+                'title': 'Печать',
+                '#': '<a href="/prints/form/?uuid='+kwargs['related_uuid']+'" target="_blank">Распечатать</a>',
                 }
         return data
 

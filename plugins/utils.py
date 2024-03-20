@@ -219,15 +219,6 @@ class RelatedMixin(object):
                     print('====================')
                     print('module_name: ', cls_related.related_module_name)
 
-                    if cls_related.related_format == 'form':
-                        for uuid in qry_uuid_list:
-                            try:
-                                cls2 = cls_model.objects.get(uuid__related_uuid=uuid)
-                                related_get = cls2.get_related_data()
-                                related_get['uuid'] = uuid
-                                data_related_list.append(related_get)
-                            except ObjectDoesNotExist:
-                                pass
                     if format:
                         for k in format:
                             if k.related_plugin == x:
@@ -241,8 +232,6 @@ class RelatedMixin(object):
                                             related_get['uuid'] = uuid
                                             related_get['position'] = k.position.position
                                             data_related_list.append(related_get)
-        #print('======= data_related_list')
-        #print(data_related_list)
         return data_related_list
 
 
