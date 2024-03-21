@@ -1,0 +1,96 @@
+{% extends "base.html" %}
+{% block title %}{{ title }} - {{ block.super }}{% endblock %}
+{% block sidebar %}
+    {% include 'include/_sidebar_owm.html' %}
+{% endblock %}
+{% block content %}
+
+<script>
+function input() {
+  var IDs = [];
+  $(".table").find("tr").each(function(){ IDs.push(this.id); });
+
+  var input_taker = document.getElementById('search').value;
+
+  if (input_taker != '')
+      {
+    $("tr").each(function (i, el) {
+         //It'll be an array of elements
+        $(this).hide();
+     });
+} else {
+    $("tr").each(function (i, el) {
+         //It'll be an array of elements
+        $(this).show();
+     });
+}
+
+
+  $("tr[id*=" + input_taker + "]").each(function (i, el) {
+         //It'll be an array of elements
+        $(this).show();
+     });
+
+
+
+}
+</script>
+
+    <h1>Обновить цены WB</h1>
+    {% if price.error %}
+        {{ price.error }}
+    {% endif %}
+<input type="text" id="search" onkeyup="input()">
+<p id="block"></p>
+    <form action="#" method="POST">
+        <button type="submit" class="btn btn-primary btn-block">Обновить цены</button>
+
+            <div class="table-responsive">
+<table class="table table-rounded table-striped border gy-7 gs-7">
+		<thead>
+			<tr class="fw-semibold fs-6 text-gray-800 border-bottom border-gray-200">
+				<th>Артикул</th>
+				<th>Цена</th>
+                <th>Мин. цена (30%)</th>
+				<th>Акция</th>
+				<th>FBS/FBO</th>
+                <th>Оптовая</th>
+                <th>Прибыль FBS/FBO</th>
+                <th>Продано (пред. месяц)</th>
+			</tr>
+		</thead>
+
+		<tbody>
+
+        {% for offer_id, value in price.items %}
+            {% csrf_token %}
+
+			<tr id="{{ offer_id }}">
+
+				<td>{{ offer_id }}</td>
+				<td>
+                    <input type="hidden" id="{{ offer_id }}" name="{{ offer_id }}" value="offer_id" />
+                <input type="text" class="form-control" name="{{ offer_id }}_price" id="{{ offer_id }}" aria-describedby="basic-addon3" value="{{ value.price }}"/>
+                </td>
+            <td>
+                <input type="text" class="form-control" name="{{ offer_id }}_min_price" id="{{ offer_id }}" aria-describedby="basic-addon3" value="{{ value.min_price }}"/>
+                </td>
+				<td>{{ value.marketing_seller_price }}</td>
+				<td>{{ value.delivery_price }}</td>
+                <td>{{ value.opt_price }}</td>
+                <td>{{ value.profit_price }}
+                    {% if value.profit_percent > 0 %}
+                        (<span style="color:#5ab738">{{ value.profit_percent }}%</span>)
+                    {% else %}
+                        (<span style="color:#ff2b4a">{{ value.profit_percent }}%</span>)
+                    {% endif %}
+                </td>
+                <td>{{ value.sale_qty }}</td>
+			</tr>
+        {% endfor %}
+        		</tbody>
+	</table>
+</div>
+        <button type="submit" class="btn btn-primary btn-block">Обновить цены</button>
+    </form>
+{% endblock %}

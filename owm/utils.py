@@ -12,6 +12,16 @@ def get_headers(user):
             'Accept': 'application/json',
             'Authorization': f'Bearer {user.yandex_api}'
         }
+        url = 'https://api.partner.market.yandex.ru/campaigns'
+        response = requests.get(url, headers=headers['yandex_headers']).json()
+        headers['yandex_id'] = {
+           'company_id': response['campaigns'][0]['id'],
+           'businessId': response['campaigns'][0]['business']['id']}
+        url = f"https://api.partner.market.yandex.ru/businesses/{headers['yandex_id']['businessId']}/warehouses"
+        response = requests.get(url, headers=headers['yandex_headers']).json()
+        headers['yandex_id'].update({
+            'warehouseId': response['result']['warehouses'][0]['id']
+                })
     if user.ozon_api and user.client_id:
         headers['ozon_headers'] = {
             'Client-Id': user.client_id,
@@ -123,15 +133,9 @@ def update_inventory_ozon(headers,stock):
 
 # инвентаризация товара яндекс
 def update_inventory_yandex(headers, stock):
-    url = 'https://api.partner.market.yandex.ru/campaigns'
-    response = requests.get(url, headers=headers).json()
-    #print(f'yandex response {response}')
-    #print(f'yandex headers {headers}')
-    company_id = response['campaigns'][0]['id']
-    businessId = response['campaigns'][0]['business']['id']
-    url = f'https://api.partner.market.yandex.ru/businesses/{businessId}/warehouses'
-    response = requests.get(url, headers=headers).json()
-    warehouseId = response['result']['warehouses'][0]['id']
+    company_id = headers['yandex_headers']['company_id']
+    businessId = headers['yandex_headers']['businessId']
+    warehouseId = headers['yandex_headers']['warehouseId']
     current_time = datetime.datetime.now()
     offset = datetime.timezone(datetime.timedelta(hours=3))  # Указываем смещение +03:00
     formatted_time = current_time.replace(tzinfo=offset).isoformat()
@@ -314,8 +318,6 @@ def get_all_price_ozon(headers):
                          + float(item['commissions']['fbs_deliv_to_customer_amount']) + \
                          float(item['price']['marketing_seller_price'])/100*1 # эквайринг 1% и 10% для средней цены
         delivery_price = delivery_price + 15 # средняя цена доставки товара
-        if item['offer_id'] == 'renata_371':
-            print(f"371 {item}")
         #print(f"opt_price {item['offer_id']}")
         profit_price = int(float(item['price']['marketing_seller_price'])) - \
                        int(delivery_price) - opt_price_clear[item['offer_id']]['opt_price']
@@ -336,6 +338,138 @@ def get_all_price_ozon(headers):
 
 
     #print(f'result ozon price {result}')
+    return result
+
+def get_all_price_wb(headers):
+    result = {}
+    opt_price = get_moysklad_opt_price(headers['moysklad_headers'])
+    #print(f"opt_price {opt_price['rows'][0]['buyPrice']['value']}")
+    #print(f"opt_price {opt_price['rows'][0]['article']}")
+    opt_price_clear = {}
+    for item in opt_price['rows']:
+        #opt_price_clear['article'] = item['article']
+        #print(f"opt_price {item['buyPrice']['value']/100}")
+        opt_price_clear[item['article']] = {
+            'opt_price' : int(float(item['buyPrice']['value']) / 100),
+            }
+
+    # продажи за последние 30 дней
+    #url = "https://statistics-api.wildberries.ru/api/v1/supplier/sales"
+    url = "https://statistics-api.wildberries.ru/api/v3/supplier/reportDetailByPeriod"
+    dateTo = datetime.datetime.now()
+    dateFrom = dateTo - datetime.timedelta(days=+30)
+    dateTo = dateTo.strftime('%Y-%m-%d')
+    dateFrom = dateFrom.strftime('%Y-%m-%d')
+    print(f"date RFC3339 {dateTo}") #.isoformat()
+    data = {
+        'dateFrom': dateFrom, #lastmonth_date.strftime('%Y-%m')
+        'dateTo': dateTo,
+        'limit': 100
+        }
+    print(f"data wb {data}")
+    response = requests.get(url, headers=headers['wildberries_headers'], json=data).json()
+    print(f"date resp wb json {response}")
+    if response:
+        if response['code'] == 503:
+            result['error'] = response['message']
+    realization = {}
+    '''
+    for item in response['result']['rows']:
+        if item['offer_id'] in realization:
+            realization[item['offer_id']]['sale_qty'] = realization[item['offer_id']]['sale_qty'] + item['sale_qty']
+        else:
+            realization[item['offer_id']] = {'sale_qty': item['sale_qty']}
+    #print(f"realization {realization}")
+    #print(f"date resp {response}")
+    
+    url = "https://api-seller.ozon.ru/v4/product/info/prices"
+    data = {
+        "filter": {
+            "visibility": "IN_SALE",
+        },
+            "last_id": "",
+            "limit": 1000
+        }
+    response = requests.post(url, headers=headers['ozon_headers'], json=data).json()
+    #print(f"response {response['result']['items'][0]}")
+    result = {}
+    for item in response['result']['items']:
+        if item['offer_id'] not in opt_price_clear:
+            continue
+        if item['offer_id'] not in realization:
+            realization[item['offer_id']] = {'sale_qty': 0}
+        delivery_price = float(item['price']['marketing_seller_price'])/100 * float(item['commissions']['sales_percent_fbs'])
+        delivery_price = delivery_price + float(item['commissions']['fbs_direct_flow_trans_min_amount']) \
+                         + float(item['commissions']['fbs_deliv_to_customer_amount']) + \
+                         float(item['price']['marketing_seller_price'])/100*1 # эквайринг 1% и 10% для средней цены
+        delivery_price = delivery_price + 15 # средняя цена доставки товара
+        if item['offer_id'] == 'renata_371':
+            print(f"371 {item}")
+        #print(f"opt_price {item['offer_id']}")
+        profit_price = int(float(item['price']['marketing_seller_price'])) - \
+                       int(delivery_price) - opt_price_clear[item['offer_id']]['opt_price']
+        profit_percent = profit_price / opt_price_clear[item['offer_id']]['opt_price'] * 100
+        min_price = int(delivery_price) + (opt_price_clear[item['offer_id']]['opt_price']/100*30) + opt_price_clear[item['offer_id']]['opt_price']
+
+        #print(f"offer_id {item}")
+        result[item['offer_id']] = {
+            'price': int(float(item['price']['price'])),
+            'min_price': int(min_price),
+            'marketing_seller_price': int(float(item['price']['marketing_seller_price'])),
+            'delivery_price': int(delivery_price),
+            'opt_price': opt_price_clear[item['offer_id']]['opt_price'],
+            'profit_price': profit_price,
+            'profit_percent': int(profit_percent),
+            'sale_qty': realization[item['offer_id']]['sale_qty']
+        }
+
+'''
+    #print(f'result ozon price {result}')
+    return result
+
+
+def get_all_price_yandex(headers):
+    # калулутяор fbs fby https: // dev - market - partner - api.docs - viewer.yandex.ru / ru / reference / tariffs / calculateTariffs
+
+    result = {}
+    company_id = headers['yandex_id']['company_id']
+    businessId = headers['yandex_id']['businessId']
+    warehouseId = headers['yandex_id']['warehouseId']
+    opt_price = get_moysklad_opt_price(headers['moysklad_headers'])
+    # print(f"opt_price {opt_price['rows'][0]['buyPrice']['value']}")
+    # print(f"opt_price {opt_price['rows'][0]['article']}")
+    opt_price_clear = {}
+    for item in opt_price['rows']:
+        # opt_price_clear['article'] = item['article']
+        # print(f"opt_price {item['buyPrice']['value']/100}")
+        opt_price_clear[item['article']] = {
+            'opt_price': int(float(item['buyPrice']['value']) / 100),
+        }
+
+    # продажи за последние 30 дней
+    # url = "https://statistics-api.wildberries.ru/api/v1/supplier/sales"
+    url = f"https://api.partner.market.yandex.ru/campaigns/{company_id}/offer-prices"
+    data = {
+        'limit': 100
+    }
+    response = requests.get(url, headers=headers['yandex_headers'], json=data).json()
+    print(f"resp yandex json {response}")
+    for item in response['result']['offers']:
+        result[item['id']] = {
+            'price': int(float(item['price']['price'])),
+            'min_price': int(min_price),
+            'marketing_seller_price': int(float(item['price']['marketing_seller_price'])),
+            'delivery_price': int(delivery_price),
+            'opt_price': opt_price_clear[item['offer_id']]['opt_price'],
+            'profit_price': profit_price,
+            'profit_percent': int(profit_percent),
+            'sale_qty': realization[item['offer_id']]['sale_qty']
+        }
+
+    if response:
+        if response['status'] == 503:
+            result['error'] = response['message']
+
     return result
 
 # обновление цены товара озон

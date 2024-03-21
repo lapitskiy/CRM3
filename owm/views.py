@@ -292,3 +292,37 @@ class PriceOzon(View):
         offer_dict = price_POST_to_offer_dict(request.POST.dict())
         update_price_ozon(parser, offer_dict)
         return render(request, 'owm/price_ozon.html', context)
+
+class PriceWb(View):
+    def get(self, request, *args, **kwargs):
+        context = {}
+        parser = Parser.objects.get(user=request.user)
+        headers = get_headers(parser)
+        price = get_all_price_wb(headers)
+        context['price'] = price
+        #print(f"stock {stock}")
+        return render(request, 'owm/price_wb.html', context)
+
+    def post(self, request, *args, **kwargs):
+        context = {}
+        parser = Parser.objects.get(user=request.user)
+        offer_dict = price_POST_to_offer_dict(request.POST.dict())
+        update_price_ozon(parser, offer_dict)
+        return render(request, 'owm/price_wb.html', context)
+
+class PriceYandex(View):
+    def get(self, request, *args, **kwargs):
+        context = {}
+        parser = Parser.objects.get(user=request.user)
+        headers = get_headers(parser)
+        price = get_all_price_yandex(headers)
+        context['price'] = price
+        #print(f"stock {stock}")
+        return render(request, 'owm/price_yandex.html', context)
+
+    def post(self, request, *args, **kwargs):
+        context = {}
+        parser = Parser.objects.get(user=request.user)
+        offer_dict = price_POST_to_offer_dict(request.POST.dict())
+        update_price_ozon(parser, offer_dict)
+        return render(request, 'owm/price_wb.html', context)
