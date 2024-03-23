@@ -13,7 +13,6 @@ import os
 from pathlib import Path
 from plugins import settings_plugin
 import logging.config
-from os import environ
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -23,13 +22,15 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/3.1/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = environ.get('b=6b6nm*el46o2-2e^y*f0d!adb@yatl9@x)x&n#d0nav#j45n')
+SECRET_KEY = 'b=6b6nm*el46o2-2e^y*f0d!adb@yatl9@x)x&n#d0nav#j45n'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = int(environ.get('DEBUG', default=0))
+DEBUG = True
 
-ALLOWED_HOSTS = environ.get('*').split(' ')
+ALLOWED_HOSTS = ['*']
+CSRF_TRUSTED_ORIGINS = ['http://127.0.0.1:8001']
 
+SILENCED_SYSTEM_CHECKS = ['mysql.W003'] # отключаем проверку unique=True >255 charfield в mysql
 
 # Application definition
 
@@ -46,6 +47,9 @@ INSTALLED_APPS = [
     'debug_toolbar',
     'ckeditor',
     'ckeditor_uploader',
+    'django_select2',
+    #owm
+    'owm',
 ]
 INSTALLED_APPS += settings_plugin.INSTALLED_APPS_ADD
 
@@ -89,6 +93,7 @@ DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
         'NAME': 'crm3_local',
+        #'NAME': 'crm3_test',
         'USER': 'root',
         'PASSWORD': '',
         'HOST': 'localhost',
@@ -206,3 +211,21 @@ LOGGING = {
         },
     },
 }
+
+
+CACHES = {
+    # … default cache config and others
+    "default": {
+        "BACKEND": "django.core.cache.backends.locmem.LocMemCache",
+        "LOCATION": "unique-snowflake",
+    },
+    "select2": {
+        "BACKEND": "django_redis.cache.RedisCache",
+        "LOCATION": "redis://redis:6379/2",
+        "OPTIONS": {
+            "CLIENT_CLASS": "django_redis.client.DefaultClient",
+        }
+    }
+}
+
+SELECT2_CACHE_BACKEND = "select2"
