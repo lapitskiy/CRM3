@@ -4,3 +4,5 @@
 __pycache__/
 venv/
 ServiceCRM3/settings.py
+migrations/
+!migrations/__init__.py

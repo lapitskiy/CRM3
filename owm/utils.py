@@ -1,5 +1,6 @@
 import requests
 import datetime
+import numpy as np
 
 def get_headers(user):
     headers = {}
@@ -72,18 +73,24 @@ def sort_stock_and_invent(invent_dict, stock):
 
 # инветаризируем (оприходуем и списываем) товары на мойсклад и обновляем остатки на маркетплейсах
 def inventory_update(user, invent_dict):
+    context = {}
     headers = get_headers(user)
     stock = get_all_moysklad_stock(headers['moysklad_headers'])
     enter_dict, loss_dict = sort_stock_and_invent(invent_dict, stock)
     response = update_inventory_moysklad(headers['moysklad_headers'], enter_dict, loss_dict)
     # если мойсклад обновил, то делаем на озоне синхронизацию
+    context['moysklad'] = {
+        'code': response.status_code,
+        'json': response.json()
+    }
     if response.status_code == 200:
         stock = get_all_moysklad_stock(headers['moysklad_headers']) # вызываем снова, так как остатки изменились
-        update_inventory_ozon(headers['ozon_headers'], stock)
-        update_inventory_yandex(headers['yandex_headers'], stock)
-        update_inventory_wb(headers['wildberries_headers'], stock)
+        context['ozon'] = update_inventory_ozon(headers['ozon_headers'], stock)
+        context['yandex'] = update_inventory_yandex(headers, stock)
+        context['wb'] = update_inventory_wb(headers['wildberries_headers'], stock)
     user.replenishment = False
     user.save()
+    return context
 
 # инвентаризация товара мой склад
 def update_inventory_moysklad(headers, enter_dict, loss_dict):
@@ -128,14 +135,20 @@ def update_inventory_ozon(headers,stock):
         data = {
             'stocks': ozon_stocks[i:i+99],
         }
-    response = requests.post(url, headers=headers, json=data).json()
-    #print(f'ozon response {response}')
+    response = requests.post(url, headers=headers, json=data)
+    context = {
+        'code': response.status_code,
+        'json': response.json()
+    }
+    return context
 
 # инвентаризация товара яндекс
 def update_inventory_yandex(headers, stock):
-    company_id = headers['yandex_headers']['company_id']
-    businessId = headers['yandex_headers']['businessId']
-    warehouseId = headers['yandex_headers']['warehouseId']
+    print(f"head {headers}")
+    headers_ya = headers['yandex_headers']
+    company_id = headers['yandex_id']['company_id']
+    businessId = headers['yandex_id']['businessId']
+    warehouseId = headers['yandex_id']['warehouseId']
     current_time = datetime.datetime.now()
     offset = datetime.timezone(datetime.timedelta(hours=3))  # Указываем смещение +03:00
     formatted_time = current_time.replace(tzinfo=offset).isoformat()
@@ -155,7 +168,12 @@ def update_inventory_yandex(headers, stock):
         'skus': sku
     }
     #print(f"skus {data['skus'][0]}")
-    response = requests.put(url=url, json=data, headers=headers).json()
+    response = requests.put(url=url, json=data, headers=headers_ya)
+    context = {
+        'code': response.status_code,
+        'json': response.json()
+    }
+    return context
     #print(f'yandex response 2 {response}')
 
 # инвентаризация товара яндекс
@@ -168,13 +186,13 @@ def update_inventory_wb(headers, stock):
                 'limit': 100,
             },
             'filter': {
-                'withPhoto': 1
+                'withPhoto': -1
             }
         }
     }
 
     while True:
-        print(f"data {data}")
+        #print(f"data {data}")
         while True:
             try:
                 response = requests.post(url, json=data, headers=headers).json()
@@ -182,8 +200,8 @@ def update_inventory_wb(headers, stock):
                 break
             except requests.exceptions.JSONDecodeError:
                 print(f"exc")
-        print(f"wb article response {response['cursor']}")
-        print(f"total {response['cursor']['total']}")
+        #print(f"wb article response {response['cursor']}")
+        #print(f"total {response['cursor']['total']}")
         #print(f"response {response}")
         for item in response['cards']:
             if item['vendorCode'] in stock:
@@ -201,13 +219,13 @@ def update_inventory_wb(headers, stock):
             }
         }
         if response['cursor']['total'] < 100: break
-    print(f'stock {len(stock)}')
+    #print(f'stock {len(stock)}')
     url = 'https://suppliers-api.wildberries.ru/api/v3/warehouses'
     response = requests.get(url, headers=headers).json()
     warehouseId = response[0]['id']
     url = f'https://suppliers-api.wildberries.ru/api/v3/stocks/{warehouseId}'
     sku = []
-    print(f'stock {stock}')
+    #print(f'stock {stock}')
     for key, value in stock.items():
         if 'sku' in value:
             sku.append({
@@ -218,7 +236,18 @@ def update_inventory_wb(headers, stock):
         'stocks': sku
     }
     response = requests.put(url, json=data, headers=headers)
+    print(f'wb response {response}')
     print(f'wb response status {response.status_code}')
+    print(f'wb response text {response.text}')
+    if response.status_code == 204:
+        json = 'Update'
+    else:
+        json = response.json()
+    context = {
+        'code': response.status_code,
+        'json': json
+    }
+    return context
     #print(f'wb response {response.json()}')
 
 def get_inventory_row_data(headers, offer_dict):
@@ -369,29 +398,27 @@ def get_all_price_wb(headers):
     print(f"data wb {data}")
     response = requests.get(url, headers=headers['wildberries_headers'], json=data).json()
     print(f"date resp wb json {response}")
+    realization = {}
     if response:
         if response['code'] == 503:
             result['error'] = response['message']
-    realization = {}
-    '''
-    for item in response['result']['rows']:
-        if item['offer_id'] in realization:
-            realization[item['offer_id']]['sale_qty'] = realization[item['offer_id']]['sale_qty'] + item['sale_qty']
-        else:
-            realization[item['offer_id']] = {'sale_qty': item['sale_qty']}
+
+        if response['code'] == 200:
+            for item in response['result']['rows']:
+                if item['offer_id'] in realization:
+                    realization[item['offer_id']]['sale_qty'] = realization[item['offer_id']]['sale_qty'] + item['sale_qty']
+                else:
+                    realization[item['offer_id']] = {'sale_qty': item['sale_qty']}
     #print(f"realization {realization}")
     #print(f"date resp {response}")
-    
-    url = "https://api-seller.ozon.ru/v4/product/info/prices"
+
+    url = "https://discounts-prices-api.wb.ru/api/v2/list/goods/filter"
     data = {
-        "filter": {
-            "visibility": "IN_SALE",
-        },
-            "last_id": "",
-            "limit": 1000
-        }
-    response = requests.post(url, headers=headers['ozon_headers'], json=data).json()
-    #print(f"response {response['result']['items'][0]}")
+            'limit': 10,
+            'offset': 0
+            }
+    response = requests.get(url, headers=headers['wildberries_headers'], json=data).json()
+    print(f"response wb {response}")
     result = {}
     for item in response['result']['items']:
         if item['offer_id'] not in opt_price_clear:
@@ -423,7 +450,6 @@ def get_all_price_wb(headers):
             'sale_qty': realization[item['offer_id']]['sale_qty']
         }
 
-'''
     #print(f'result ozon price {result}')
     return result
 

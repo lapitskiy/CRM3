@@ -5,6 +5,9 @@
 {% endblock %}
 {% block content %}
     <h1>ОПРИХОДОВАНИЕ MoySklad + Ozon + Wb + Market</h1>
+    {% if error %}
+        Нет записи api
+    {% endif %}
     <form action="#" method="POST">
         <button type="submit" class="btn btn-primary btn-block">Обновить</button>
         {% for offer_id, value in stock.items %}

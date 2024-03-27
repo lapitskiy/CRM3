@@ -5,8 +5,34 @@
 {% endblock %}
 {% block content %}
     <h1>ИНВЕНТАРИЗАЦИЯ MoySklad + Ozon + Wb + Market</h1>
+
+    {% if resp %}
+        <div class="accordion" id="kt_accordion_1">
+        {% for key, value in resp.items %}
+            {% if value.code == 200 or value.code == 204 %}
+                <!--begin::Accordion-->
+
+                    <div class="accordion-item">
+                        <h2 class="accordion-header" id="kt_accordion_1_header_1">
+                            <button class="accordion-button fs-4 fw-semibold" type="button" data-bs-toggle="collapse" data-bs-target="#kt_accordion_1_body_1" aria-expanded="true" aria-controls="kt_accordion_1_body_1">
+                                {{ key }} остатки обновлены
+                            </button>
+                        </h2>
+                        <div id="kt_accordion_1_body_1" class="accordion-collapse collapse show" aria-labelledby="kt_accordion_1_header_1" data-bs-parent="#kt_accordion_1">
+                            <div class="accordion-body">
+                                {{ value }}
+                            </div>
+                        </div>
+                    </div>
+                <!--end::Accordion-->
+            {% endif %}
+        {% endfor %}
+        </div>
+
+    {% else %}
+
     <form action="#" method="POST">
-        <button type="submit" class="btn btn-primary btn-block">Установить api</button>
+        <button type="submit" class="btn btn-primary btn-block">Обновить остатки</button>
         {% for offer_id, value in stock.items %}
             {% csrf_token %}
             <div class="input-group mb-5">
@@ -15,6 +41,8 @@
                 <input type="text" class="form-control" name="{{ offer_id }}_stock" id="{{ offer_id }}" aria-describedby="basic-addon3" value="{{ value.stock }}"/>
             </div>
         {% endfor %}
-        <button type="submit" class="btn btn-primary btn-block">Установить api</button>
+        <button type="submit" class="btn btn-primary btn-block">Обновить остатки</button>
     </form>
+
+    {% endif %}
 {% endblock %}

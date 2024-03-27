@@ -6,6 +6,7 @@ from django.shortcuts import render
 from django.views import View
 from .models import Parser
 from .utils import *
+from django.core.exceptions import ObjectDoesNotExist
 
 
 def get_prod_meta(headers, offer_dict):
@@ -196,10 +197,13 @@ def price_POST_to_offer_dict(post):
 class Enter(View):
     def get(self, request, *args, **kwargs):
         context = {}
-        parser = Parser.objects.get(user=request.user)
-        headers = get_headers(parser)
-        stock = get_all_moysklad_stock(headers['moysklad_headers'])
-        context['stock'] = stock
+        try:
+            parser = Parser.objects.get(user=request.user)
+            headers = get_headers(parser)
+            stock = get_all_moysklad_stock(headers['moysklad_headers'])
+            context['stock'] = stock
+        except ObjectDoesNotExist:
+            context['error'] = 'нет api'
         #print(f"stock {stock}")
         return render(request, 'owm/enter.html', context)
 
@@ -231,12 +235,14 @@ class Inventory(View):
 
     def post(self, request):
         #print(f"post {request.POST.dict()}")
+        context = {}
         invent_dict = inventory_POST_to_offer_dict(request.POST.dict())
         parser = Parser.objects.get(user=request.user)
         parser.replenishment = True
         parser.save()
-        inventory_update(parser, invent_dict)
-        return HttpResponseRedirect('store')
+        context['resp'] = inventory_update(parser, invent_dict)
+        print(f"responce {context['resp']}")
+        return render(request, 'owm/inventory.html', context)
 
 class Create(View):
     def get(self, request, *args, **kwargs):

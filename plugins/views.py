@@ -103,7 +103,7 @@ class PluginsTestView(ListView):
     def add_plugin_in_db(self, **kwargs):
         if 'models' in kwargs:
             models = kwargs['models']
-            cfgPath = models + '.install'
+            cfgPath = models + '.settings'
             cfg_lib = importlib.import_module(cfgPath)
             cfg = cfg_lib.REPO_DATA
             print('cfg: ', cfg)

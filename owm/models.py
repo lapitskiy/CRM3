@@ -8,6 +8,5 @@ class Parser(models.Model):
     wildberries_api = models.CharField(max_length=1024, unique=True, verbose_name='API wildberries')
     client_id = models.CharField(max_length=128, unique=True, verbose_name='Client Id Ozon')
     ozon_api = models.CharField(max_length=1024, unique=True, verbose_name='API Ozon')
-    # default='', blank=True, null=True,
     replenishment = models.BooleanField(default=False, verbose_name='Пополняется ли склад сейчас?')
-    last_stock_update_at = models.DateTimeField(blank=True, null=True, verbose_name='Последнее оприходование или инвентаризация')
+    stock_update_at = models.DateTimeField(blank=True, null=True, verbose_name='Последняя инвентаризация')
