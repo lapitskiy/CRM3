@@ -14,7 +14,8 @@ Features
 
 - multilingual
 - version control
-- order plugin
+- repository
+- docker
 
 Requirements
 -
@@ -49,12 +50,7 @@ CRM3
 -
 читать [documentation.md](documentation.md)
 
-crm paper:
+Обновления
+-
+читать [update.md](update.md)
 
-- единая база данных, подгрузка конкретных версий приложений и роли пользователей
-- плагин создания печатных данных
-- mixin для взаимодействия приложений utils.py [DONE]
-- написан плагин создания заказов [DONE] 
-- написан плагин бухгалтерия [DONE]
-- написан плагин клиенты [DONE]
-- создан репозиторий [DONE]
