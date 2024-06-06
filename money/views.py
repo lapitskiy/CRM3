@@ -18,46 +18,42 @@ from datetime import datetime, timedelta
 
 import time
 
+import cProfile
+import pstats
+profiler = cProfile.Profile()
+
+
 class MoneyHomeView(RelatedMixin, ListView):
     paginate_by = 10
     template_name = 'money/money_list.html'
     context_object_name = 'money'
     related_module_name = 'money'
+    _queryset_cached = None  # Добавляем переменную для кеширования запроса
 
     def get_queryset(self):
-        '''
-        if self._check_cached() == False:
-            getQ = self._caching_queryset(self.getMoneyQuery())
-        else:
-            getQ = self._get_cached_queryset()
-        '''
-        return self.getMoneyQuery()
+        if self._queryset_cached is not None:
+            return self._queryset_cached
+        print('Fetching new queryset...')
+        self._queryset_cached = self.getMoneyQuery()
+        return self._queryset_cached
 
     def get_context_data(self, *, object_list=None, **kwargs):
         start_time = time.time()
-        #if self._check_cached() == False:
-        #    getQ = self._caching_queryset(self.getMoneyQuery())
-        #else:
-            #print('self._check_cached() ', self._check_cached())
-        #    getQ = self._get_cached_queryset()
         context = super(MoneyHomeView, self).get_context_data(**kwargs)
-        getQ = self.getMoneyQuery()
-        print('tyt11 ', type(getQ))
-        print('tyt22 ', getQ)
+        profiler.enable()
+        getQ = self.get_queryset()
+        profiler.disable()
+        # Сохранение статистики в объект `Stats`
+        # Дополнительно: сохранение вывода профилирования в файл
+        # Создание объекта Stats для файла и вывод топ-10 самых тяжелых функций
+        p = pstats.Stats('output.prof')
+        p.sort_stats('cumulative')
+        p.print_stats(10)
         context['info'] = self.getInfo(getQ)
         context['title'] = 'Деньги'
-        list_orders = getQ.values()
-        qry_uuid_list = list(getQ.values_list('money__uuid__related_uuid', flat=True))
-        print(type(getQ))
-        print(getQ)
-        print(type(getQ.values()))
-        print(getQ.values())
-        #list_orders = getQ
-        #print('list_orders ', list_orders)
-        #list_orders = list_orders.all()
-        #print('list_orders', list_orders.all())
-        paginator = Paginator(list_orders, self.paginate_by)
+        paginator = Paginator(getQ, self.paginate_by)
         page = self.request.GET.get('page')
+        print('tyt1')
         try:
             orders_page = paginator.page(page)
         except PageNotAnInteger:
@@ -65,26 +61,12 @@ class MoneyHomeView(RelatedMixin, ListView):
             orders_page = paginator.page(page)
         except EmptyPage:
             orders_page = paginator.page(paginator.num_pages)
-        #print('context info', context['info'])
-        context['related_list'] = self.getDataListRelated(query=orders_page, qry_uuid_list=qry_uuid_list, method='query_paginator_page')
+        context['money_list'] = list(orders_page.object_list)
+        qry_uuid_list = list(getQ.values_list('money__uuid__related_uuid', flat=True))
+        context['related_list'] = list(self.getDataListRelated(query=orders_page, qry_uuid_list=qry_uuid_list, method='query_paginator_page'))
         print('### money related_list ', context['related_list'])
         context['request'] = self.request
         context['get'] = self.request.GET
-        #page_list = orders_page.object_list.values()
-        #for x in page_list:
-        #print('x ', orders_page.object_list.values())
-        #test = orders_page.object_list.values()
-        qry_page = orders_page
-        #print('qry_page ', qry_page.object_list.values_list('pk', flat=True))
-        #qry_uuid_list = list(qry.object_list.values_list('uuid__related_uuid', flat=True))
-        context['money_list'] = list(qry_page.object_list.values('pk', 'id', 'prepayment', 'created_at', 'money_id'))
-
-        #context['money_list'] = orders_page.object_list
-        #getIdMoney = orders_page.object_list
-        #print('money_list ', context['money_list'])
-        #getPrepay = Prepayment.objects.filter()
-        #print('============================')
-        #print('VIEW context', context)
         print(" --- %s seconds ---" % (time.time() - start_time))
         return context
 
@@ -92,13 +74,15 @@ class MoneyHomeView(RelatedMixin, ListView):
         #print('MONEY QUERY ', self.request.GET)
         if 'rdata_' in str(self.request.GET):
             relatedListUuid = self.relatedPostGetData(request_get=self.request.GET)
-            #print('relatedListUuid ', relatedListUuid)
+            print('relatedListUuid ', relatedListUuid['orders']['relateddata'])
             interslist = []
             for k, v in relatedListUuid.items():
                 if v['relateddata']:
                     interslist.append(v['relateddata'])
             #print('interslist ', interslist)
+
             interslist = list(set.intersection(*map(set,interslist)))
+
             #print('peres ', interslist)
             if interslist:
                 query = self.get_related_query_icontains(interslist)

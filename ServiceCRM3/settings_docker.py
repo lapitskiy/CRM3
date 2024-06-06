@@ -88,7 +88,7 @@ WSGI_APPLICATION = 'ServiceCRM3.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
-        'NAME': 'crm3_ubuntu_backup',
+        'NAME': 'crm3_',
         #'NAME': 'crm3_test',
         'USER': 'root',
         'PASSWORD': 'root',

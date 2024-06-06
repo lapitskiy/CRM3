@@ -221,8 +221,6 @@ class ViewCurrentPlugins(DetailView):
         context['form_related'] = RelatedPluginForm()
         context['form_relatedformat'] = RelatedFormatPositionForm()
         context['form_designposition'] = RelatedDesignPositionForm()
-
-        print(f"context {context['form_designposition']}")
         return context
 
     def post(self, request, *args, **kwargs):

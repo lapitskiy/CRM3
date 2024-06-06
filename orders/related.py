@@ -54,7 +54,6 @@ class AppRelated():
         # cond = None
         if relateddata:
             getdata = relateddata
-            logger.info('%s getdata: %s', __name__, getdata)
             if 'submenu' in getdata:
                 _dict = getdata['submenu']
                 if _dict['category'] == 'filterform':

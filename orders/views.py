@@ -46,6 +46,7 @@ class OrdersHomeView(RelatedMixin, ListView):
         context['filter'] = self.requestGet('filter')
         context['date'] = self.requestGet('date')
         clean_orders = self.get_queryset()
+        print(f'clean_orders {type(clean_orders)}')
         #print('clean_orders', type(clean_orders)) # clean_orders <class 'django.db.models.query.QuerySet'>
         paginator = Paginator(clean_orders, self.paginate_by)
         page = self.request.GET.get('page')

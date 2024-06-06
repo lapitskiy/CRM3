@@ -27,6 +27,7 @@ def action_plugin(arg1=0, tag='', form_related=None, form_relatedformat=None, fo
     context['isRelated'] = plugin.related.all()
     context['isRelatedFormat'] = RelatedFormat.objects.all()
     context['isDesignRelatedPlugin'] = DesignRelatedPlugin.objects.filter(related_plugin=arg1)
+    print(f"isDesignRelatedPlugin {context['isDesignRelatedPlugin']}")
     context['delete_check'] = False
     context['copydata'] = False
     if tag == 'active' and not context['active_check']:
