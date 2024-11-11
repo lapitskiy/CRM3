@@ -1,17 +1,17 @@
-# образ на основе которого создаём контейнер
-FROM python:3.8.7
+# Используйте официальный образ Python
+FROM python:3.10
 
-# рабочая директория внутри проекта
-WORKDIR /usr/src/app
+# Установите рабочую директорию в контейнере
+WORKDIR /app
 
-# переменные окружения для python
-ENV PYTHONDONTWRITEBYTECODE 1
-ENV PYTHONUNBUFFERED 1
+ENV PYTHONUNBUFFERED=1
 
-# устанавливаем зависимости
-RUN pip install --upgrade pip
-COPY ./requirements.txt .
-RUN pip install -r requirements.txt
+# Скопируйте файлы зависимостей и установите их
+COPY requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
 
-# копируем содержимое текущей папки в контейнер
+# Скопируйте остальные файлы вашего приложения в контейнер
 COPY . .
+
+# Определите команду для запуска приложения
+CMD ["python", "manage.py", "runserver", "0.0.0.0:8000"]

@@ -49,3 +49,28 @@ color: #9370db;
 .bs-callout-rosybrown h4 {
 color: #bc8f8f;
 }
+
+.update-form .row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.update-form .row .col {
+    flex: 1;
+    padding: 0 10px;
+    text-align: center;
+}
+
+.update-form .row .col-id {
+    flex: 0 1 auto;  /* Позволяет ширине адаптироваться к содержимому */
+    padding: 0 10px;
+    text-align: left;  /* Выровнять по левому краю */
+}
+
+.header-row {
+    font-weight: bold;
+    border-bottom: 1px solid #ddd;
+    padding-bottom: 8px;
+    margin-bottom: 8px;
+}

@@ -1,0 +1,45 @@
+services:
+  postgres:
+    image: postgres:17  # Указание конкретной версии обеспечивает стабильность
+    container_name: postgres17_crm3_cntnr
+    environment:
+      POSTGRES_DB: postgres
+      POSTGRES_USER: crm3
+      POSTGRES_PASSWORD: Billkill13
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5433:5432"
+
+  redis:
+      image: redis:latest  # Используем последнюю версию Redis
+      container_name: redis_crm3_cntnr  # Название контейнера Redis
+      ports:
+        - "6380:6379"  # Публикуем порт Redis
+      volumes:
+        - redis_data:/data  # Том для данных Redis
+        - ./env/redis.conf:/usr/local/etc/redis/redis.conf
+      environment:
+        - REDIS_PASSWORD=Billkill13  # Установка пароля для Redis
+      command: redis-server /usr/local/etc/redis/redis.conf --requirepass "Billkill13"  # Запуск Redis с паролем и файлом конфигурации
+
+  kvadrober:  # Название вашего приложения на Python
+    build: .
+    image: crm3:latest
+    container_name: cmr3_container
+    environment:
+      - DATABASE_NAME=postgres
+      - DATABASE_USER=crm3
+      - DATABASE_PASSWORD=Billkill13
+      - DATABASE_HOST=postgres
+    ports:
+      - "8001:8000"  # Предполагается, что ваше приложение работает на 8000 порту
+    volumes:
+      - .:/app
+    depends_on:
+      - postgres
+      - redis
+
+volumes:
+  postgres_data: {}
+  redis_data: {}

@@ -10,9 +10,10 @@ def get_headers(user):
         }
     if user.yandex_api:
         headers['yandex_headers'] = {
-            'Accept': 'application/json',
-            'Authorization': f'Bearer {user.yandex_api}'
+            "Api-Key": user.yandex_api,
+            "Content-Type": "application/json"
         }
+
         url = 'https://api.partner.market.yandex.ru/campaigns'
         response = requests.get(url, headers=headers['yandex_headers']).json()
         headers['yandex_id'] = {

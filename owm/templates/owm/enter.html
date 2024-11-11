@@ -8,17 +8,37 @@
     {% if error %}
         Нет записи api
     {% endif %}
-    <form action="#" method="POST">
-        <button type="submit" class="btn btn-primary btn-block">Обновить</button>
-        {% for offer_id, value in stock.items %}
-            {% csrf_token %}
-            <div class="input-group mb-5">
-                <span class="input-group-text" name="basic-addon3">{{ offer_id }}</span>
-                <input type="hidden" id="{{ offer_id }}" name="{{ offer_id }}" value="offer_id" />
-                <input type="text" class="form-control" name="{{ offer_id }}_stock" id="{{ offer_id }}" aria-describedby="basic-addon3" value="{{ value.stock }}"/>
-                <input type="text" class="form-control" name="{{ offer_id }}_price" aria-describedby="basic-addon3" value="{{ value.price }}"/>
-            </div>
-        {% endfor %}
+<form action="#" method="POST" class="update-form">
+        {% csrf_token %}
+        <button type="submit" class="btn btn-primary btn-block mb-3">Обновить</button>
+
+<div class="table-responsive">
+    <table class="table table-bordered custom-table">
+        <thead>
+            <tr class="fw-bold fs-6 text-gray-800">
+                <th>Offer ID</th>
+                <th>Stock</th>
+                <th>Price</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for offer_id, value in stock.items %}
+                <tr>
+                    <td>
+                        <input type="hidden" name="{{ offer_id }}" value="offer_id" />
+                        <span>{{ offer_id }}</span>
+                    </td>
+                    <td>
+                        <input type="text" class="form-control" name="{{ offer_id }}_stock" id="{{ offer_id }}_stock" value="{{ value.stock }}" />
+                    </td>
+                    <td>
+                        <input type="text" class="form-control" name="{{ offer_id }}_price" id="{{ offer_id }}_price" value="{{ value.price }}" />
+                    </td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
         <button type="submit" class="btn btn-primary btn-block">Обновить</button>
     </form>
 {% endblock %}
