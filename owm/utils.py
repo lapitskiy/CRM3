@@ -310,22 +310,30 @@ def get_all_price_ozon(headers):
             'opt_price' : int(float(item['buyPrice']['value']) / 100),
             }
 
-    url = "https://api-seller.ozon.ru/v1/finance/realization"
+    url = "https://api-seller.ozon.ru/v2/finance/realization"
     now = datetime.datetime.now()
     lastmonth_date = now - datetime.timedelta(days=now.day)
     data = {
-        "date": lastmonth_date.strftime('%Y-%m')
-        }
+        "year": lastmonth_date.year,
+        "month": lastmonth_date.month
+    }
+
+    print(f"ozon_headers: {headers['ozon_headers']}")
     response = requests.post(url, headers=headers['ozon_headers'], json=data).json()
-    #print(f"date resp {response}")
+    #print(f"utils.py | get_all_price_ozon | response: {response}")
     realization = {}
-    for item in response['result']['rows']:
-        if item['offer_id'] in realization:
-            realization[item['offer_id']]['sale_qty'] = realization[item['offer_id']]['sale_qty'] + item['sale_qty']
+    for item in response.get('result', {}).get('rows', []):
+        offer_id = item['item'].get('offer_id')
+        quantity = item['delivery_commission']['quantity'] if item.get('delivery_commission') and 'quantity' in item['delivery_commission'] else 0
+
+        # Инициализируем, если offer_id нет в realization или оно равно None
+        if offer_id not in realization or realization[offer_id] is None:
+            realization[offer_id] = {'sale_qty': quantity}
         else:
-            realization[item['offer_id']] = {'sale_qty': item['sale_qty']}
-    #print(f"realization {realization}")
-    #print(f"date resp {response}")
+            # Добавляем к sale_qty, если offer_id уже существует
+            realization[offer_id]['sale_qty'] = realization[offer_id].get('sale_qty', 0) + quantity
+
+    print(f"realization {realization}")
 
     url = "https://api-seller.ozon.ru/v4/product/info/prices"
     data = {
@@ -352,7 +360,7 @@ def get_all_price_ozon(headers):
         profit_price = int(float(item['price']['marketing_seller_price'])) - \
                        int(delivery_price) - opt_price_clear[item['offer_id']]['opt_price']
         profit_percent = profit_price / opt_price_clear[item['offer_id']]['opt_price'] * 100
-        min_price = int(delivery_price) + (opt_price_clear[item['offer_id']]['opt_price']/100*30) + opt_price_clear[item['offer_id']]['opt_price']
+        min_price = int(delivery_price) + (opt_price_clear[item['offer_id']]['opt_price']/100*100) + opt_price_clear[item['offer_id']]['opt_price']
 
         #print(f"offer_id {item}")
         result[item['offer_id']] = {

@@ -51,6 +51,7 @@ def update_enter_moysklad(headers, offer_dict):
     responce = requests.post(url=url, json=data, headers=headers)
     print(f"responce moysklad {responce.json()}")
 
+#обновляет толко остаток
 def update_enter_yandex(headers, article, count):
     url = 'https://api.partner.market.yandex.ru/campaigns'
     response = requests.get(url, headers=headers).json()
