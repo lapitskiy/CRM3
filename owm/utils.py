@@ -347,6 +347,7 @@ def get_all_price_ozon(headers):
     #print(f"response {response['result']['items'][0]}")
     result = {}
     for item in response['result']['items']:
+        #print(f'item {item}')
         if item['offer_id'] not in opt_price_clear:
             continue
         if item['offer_id'] not in realization:
@@ -360,12 +361,19 @@ def get_all_price_ozon(headers):
         profit_price = int(float(item['price']['marketing_seller_price'])) - \
                        int(delivery_price) - opt_price_clear[item['offer_id']]['opt_price']
         profit_percent = profit_price / opt_price_clear[item['offer_id']]['opt_price'] * 100
-        min_price = int(delivery_price) + (opt_price_clear[item['offer_id']]['opt_price']/100*100) + opt_price_clear[item['offer_id']]['opt_price']
-
+        min_price = float(item['price']['min_price'])
+        min_price_percent30 = int(delivery_price) + (opt_price_clear[item['offer_id']]['opt_price'] * 1.3)
+        min_price_percent50 = int(delivery_price) + (opt_price_clear[item['offer_id']]['opt_price'] * 1.5)
+        min_price_percent80 = int(delivery_price) + (opt_price_clear[item['offer_id']]['opt_price'] * 1.8)
+        min_price_percent100 = int(delivery_price) + (opt_price_clear[item['offer_id']]['opt_price'] * 2)
         #print(f"offer_id {item}")
         result[item['offer_id']] = {
-            'price': int(float(item['price']['price'])),
+            'product_id': int(float(item['product_id'])),
             'min_price': int(min_price),
+            'min_price_percent30': int(min_price_percent30),
+            'min_price_percent50': int(min_price_percent50),
+            'min_price_percent80': int(min_price_percent80),
+            'min_price_percent100': int(min_price_percent100),
             'marketing_seller_price': int(float(item['price']['marketing_seller_price'])),
             'delivery_price': int(delivery_price),
             'opt_price': opt_price_clear[item['offer_id']]['opt_price'],

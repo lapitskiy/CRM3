@@ -40,16 +40,18 @@ function input() {
 <input type="text" id="search" onkeyup="input()">
 <p id="block"></p>
     <form action="#" method="POST">
+    {% csrf_token %}
         <button type="submit" class="btn btn-primary btn-block">Обновить цены</button>
 
+
+
             <div class="table-responsive">
-<table class="table table-rounded table-striped border gy-7 gs-7">
+<table class="table table-rounded table-row-bordered table-striped border gy-7 gs-7">
 		<thead>
-			<tr class="fw-semibold fs-6 text-gray-800 border-bottom border-gray-200">
+			<tr class="fw-semibold fs-6 text-gray-800 border-bottom border-gray-400">
 				<th>Артикул</th>
 				<th>Цена</th>
-                <th>Мин. цена (100%)</th>
-				<th>Акция</th>
+				<th>Текущая акция</th>
 				<th>FBS/FBO</th>
                 <th>Оптовая</th>
                 <th>Прибыль FBS/FBO</th>
@@ -59,19 +61,36 @@ function input() {
 		<tbody>
 
         {% for offer_id, value in price.items %}
-            {% csrf_token %}
 
-			<tr id="{{ offer_id }}">
+
+			<tr id="{{ offer_id }}" class="fw-bold fs-6 text-gray-800 border-gray-400">
 
 				<td>{{ offer_id }}</td>
 				<td>
                     <input type="hidden" id="{{ offer_id }}" name="{{ offer_id }}" value="offer_id" />
-                <input type="text" class="form-control" name="{{ offer_id }}_price" id="{{ offer_id }}" aria-describedby="basic-addon3" value="{{ value.price }}"/>
-                </td>
-            <td>
+                    <a href="https://seller.ozon.ru/app/prices/manager/{{ value.product_id }}/prices">Посмотреть цену товара в личном кабинете ozon</a>
+                    <br><br>
+                    Минимальная
                 <input type="text" class="form-control" name="{{ offer_id }}_min_price" id="{{ offer_id }}" aria-describedby="basic-addon3" value="{{ value.min_price }}"/>
+                    <button class="btn btn-primary position-relative me-5" disabled style="margin-top: 5px;">
+                        <span style="position: relative; top: 5px; left: 2px;">{{ value.min_price_percent30 }}</span>
+                        <span class="ms-4 mt-2 position-absolute top-0 start-0 translate-middle badge badge-primary badge-danger">30%</span>
+                    </button>
+                    <button class="btn btn-primary position-relative me-5" disabled style="margin-top: 5px;">
+                        <span style="position: relative; top: 5px; left: 2px;">{{ value.min_price_percent50 }}</span>
+                         <span class="ms-4 mt-2  position-absolute top-0 start-0 translate-middle badge badge-primary badge-danger">50%</span>
+                    </button>
+                    <button class="btn btn-primary position-relative me-5" disabled style="margin-top: 5px;">
+                        <span style="position: relative; top: 5px; left: 2px;">{{ value.min_price_percent80 }}</span>
+                         <span class="ms-4 mt-2  position-absolute top-0 start-0 translate-middle badge badge-primary badge-danger">80%</span>
+                    </button>
+                    <button class="btn btn-primary position-relative me-5" disabled style="margin-top: 5px;">
+                        <span style="position: relative; top: 5px; left: 2px;">{{ value.min_price_percent100 }}</span>
+                         <span class="ms-4 mt-2  position-absolute top-0 start-0 translate-middle badge badge-primary badge-danger">100%</span>
+                    </button>
+                    <br><br>Текущая акция {{ value.marketing_seller_price }}
                 </td>
-				<td>{{ value.marketing_seller_price }}</td>
+				<td>чч</td>
 				<td>{{ value.delivery_price }}</td>
                 <td>{{ value.opt_price }}</td>
                 <td>{{ value.profit_price }}
