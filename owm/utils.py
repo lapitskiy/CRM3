@@ -525,15 +525,17 @@ def update_price_ozon(obj, offer_dict):
             'auto_action_enabled': 'ENABLED',
             'min_price': str(value['min_price']),
             'offer_id': key,
-            'old_price': str(int(float(value['price']) * 2)),
-            'price': str(value['price']),
-            'price_strategy_enabled': 'ENABLED'
+            'old_price': str(int(float(value['min_price']) * 2)),
+            'price_strategy_enabled': 'DISABLED'
             })
 
-    for i in range(0, len(ozon_price), 1000):
+    for i in range(0, len(ozon_price), 2): # 1000
         data = {
-            'prices': ozon_price[i:i+999],
+            #'prices': ozon_price[i:i+999],
+            'prices': ozon_price[i:i + 2],
         }
         response = requests.post(url, headers=headers['ozon_headers'], json=data)
+        print(f'data {data}')
+        break
     #print(f'ozon price response {response.status_code}')
     print(f'ozon price json {response.json()}')

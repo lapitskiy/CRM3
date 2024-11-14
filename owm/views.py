@@ -188,9 +188,9 @@ def price_POST_to_offer_dict(post):
     offer_dict = {}
     for key, value in post.items():
         if value == 'offer_id':
-            price = post[key+'_price']
+            print(f'post {post}')
             min_price = post[key + '_min_price']
-            offer_dict[key] = {'price': price.replace(',', '.'), 'min_price': min_price}
+            offer_dict[key] = {'min_price': min_price}
     #print(f"offer_dict {offer_dict}")
     return offer_dict
 
