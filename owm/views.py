@@ -289,7 +289,7 @@ class PriceOzon(View):
         parser = Parser.objects.get(user=request.user)
         headers = get_headers(parser)
         price = get_all_price_ozon(headers)
-        context['price'] = price
+        context['price'] = price #dict(list(price.items())[:1]) # price
         #print(f"stock {stock}")
         return render(request, 'owm/price_ozon.html', context)
 
