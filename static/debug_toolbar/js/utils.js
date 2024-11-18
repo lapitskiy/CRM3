@@ -1,5 +1,6 @@
 const $$ = {
     on(root, eventName, selector, fn) {
+        root.removeEventListener(eventName, fn);
         root.addEventListener(eventName, function (event) {
             const target = event.target.closest(selector);
             if (root.contains(target)) {
@@ -74,7 +75,11 @@ function ajax(url, init) {
     return fetch(url, init)
         .then(function (response) {
             if (response.ok) {
-                return response.json();
+                    return response.json().catch(function(error){
+                        return Promise.reject(
+                            new Error("The response  is a invalid Json object : " + error)
+                        );
+                    });
             }
             return Promise.reject(
                 new Error(response.status + ": " + response.statusText)
@@ -107,7 +112,7 @@ function ajaxForm(element) {
 function replaceToolbarState(newStoreId, data) {
     const djDebug = document.getElementById("djDebug");
     djDebug.setAttribute("data-store-id", newStoreId);
-    // Check if response is empty, it could be due to an expired store_id.
+    // Check if response is empty, it could be due to an expired storeId.
     Object.keys(data).forEach(function (panelId) {
         const panel = document.getElementById(panelId);
         if (panel) {

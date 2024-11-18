@@ -333,3 +333,21 @@ class PriceYandex(View):
         offer_dict = price_POST_to_offer_dict(request.POST.dict())
         update_price_ozon(parser, offer_dict)
         return render(request, 'owm/price_wb.html', context)
+
+class FinanceOzon(View):
+    def get(self, request, *args, **kwargs):
+        context = {}
+        parser = Parser.objects.get(user=request.user)
+        headers = get_headers(parser)
+        report, all_total = get_finance_ozon(headers, period='month')
+        context['report'] = report  # dict(list(price.items())[:1]) # price
+        context['all_total'] = all_total
+        # print(f"stock {stock}")
+        return render(request, 'owm/finance_ozon.html', context)
+
+    def post(self, request, *args, **kwargs):
+        context = {}
+        parser = Parser.objects.get(user=request.user)
+        offer_dict = price_POST_to_offer_dict(request.POST.dict())
+        update_price_ozon(parser, offer_dict)
+        return render(request, 'owm/finance_ozon.html', context)

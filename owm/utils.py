@@ -515,6 +515,7 @@ def get_all_price_yandex(headers):
 
     return result
 
+
 # обновление цены товара озон
 def update_price_ozon(obj, offer_dict):
     url = 'https://api-seller.ozon.ru/v1/product/import/prices'
@@ -540,3 +541,84 @@ def update_price_ozon(obj, offer_dict):
         break
     #print(f'ozon price response {response.status_code}')
     print(f'ozon price json {response.json()}')
+
+def get_finance_ozon(headers: dict, period: str):
+    opt_price = get_moysklad_opt_price(headers['moysklad_headers'])
+    opt_price_clear = {}
+    for item in opt_price['rows']:
+        #opt_price_clear['article'] = item['article']
+        #print(f"opt_price {item['buyPrice']['value']/100}")
+        opt_price_clear[item['article']] = {
+            'opt_price' : int(float(item['buyPrice']['value']) / 100),
+            }
+
+    url = "https://api-seller.ozon.ru/v2/finance/realization"
+    now = datetime.datetime.now()
+    lastmonth_date = now - datetime.timedelta(days=now.day)
+    data = {
+        "year": lastmonth_date.year,
+        "month": lastmonth_date.month
+    }
+
+    response = requests.post(url, headers=headers['ozon_headers'], json=data).json()
+    #print(f"utils.py | get_all_price_ozon | response: {response}")
+    #print(f"realization {response['result']['rows']}")
+    result = {}
+    summed_totals = {}
+    all_delivery_commission_total = 0
+    for item in response.get('result', {}).get('rows', []):
+        offer_id = item['item'].get('offer_id')
+        if item.get('delivery_commission') is not None and item.get('return_commission') is None:
+            opt = opt_price_clear[offer_id]['opt_price']
+            new_entry = {
+                'name': item['item']['name'],
+                'product_id': int(item['item']['sku']),
+                'seller_price_per_instance': int(item['seller_price_per_instance']),
+                'total_price': int(item['delivery_commission']['total']),
+                'quantity': int(item['delivery_commission']['quantity']),
+            }
+            net_profit = new_entry['total_price'] - (opt * new_entry['quantity'])
+            net_profit_perc = (net_profit / (opt * new_entry['quantity'])) * 100 if opt * new_entry[
+                'quantity'] != 0 else 0
+            posttax_profit = net_profit - (new_entry['total_price'] * 0.06)
+            posttax_profit_perc = (posttax_profit / (opt * new_entry['quantity'])) * 100 if opt * new_entry[
+                'quantity'] != 0 else 0
+            new_entry.update({
+                'net_profit': net_profit,
+                'net_profit_perc': int(net_profit_perc),
+                'posttax_profit': posttax_profit,
+                'posttax_profit_perc': int(posttax_profit_perc),
+            })
+        if item.get('return_commission') is not None and item.get('delivery_commission') is None:
+            all_delivery_commission_total += int(item['return_commission']['total'])
+        if offer_id in result:
+            result[offer_id].append(new_entry)
+        else:
+            result[offer_id] = [new_entry]
+    #print(f'result ozon price {result}')
+    # seller_price_per_instance Цена продавца с учётом скидки.
+    # 'item': {'offer_id': 'cer_black_20', 'barcode': 'OZN1249002486', 'sku': 1249002486},
+    sorted_report = dict(sorted(result.items(), key=lambda item: (item[0][:3], item[0][3:])))
+
+    # Итерация по результатам и вычисление суммы total_price
+    for offer_id, entries in result.items():
+        total_price_sum = sum(entry['total_price'] for entry in entries)
+        net_profit_sum = sum(entry['net_profit'] for entry in entries)
+        posttax_profit_sum = sum(entry['posttax_profit'] for entry in entries)
+
+        # Сохраняем результаты в словарь
+        summed_totals[offer_id] = {
+            "total_price_sum": int(total_price_sum),
+            "net_profit_sum": int(net_profit_sum),
+            "posttax_profit_sum": int(posttax_profit_sum)
+        }
+    print(f'summed_totals {summed_totals}')
+    summed_totals['total'] = {
+        "all_total_price_sum": sum(value["total_price_sum"] for value in summed_totals.values()),
+        "all_net_profit_sum": sum(value["net_profit_sum"] for value in summed_totals.values()),
+        "all_posttax_profit_sum": sum(value["posttax_profit_sum"] for value in summed_totals.values()),
+        "all_delivery_commission_total": all_delivery_commission_total
+    }
+
+    # Выводим отсортированный словарь
+    return sorted_report, summed_totals

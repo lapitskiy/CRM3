@@ -1,0 +1,84 @@
+{% extends "base.html" %}
+{% block title %}{{ title }} - {{ block.super }}{% endblock %}
+{% block sidebar %}
+    {% include 'include/_sidebar_owm.html' %}
+{% endblock %}
+{% block content %}
+{% load custom_filters %}
+
+<script>
+function input() {
+  var IDs = [];
+  $(".table").find("tr").each(function(){ IDs.push(this.id); });
+
+  var input_taker = document.getElementById('search').value;
+
+  if (input_taker != '')
+      {
+    $("tr").each(function (i, el) {
+         //It'll be an array of elements
+        $(this).hide();
+     });
+} else {
+    $("tr").each(function (i, el) {
+         //It'll be an array of elements
+        $(this).show();
+     });
+}
+
+
+  $("tr[id*=" + input_taker + "]").each(function (i, el) {
+         //It'll be an array of elements
+        $(this).show();
+     });
+
+
+
+}
+</script>
+
+    <h1>Обновить цены OZON</h1>
+<input type="text" id="search" onkeyup="input()">
+<p id="block"></p>
+
+
+<!--begin::Accordion-->
+<div class="accordion" id="accordionExample">
+  {% for offer_id, value in report.items %}
+    <div class="accordion-item">
+      <h2 class="accordion-header" id="heading_{{ offer_id }}">
+        <button class="accordion-button {% if not forloop.first %}collapsed{% endif %}" type="button" data-bs-toggle="collapse" data-bs-target="#collapse_{{ offer_id }}" aria-expanded="{% if forloop.first %}true{% else %}false{% endif %}" aria-controls="collapse_{{ offer_id }}">
+          {{ offer_id }} - {{ value.0.name }} <i class="fa fa-exclamation-triangle" style="font-size: 1.2em; color: #ef4646;"></i>
+        </button>
+      </h2>
+      <div id="collapse_{{ offer_id }}" class="accordion-collapse collapse {% if forloop.first %}show{% endif %}" aria-labelledby="heading_{{ offer_id }}" data-bs-parent="#accordionExample">
+        <div class="accordion-body">
+          <ul>
+            {% for entry in value %}
+              <li>'total_price': {{ entry.total_price }}</li>
+              <li>'net_profit': {{ entry.net_profit }}</li>
+              <li>'net_profit_perc': {{ entry.net_profit_perc }}</li>
+              <li>'posttax_profit': {{ entry.posttax_profit }}</li>
+              <li>'posttax_profit_perc': {{ entry.posttax_profit_perc }}</li>
+              <br>
+            {% endfor %}
+          </ul>
+          <div>
+            <strong>Общая сумма:</strong>
+<ul>
+  {% with all_total|default:{} as total_dict %}
+    {% with total_dict|dict:offer_id as offer_data %}
+      <li>'total_price_sum': {{ offer_data.total_price_sum|default:0 }}</li>
+      <li>'net_profit_sum': {{ offer_data.net_profit_sum|default:0 }}</li>
+      <li>'posttax_profit_sum': {{ offer_data.posttax_profit_sum|default:0 }}</li>
+    {% endwith %}
+  {% endwith %}
+</ul>
+        </div>
+      </div>
+    </div>
+  {% endfor %}
+</div>
+
+<!--end::Accordion-->
+{% endblock %}

@@ -4,6 +4,7 @@
     {% include 'include/_sidebar_owm.html' %}
 {% endblock %}
 {% block content %}
+{% load custom_filters %}
 
 <script>
 function input() {
@@ -46,7 +47,7 @@ function input() {
 
 
             <div class="table-responsive">
-<table class="table table-rounded table-row-bordered table-striped border gy-7 gs-7">
+<table class="table table-rounded table-row-bordered border gy-7 gs-7">
 		<thead>
 			<tr class="fw-semibold fs-6 text-gray-800 border-bottom border-gray-400">
 				<th>Артикул</th>
@@ -60,10 +61,7 @@ function input() {
 		<tbody>
 
         {% for offer_id, value in price.items %}
-
-
-			<tr id="{{ offer_id }}" class="fw-bold fs-6 text-gray-800 border-gray-400">
-
+			<tr id="{{ offer_id }}" class="fw-bold fs-6 text-gray-800 border-gray-400 {{ value.sale_qty|get_row_class }}">
 				<td>{{ offer_id }}</td>
 				<td>
                     <input type="hidden" id="{{ offer_id }}" name="{{ offer_id }}" value="offer_id" />

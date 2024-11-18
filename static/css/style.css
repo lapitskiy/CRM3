@@ -50,27 +50,50 @@ color: #9370db;
 color: #bc8f8f;
 }
 
-.update-form .row {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
+
+.table-bordered th, .table-bordered td {
+    border: 1px solid #dee2e6 !important; /* Добавляем границы ячеек */
 }
 
-.update-form .row .col {
-    flex: 1;
-    padding: 0 10px;
+.table thead th {
+    border-bottom: 2px solid #dee2e6; /* Устанавливаем более широкую границу для заголовка */
+}
+
+.col-offer-id {
+    white-space: nowrap;
+    width: 1% !important;     /* Гарантирует адаптацию ширины под содержимое */
+    text-align: left;
+}
+
+.col-stock, .col-price {
+    width: 200px !important;  /* Фиксирует ширину в 100px */
+    max-width: 200px !important; /* Ограничивает максимальную ширину */
+    text-align: center;
+    overflow: hidden;         /* Обрезает текст, если он выходит за границы */
+    white-space: nowrap;      /* Предотвращает перенос текста */
+}
+
+.table td, .table th {
+    vertical-align: middle;    /* Вертикально центрирует содержимое */
+}
+
+.custom-table {
+    display: grid;
+    grid-template-columns: min-content 200px 200px; /* Устанавливает ширину Offer ID по содержимому */
+    width: 100%; /* Полная ширина таблицы */
+}
+
+.custom-table thead, .custom-table tbody, .custom-table tr {
+    display: contents; /* Для правильного отображения в CSS Grid */
+}
+
+.custom-table th, .custom-table td {
+    border: 1px solid #dee2e6 !important;
+    padding: 8px;
     text-align: center;
 }
 
-.update-form .row .col-id {
-    flex: 0 1 auto;  /* Позволяет ширине адаптироваться к содержимому */
-    padding: 0 10px;
-    text-align: left;  /* Выровнять по левому краю */
-}
-
-.header-row {
-    font-weight: bold;
-    border-bottom: 1px solid #ddd;
-    padding-bottom: 8px;
-    margin-bottom: 8px;
+.custom-table th:first-child, .custom-table td:first-child {
+    text-align: left;
+    white-space: nowrap;
 }
