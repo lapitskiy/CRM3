@@ -576,6 +576,7 @@ def get_finance_ozon(headers: dict, period: str):
                 'seller_price_per_instance': int(item['seller_price_per_instance']),
                 'total_price': int(item['delivery_commission']['total']),
                 'quantity': int(item['delivery_commission']['quantity']),
+                'opt': int(opt)
             }
             net_profit = new_entry['total_price'] - (opt * new_entry['quantity'])
             net_profit_perc = (net_profit / (opt * new_entry['quantity'])) * 100 if opt * new_entry[
@@ -605,20 +606,36 @@ def get_finance_ozon(headers: dict, period: str):
         total_price_sum = sum(entry['total_price'] for entry in entries)
         net_profit_sum = sum(entry['net_profit'] for entry in entries)
         posttax_profit_sum = sum(entry['posttax_profit'] for entry in entries)
+        total_quantity = sum(entry['quantity'] for entry in entries)
+
+        # Расчет средней цены продажи
+        average_sales_price = total_price_sum / total_quantity if total_quantity > 0 else 0
+
+        average_percent_posttax = sum(entry['posttax_profit_perc'] for entry in entries) / len(
+            entries) if entries else 0
 
         # Сохраняем результаты в словарь
         summed_totals[offer_id] = {
             "total_price_sum": int(total_price_sum),
             "net_profit_sum": int(net_profit_sum),
-            "posttax_profit_sum": int(posttax_profit_sum)
+            "posttax_profit_sum": int(posttax_profit_sum),
+            "average_sales_price": int(average_sales_price),
+            "average_percent_posttax": int(average_percent_posttax),
+            "total_quantity": int(total_quantity),
         }
-    print(f'summed_totals {summed_totals}')
-    summed_totals['total'] = {
+    #print(f'summed_totals {summed_totals}')
+    all_totals = {
         "all_total_price_sum": sum(value["total_price_sum"] for value in summed_totals.values()),
         "all_net_profit_sum": sum(value["net_profit_sum"] for value in summed_totals.values()),
         "all_posttax_profit_sum": sum(value["posttax_profit_sum"] for value in summed_totals.values()),
+        "all_quantity": sum(value["total_quantity"] for value in summed_totals.values()),
         "all_delivery_commission_total": all_delivery_commission_total
+
+    }
+    all_totals = {
+        key: f"{value:,}" if isinstance(value, (int, float)) else value
+        for key, value in all_totals.items()
     }
 
     # Выводим отсортированный словарь
-    return sorted_report, summed_totals
+    return sorted_report, all_totals, summed_totals

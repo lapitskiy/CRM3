@@ -11,3 +11,6 @@ urlpatterns = [
     path('finance_ozon/', FinanceOzon.as_view(), name='finance_ozon'),
     path('', Enter.as_view(), name='enter'),
 ]
+
+
+

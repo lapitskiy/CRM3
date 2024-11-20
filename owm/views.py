@@ -339,10 +339,16 @@ class FinanceOzon(View):
         context = {}
         parser = Parser.objects.get(user=request.user)
         headers = get_headers(parser)
-        report, all_total = get_finance_ozon(headers, period='month')
+        report, all_totals, summed_totals = get_finance_ozon(headers, period='month')
         context['report'] = report  # dict(list(price.items())[:1]) # price
-        context['all_total'] = all_total
-        # print(f"stock {stock}")
+        context['summed_totals'] = summed_totals  # dict(list(price.items())[:1]) # price
+        context['all_totals'] = all_totals
+        print(f"report {report}")
+        print(f"$$$$$$$$$$$$$$$$$")
+        print(f"$$$$$$$$$$$$$$$$$")
+        print(f"$$$$$$$$$$$$$$$$$")
+        print(f"all_total {all_totals}")
+
         return render(request, 'owm/finance_ozon.html', context)
 
     def post(self, request, *args, **kwargs):

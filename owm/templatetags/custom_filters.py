@@ -10,3 +10,7 @@ def get_row_class(sale_qty):
         return "alert-warning"
     else:
         return "alert-success"
+
+@register.filter
+def get_item(dictionary, key):
+    return dictionary.get(key, {})

@@ -97,3 +97,8 @@ color: #bc8f8f;
     text-align: left;
     white-space: nowrap;
 }
+
+#my-accordion {
+    --kt-accordion-button-active-color: #009ef7; /* Например, #ffffff для белого */
+    --kt-accordion-button-active-bg: #024a6e; /* Например, #ff0000 для красного */
+}
