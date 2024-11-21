@@ -43,6 +43,7 @@ function input() {
   });
 </script>
 
+
 <div class="position-relative mb-17">
     <div class="overlay overlay-show">
         <div class="bgi-no-repeat bgi-position-center bgi-size-cover card-rounded min-h-250px" style="background-image:url('/media/owm/fin_owm.jpg')">
@@ -219,13 +220,13 @@ function input() {
         <div class="card h-lg-100">
             <div class="card-body d-flex justify-content-between align-items-start flex-column">
                 <div class="m-0">
-                     <i class="ki-duotone ki-abstract-35 fs-2hx text-gray-600"><span class="path1"></span><span class="path2"></span></i>
+                    <i class="fa-regular fa-calendar-days fs-2hx text-gray-600"><span class="path1"></span><span class="path2"></span></i>
                 </div>
                 <div class="d-flex flex-column my-7">
                     <!--begin::Number-->
-                    <span class="fw-semibold fs-3x text-gray-800 lh-1 ls-n2">-</span>
+                    <span class="fw-semibold fs-3x text-gray-800 lh-1 ls-n2">{{ header_data.month }}</span>
                     <div class="m-0">
-                        <span class="fw-semibold fs-6 text-gray-500">-</span>
+                        <span class="fw-semibold fs-6 text-gray-500">{{ header_data.day_delta }} дней</span>
                     </div>
                 </div>
                 <span class="badge badge-light-danger fs-base">

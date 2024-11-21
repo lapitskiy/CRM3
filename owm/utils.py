@@ -565,6 +565,7 @@ def get_finance_ozon(headers: dict, period: str):
     #print(f"realization {response['result']['rows']}")
     result = {}
     summed_totals = {}
+    header_data = response.get('result', {}).get('header', [])
     all_delivery_commission_total = 0
     for item in response.get('result', {}).get('rows', []):
         offer_id = item['item'].get('offer_id')
@@ -638,4 +639,9 @@ def get_finance_ozon(headers: dict, period: str):
     }
 
     # Выводим отсортированный словарь
-    return sorted_report, all_totals, summed_totals
+    result = {}
+    result['sorted_report']= sorted_report
+    result['all_totals'] = all_totals
+    result['summed_totals'] = summed_totals
+    result['header_data'] = header_data
+    return result

@@ -8,6 +8,9 @@ from .models import Parser
 from .utils import *
 from django.core.exceptions import ObjectDoesNotExist
 
+from datetime import datetime
+import locale
+import pymorphy2
 
 def get_prod_meta(headers, offer_dict):
     #url = f'https://api.moysklad.ru/api/remap/1.2/entity/assortment?filter=article={article}'
@@ -337,17 +340,35 @@ class PriceYandex(View):
 class FinanceOzon(View):
     def get(self, request, *args, **kwargs):
         context = {}
+
         parser = Parser.objects.get(user=request.user)
         headers = get_headers(parser)
-        report, all_totals, summed_totals = get_finance_ozon(headers, period='month')
-        context['report'] = report  # dict(list(price.items())[:1]) # price
-        context['summed_totals'] = summed_totals  # dict(list(price.items())[:1]) # price
-        context['all_totals'] = all_totals
-        print(f"report {report}")
+        data = get_finance_ozon(headers, period='month')
+
+        locale.setlocale(locale.LC_TIME, 'ru_RU.UTF-8')
+        start_date = datetime.strptime(data['header_data']['start_date'], '%Y-%m-%d')
+        stop_date = datetime.strptime(data['header_data']['stop_date'], '%Y-%m-%d')
+        month_name = start_date.strftime('%B')
+        morph = pymorphy2.MorphAnalyzer()
+        month_nominative = morph.parse(month_name)[0].inflect({'nomn'}).word
+        print(month_nominative)  # Выводит: Октябрь
+        # Вычисляем разницу в днях
+        day_delta = stop_date - start_date
+
+        context['report'] = data['sorted_report']  # dict(list(price.items())[:1]) # price
+        context['summed_totals'] = data['summed_totals']  # dict(list(price.items())[:1]) # price
+        context['all_totals'] = data['all_totals']
+        context['header_data'] = data['header_data']
+        context['header_data']['month'] = month_nominative.capitalize()
+        context['header_data']['day_delta'] = day_delta.days
+
+
+
+        #print(f"headers {context['headers']}")
         print(f"$$$$$$$$$$$$$$$$$")
         print(f"$$$$$$$$$$$$$$$$$")
         print(f"$$$$$$$$$$$$$$$$$")
-        print(f"all_total {all_totals}")
+        #print(f"all_total {all_totals}")
 
         return render(request, 'owm/finance_ozon.html', context)
 

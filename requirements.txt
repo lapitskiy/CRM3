@@ -44,6 +44,7 @@ numpy==2.1.3
 packaging==24.1
 pandocfilters==1.5.1
 parso==0.8.4
+pymorphy2==0.9.1
 phonenumbers==8.13.40
 pickleshare==0.7.5
 pillow==10.4.0
