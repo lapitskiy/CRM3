@@ -1,0 +1,121 @@
+{% extends "base.html" %}
+{% block title %}{{ title }} - {{ block.super }}{% endblock %}
+{% block sidebar %}
+    {% include 'include/_sidebar_owm.html' %}
+{% endblock %}
+{% block content %}
+{% load custom_filters %}
+
+<script>
+function input() {
+  var IDs = [];
+  $(".table").find("tr").each(function(){ IDs.push(this.id); });
+
+  var input_taker = document.getElementById('search').value;
+
+  if (input_taker != '')
+      {
+    $("tr").each(function (i, el) {
+         //It'll be an array of elements
+        $(this).hide();
+     });
+} else {
+    $("tr").each(function (i, el) {
+         //It'll be an array of elements
+        $(this).show();
+     });
+}
+  $("tr[id*=" + input_taker + "]").each(function (i, el) {
+         //It'll be an array of elements
+        $(this).show();
+     });
+}
+
+</script>
+    <script>
+  $(document).ready(function() {
+    $('[data-toggle="tooltip"]').tooltip();
+  });
+</script>
+
+header_data {{ header_data }}
+
+    <br><br>
+    all_totals {{ all_totals }}
+<div class="position-relative mb-17">
+    <div class="overlay overlay-show">
+        <div class="bgi-no-repeat bgi-position-center bgi-size-cover card-rounded min-h-250px" style="background-image:url('/media/owm/fin_owm.jpg')">
+        </div>
+        <div class="overlay-layer rounded bg-black" style="opacity: 0.4">
+        </div>
+    </div>
+    <!--begin::Heading-->
+    <div class="position-absolute text-white mb-8 ms-10 bottom-0">
+        <!--begin::Title-->
+        <h3 class="text-white fs-2qx fw-bold mb-3 m">Отчет о поставках OZON</h3>
+        <!--end::Title-->
+
+        <!--begin::Text-->
+        <div class="fs-5 fw-semibold">
+            Данные о поставках FBO
+        </div>
+        <!--end::Text-->
+    </div>
+    <!--end::Heading-->
+</div>
+
+
+{% if code == 8 %}
+    <div class="alert alert-warning d-flex align-items-center p-5" style="max-width: 600px;">
+        <!--begin::Icon-->
+        <i class="ki-duotone ki-shield-tick fs-2hx text-warning me-4"><span class="path1"></span><span class="path2"></span></i>
+        <!--end::Icon-->
+
+        <!--begin::Wrapper-->
+        <div class="d-flex flex-column">
+            <!--begin::Title-->
+            <h4 class="mb-1 text-dark">Ограничение на получение данных с Ozon Api</h4>
+            <!--end::Title-->
+
+            <!--begin::Content-->
+            <span class="text-dark">Вы не можете чаще чем раз в минуту делать этот запрос. Выждите 1 минуту и обновите страницу.</span>
+            <!--end::Content-->
+        </div>
+        <!--end::Wrapper-->
+    </div>
+{% else %}
+
+    <div class="alert alert-primary d-flex align-items-center p-5" style="max-width: 600px;">
+        <!--begin::Icon-->
+        <i class="ki-duotone ki-shield-tick fs-2hx text-warning me-4"><span class="path1"></span><span class="path2"></span></i>
+        <!--end::Icon-->
+
+        <!--begin::Wrapper-->
+        <div class="d-flex flex-column">
+            <!--begin::Title-->
+            <h4 class="mb-1 text-dark">Файл для FBO поставки</h4>
+            <!--end::Title-->
+
+            <!--begin::Content-->
+            <span class="text-dark">Содержит рекомендуемое количество поставки товара на 90 дней с учетом продаж за последние 2 месяца.
+                Так же в файл добавлены рекомендованные поставки с FBS, которые надо удалить в ручную. если таких поставок не будет.<br>
+                Если вам надо добавить товары, которые раньше вы продавали только FBS,
+                надо добавить их в ручную в xlsx файл.</span>
+            <!--end::Content-->
+        </div>
+        <!--end::Wrapper-->
+    </div>
+
+    <a href="{{ path }}" class="btn btn-primary btn-sm" style="width: 150px;">
+        <i class="fa-solid fa-download fs-1"><span class="path1"></span><span class="path2"></span><span class="path3"></span><span the="path4"></span></i>
+        Скачать xlsx файл для поставки FBO
+    </a>
+    <br>
+    {{ row }}
+{% endif %}
+
+
+
+
+
+{% endblock %}

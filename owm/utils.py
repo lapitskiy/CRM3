@@ -1,6 +1,12 @@
 import requests
 import datetime
 import numpy as np
+import uuid
+import xlsxwriter
+import locale
+import pymorphy2
+import os
+from django.conf import settings
 
 def get_headers(user):
     headers = {}
@@ -566,19 +572,37 @@ def get_finance_ozon(headers: dict, period: str):
     result = {}
     summed_totals = {}
     header_data = response.get('result', {}).get('header', [])
-    all_delivery_commission_total = 0
+    all_return_total = 0
     for item in response.get('result', {}).get('rows', []):
         offer_id = item['item'].get('offer_id')
-        if item.get('delivery_commission') is not None and item.get('return_commission') is None:
+        if item.get('return_commission') is not None:
+            all_return_total += int(item['return_commission']['total'])
+
+        if item.get('delivery_commission') is not None:
+            # Получаем 'quantity' из каждого словаря с параметром по умолчанию равным 0, если ключ отсутствует
             opt = opt_price_clear[offer_id]['opt_price']
-            new_entry = {
+            if item.get('return_commission') is not None:
+                delivery_quantity = item.get('delivery_commission').get('quantity', 0)
+                return_quantity = item.get('return_commission').get('quantity', 0)
+                if delivery_quantity > return_quantity:
+                    new_entry = {
+                        'total_price': int(item['delivery_commission']['total']) - int(item['return_commission']['total']),
+                        'quantity': int(item['delivery_commission']['quantity']) - int(item['return_commission']['quantity']),
+                    }
+                else:
+                    continue
+
+            else:
+                new_entry = {
+                    'total_price': int(item['delivery_commission']['total']),
+                    'quantity': int(item['delivery_commission']['quantity'])
+                }
+            new_entry.update({
                 'name': item['item']['name'],
                 'product_id': int(item['item']['sku']),
                 'seller_price_per_instance': int(item['seller_price_per_instance']),
-                'total_price': int(item['delivery_commission']['total']),
-                'quantity': int(item['delivery_commission']['quantity']),
                 'opt': int(opt)
-            }
+            })
             net_profit = new_entry['total_price'] - (opt * new_entry['quantity'])
             net_profit_perc = (net_profit / (opt * new_entry['quantity'])) * 100 if opt * new_entry[
                 'quantity'] != 0 else 0
@@ -591,12 +615,11 @@ def get_finance_ozon(headers: dict, period: str):
                 'posttax_profit': posttax_profit,
                 'posttax_profit_perc': int(posttax_profit_perc),
             })
-        if item.get('return_commission') is not None and item.get('delivery_commission') is None:
-            all_delivery_commission_total += int(item['return_commission']['total'])
-        if offer_id in result:
-            result[offer_id].append(new_entry)
-        else:
-            result[offer_id] = [new_entry]
+            if offer_id in result:
+                result[offer_id].append(new_entry)
+            else:
+                result[offer_id] = [new_entry]
+
     #print(f'result ozon price {result}')
     # seller_price_per_instance Цена продавца с учётом скидки.
     # 'item': {'offer_id': 'cer_black_20', 'barcode': 'OZN1249002486', 'sku': 1249002486},
@@ -625,18 +648,28 @@ def get_finance_ozon(headers: dict, period: str):
             "total_quantity": int(total_quantity),
         }
     #print(f'summed_totals {summed_totals}')
+    all_total_price_sum = sum(value["total_price_sum"] for value in summed_totals.values())
     all_totals = {
-        "all_total_price_sum": sum(value["total_price_sum"] for value in summed_totals.values()),
+        "all_total_price_sum": all_total_price_sum,
         "all_net_profit_sum": sum(value["net_profit_sum"] for value in summed_totals.values()),
         "all_posttax_profit_sum": sum(value["posttax_profit_sum"] for value in summed_totals.values()),
         "all_quantity": sum(value["total_quantity"] for value in summed_totals.values()),
-        "all_delivery_commission_total": all_delivery_commission_total
-
+        "all_return_total": all_return_total
     }
     all_totals = {
         key: f"{value:,}" if isinstance(value, (int, float)) else value
         for key, value in all_totals.items()
     }
+
+    locale.setlocale(locale.LC_TIME, 'ru_RU.UTF-8')
+    start_date = datetime.strptime(header_data['start_date'], '%Y-%m-%d')
+    stop_date = datetime.strptime(header_data['stop_date'], '%Y-%m-%d')
+    month_name = start_date.strftime('%B')
+    morph = pymorphy2.MorphAnalyzer()
+    month_nominative = morph.parse(month_name)[0].inflect({'nomn'}).word
+    day_delta = stop_date - start_date
+    header_data['month'] = month_nominative.capitalize()
+    header_data['day_delta'] = day_delta.days
 
     # Выводим отсортированный словарь
     result = {}
@@ -644,4 +677,47 @@ def get_finance_ozon(headers: dict, period: str):
     result['all_totals'] = all_totals
     result['summed_totals'] = summed_totals
     result['header_data'] = header_data
+    return result
+
+def get_postavka_ozon(headers: dict):
+    uuid_suffix = str(uuid.uuid4())[:6]
+
+    url_path = os.path.join(settings.MEDIA_URL, 'owm/report/', f'stock_data_{uuid_suffix}.xlsx')
+    file_path = os.path.join(settings.MEDIA_ROOT, 'owm/report/', f'stock_data_{uuid_suffix}.xlsx')
+    os.makedirs(os.path.dirname(file_path), exist_ok=True)
+
+    url = "https://api-seller.ozon.ru/v1/analytics/turnover/stocks"
+    data = {
+        "limit": 1000,
+    }
+
+    response = requests.post(url, headers=headers['ozon_headers'], json=data).json()
+
+    rows = []
+    for item in response.get('items', []):
+        offer_id = item.get('offer_id')
+        # Шаг 1: Считаем, сколько товара нужно на 90 дней
+        total_stock_needed = 90 * item.get('ads')
+        rows.append({
+            'offer_id': item['offer_id'],
+            'name': '',  # Имя оставляем пустым
+            'stock_needed': int(round(max(0, total_stock_needed - item.get('current_stock')))) # Округляем до целого
+            })
+
+    # Создание XLSX файла
+    workbook = xlsxwriter.Workbook(file_path)
+    worksheet = workbook.add_worksheet()
+    headers = ['Артикул', 'Имя', 'Количество']
+    for col_num, header in enumerate(headers):
+        worksheet.write(0, col_num, header)
+    for row_num, row in enumerate(rows, start=1):
+        worksheet.write(row_num, 0, row['offer_id'])  # Артикул
+        worksheet.write(row_num, 1, row['name'])  # Имя (пустое)
+        worksheet.write(row_num, 2, row['stock_needed'])  # Количество
+    workbook.close()
+
+    result = {}
+    result['row'] = rows
+    result['path'] = url_path
+    result['code'] = 8 if response.get('code') == 8 else 0
     return result
