@@ -1,3 +1,5 @@
+import fnmatch
+
 import requests
 import datetime
 import numpy as np
@@ -661,9 +663,12 @@ def get_finance_ozon(headers: dict, period: str):
         for key, value in all_totals.items()
     }
 
+
+
     locale.setlocale(locale.LC_TIME, 'ru_RU.UTF-8')
-    start_date = datetime.strptime(header_data['start_date'], '%Y-%m-%d')
-    stop_date = datetime.strptime(header_data['stop_date'], '%Y-%m-%d')
+
+    start_date = datetime.datetime.strptime(header_data['start_date'], '%Y-%m-%d')
+    stop_date = datetime.datetime.strptime(header_data['stop_date'], '%Y-%m-%d')
     month_name = start_date.strftime('%B')
     morph = pymorphy2.MorphAnalyzer()
     month_nominative = morph.parse(month_name)[0].inflect({'nomn'}).word
@@ -682,6 +687,7 @@ def get_finance_ozon(headers: dict, period: str):
 def get_postavka_ozon(headers: dict):
     uuid_suffix = str(uuid.uuid4())[:6]
 
+    path = os.path.join(settings.MEDIA_ROOT, 'owm/report/')
     url_path = os.path.join(settings.MEDIA_URL, 'owm/report/', f'stock_data_{uuid_suffix}.xlsx')
     file_path = os.path.join(settings.MEDIA_ROOT, 'owm/report/', f'stock_data_{uuid_suffix}.xlsx')
     os.makedirs(os.path.dirname(file_path), exist_ok=True)
@@ -705,19 +711,42 @@ def get_postavka_ozon(headers: dict):
             })
 
     # Создание XLSX файла
+
+    prefix = 'stock_data'
+    delete_files_with_prefix(path, prefix)
+
     workbook = xlsxwriter.Workbook(file_path)
     worksheet = workbook.add_worksheet()
     headers = ['Артикул', 'Имя', 'Количество']
+
+    rows_sorted = sorted(rows, key=lambda x: x['offer_id'])  # Сортировка по 'offer_id'
+
     for col_num, header in enumerate(headers):
         worksheet.write(0, col_num, header)
-    for row_num, row in enumerate(rows, start=1):
+    for row_num, row in enumerate(rows_sorted, start=1):
         worksheet.write(row_num, 0, row['offer_id'])  # Артикул
         worksheet.write(row_num, 1, row['name'])  # Имя (пустое)
         worksheet.write(row_num, 2, row['stock_needed'])  # Количество
     workbook.close()
 
     result = {}
-    result['row'] = rows
+    result['row'] = rows_sorted
     result['path'] = url_path
     result['code'] = 8 if response.get('code') == 8 else 0
     return result
+
+def delete_files_with_prefix(directory_path, prefix):
+    """
+    Удаляет все файлы в указанной папке, начинающиеся с заданного префикса.
+    """
+    if os.path.exists(directory_path):
+        for filename in os.listdir(directory_path):
+            if fnmatch.fnmatch(filename, f"{prefix}*"):  # Проверяем, начинается ли имя с префикса
+                file_path = os.path.join(directory_path, filename)
+                try:
+                    os.unlink(file_path)  # Удаляем файл
+                    print(f"Удалён файл: {file_path}")
+                except Exception as e:
+                    print(f"Ошибка при удалении {file_path}: {e}")
+    else:
+        print(f"Директория {directory_path} не существует.")
