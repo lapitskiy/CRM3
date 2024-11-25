@@ -1,19 +1,10 @@
-<a href="{% url 'enter' %}">Оприходование FBS</a><br><br>
-<a href="{% url 'inventory' %}">Инвентаризация FBS</a><br><br>
-<a href="{% url 'price_ozon' %}">Цены OZON</a><br><br>
-<a href="{% url 'price_wb' %}">Цены WB</a><br><br>
-<a href="{% url 'price_yandex' %}">Цены Yandex</a><br><br>
-<a href="{% url 'finance_ozon' %}">Финансы OZON</a><br><br>
-<a href="{% url 'postavka_ozon' %}">Поставка FBO OZON</a><br><br>
-<a href="{% url 'create' %}">Api ключи</a><br><br>
 
-<!--begin::Menu-->
 <div style="padding-left: -60px;" class="menu menu-rounded menu-column menu-title-gray-700 menu-icon-gray-500 menu-arrow-gray-500 menu-bullet-gray-500 menu-arrow-gray-500 menu-state-bg fw-semibold" data-kt-menu="true">
-    <!--begin::Menu item-->
+    <!--ОБЩЕЕ-->
     <div class="menu-item menu-sub-indention menu-accordion" data-kt-menu-trigger="click">
         <!--begin::Menu link-->
         <a href="#" class="menu-link py-3">
-            <span class="menu-title">Example Link</span>
+            <span class="menu-title">Общее</span>
             <span class="menu-arrow"></span>
         </a>
         <!--end::Menu link-->
@@ -22,12 +13,72 @@
         <div class="menu-sub menu-sub-accordion pt-3">
             <!--begin::Menu item-->
             <div class="menu-item">
+                <a href="{% url 'enter' %}" class="menu-link py-3">
+                    <span class="menu-bullet">
+                        <span class="bullet bullet-dot"></span>
+                    </span>
+                    <span class="menu-title">Оприходование FBS</span>
+                </a>
+            </div>
+            <div class="menu-item">
+                <a href="{% url 'inventory' %}" class="menu-link py-3">
+                    <span class="menu-bullet">
+                        <span class="bullet bullet-dot"></span>
+                    </span>
+                    <span class="menu-title">Инвентаризация FBS</span>
+                </a>
+            </div>
+            <!--end::Menu item-->
+
+
+            <!--begin::Menu item-->
+            <div class="menu-item menu-accordion" data-kt-menu-trigger="click">
+                <!--begin::Menu link-->
                 <a href="#" class="menu-link py-3">
                     <span class="menu-bullet">
                         <span class="bullet bullet-dot"></span>
                     </span>
                     <span class="menu-title">Example Link</span>
+                    <span class="menu-arrow"></span>
                 </a>
+                <!--end::Menu link-->
+
+                <!--begin::Menu sub-->
+                <div class="menu-sub menu-sub-accordion pt-3">
+                    <!--begin::Menu item-->
+                    <div class="menu-item">
+                        <a href="#" class="menu-link py-3">
+                            <span class="menu-bullet">
+                                <span class="bullet bullet-dot"></span>
+                            </span>
+                            <span class="menu-title">Example Link</span>
+                        </a>
+                    </div>
+                    <!--end::Menu item-->
+
+                    <!--begin::Menu item-->
+                    <div class="menu-item">
+                        <a href="#" class="menu-link py-3">
+                            <span class="menu-bullet">
+                                <span class="bullet bullet-dot"></span>
+                            </span>
+                            <span class="menu-title">Example Link</span>
+                        </a>
+                    </div>
+                    <!--end::Menu item-->
+
+                    <!--begin::Menu item-->
+                    <div class="menu-item">
+                        <a href="#" class="menu-link py-3">
+                            <span class="menu-bullet">
+                                <span class="bullet bullet-dot"></span>
+                            </span>
+                            <span class="menu-title">Example Link</span>
+                        </a>
+                    </div>
+                    <!--end::Menu item-->
+                </div>
+                <!--end::Menu sub-->
             </div>
             <!--end::Menu item-->
 
@@ -38,6 +89,81 @@
                         <span class="bullet bullet-dot"></span>
                     </span>
                     <span class="menu-title">Example Link</span>
+                </a>
+            </div>
+            <!--end::Menu item-->
+        </div>
+        <!--end::Menu sub-->
+    </div>
+    <!--OZON-->
+    <div class="menu-item menu-sub-indention menu-accordion" data-kt-menu-trigger="click">
+        <!--begin::Menu link-->
+        <a href="#" class="menu-link py-3">
+            <span class="menu-title">Ozon</span>
+            <span class="menu-arrow"></span>
+        </a>
+        <!--end::Menu link-->
+
+        <!--begin::Menu sub-->
+        <div class="menu-sub menu-sub-accordion pt-3">
+            <!--begin::Menu item-->
+            <div class="menu-item">
+                <a href="{% url 'price_ozon' %}" class="menu-link py-3">
+                    <span class="menu-bullet">
+                        <span class="bullet bullet-dot"></span>
+                    </span>
+                    <span class="menu-title">Цены OZON</span>
+                </a>
+            </div>
+            <div class="menu-item">
+                <a href="{% url 'finance_ozon' %}" class="menu-link py-3">
+                    <span class="menu-bullet">
+                        <span class="bullet bullet-dot"></span>
+                    </span>
+                    <span class="menu-title">Финансы OZON</span>
+                </a>
+            </div>
+            <div class="menu-item">
+                <a href="{% url 'postavka_ozon' %}" class="menu-link py-3">
+                    <span class="menu-bullet">
+                        <span class="bullet bullet-dot"></span>
+                    </span>
+                    <span class="menu-title">Поставка FBO OZON</span>
+                </a>
+            </div>
+            <!--end::Menu item-->
+        </div>
+        <!--end::Menu sub-->
+    </div>
+    <!--WB-->
+    <div class="menu-item menu-sub-indention menu-accordion" data-kt-menu-trigger="click">
+        <!--begin::Menu link-->
+        <a href="#" class="menu-link py-3">
+            <span class="menu-title">WB</span>
+            <span class="menu-arrow"></span>
+        </a>
+        <!--end::Menu link-->
+
+        <!--begin::Menu sub-->
+        <div class="menu-sub menu-sub-accordion pt-3">
+            <!--begin::Menu item-->
+            <div class="menu-item">
+                <a href="{% url 'price_wb' %}" class="menu-link py-3">
+                    <span class="menu-bullet">
+                        <span class="bullet bullet-dot"></span>
+                    </span>
+                    <span class="menu-title">Цены WB</span>
+                </a>
+            </div>
+            <!--end::Menu item-->
+
+            <!--begin::Menu item-->
+            <div class="menu-item">
+                <a href="{% url 'finance_wb' %}" class="menu-link py-3">
+                    <span class="menu-bullet">
+                        <span class="bullet bullet-dot"></span>
+                    </span>
+                    <span class="menu-title">Финансы WB</span>
                 </a>
             </div>
             <!--end::Menu item-->
@@ -106,22 +232,50 @@
         </div>
         <!--end::Menu sub-->
     </div>
-    <!--end::Menu item-->
-
-    <!--begin::Menu item-->
-    <div class="menu-item">
+    <!--YANDEX-->
+    <div class="menu-item menu-sub-indention menu-accordion" data-kt-menu-trigger="click">
+        <!--begin::Menu link-->
         <a href="#" class="menu-link py-3">
-            <span class="menu-icon">
-                <i class="ki-duotone ki-notification-on fs-3"><span class="path1"></span><span class="path2"></span><span class="path3"></span><span class="path4"></span><span class="path5"></span></i>
-            </span>
-            <span class="menu-title">Example Link</span>
+            <span class="menu-title">Yandex</span>
+            <span class="menu-arrow"></span>
         </a>
+        <div class="menu-sub menu-sub-accordion pt-3">
+            <!--begin::Menu item-->
+            <div class="menu-item">
+                <a href="{% url 'price_yandex' %}" class="menu-link py-3">
+                    <span class="menu-bullet">
+                        <span class="bullet bullet-dot"></span>
+                    </span>
+                    <span class="menu-title">Цены Yandex</span>
+                </a>
+            </div>
+        </div>
+        <!--end::Menu sub-->
     </div>
-    <!--end::Menu item-->
+    <!--НАСТРОЙКИ-->
+    <div class="menu-item menu-sub-indention menu-accordion" data-kt-menu-trigger="click">
+        <!--begin::Menu link-->
+        <a href="#" class="menu-link py-3">
+            <span class="menu-title">Настройки</span>
+            <span class="menu-arrow"></span>
+        </a>
+        <!--end::Menu link-->
 
-    <!--end::Menu item-->
+        <!--begin::Menu sub-->
+        <div class="menu-sub menu-sub-accordion pt-3">
+            <!--begin::Menu item-->
+            <div class="menu-item">
+                <a href="{% url 'create' %}" class="menu-link py-3">
+                    <span class="menu-bullet">
+                        <span class="bullet bullet-dot"></span>
+                    </span>
+                    <span class="menu-title">Api ключи</span>
+                </a>
+            </div>
+        </div>
+        <!--end::Menu sub-->
+    </div>
 </div>
-<!--end::Menu-->
 
 
 

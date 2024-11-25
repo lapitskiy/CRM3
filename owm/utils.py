@@ -10,6 +10,8 @@ import pymorphy2
 import os
 from django.conf import settings
 
+import pandas as pd
+
 def get_headers(user):
     headers = {}
     if user.moysklad_api:
@@ -734,6 +736,127 @@ def get_postavka_ozon(headers: dict):
     result['path'] = url_path
     result['code'] = 8 if response.get('code') == 8 else 0
     return result
+
+def get_finance_wb(headers: dict, period: str):
+    opt_price = get_moysklad_opt_price(headers['moysklad_headers'])
+    opt_price_clear = {}
+    for item in opt_price['rows']:
+        #opt_price_clear['article'] = item['article']
+        #print(f"opt_price {item['buyPrice']['value']/100}")
+        opt_price_clear[item['article']] = {
+            'opt_price' : int(float(item['buyPrice']['value']) / 100),
+            }
+
+    url = "https://statistics-api.wildberries.ru/api/v5/supplier/reportDetailByPeriod"
+    now = datetime.datetime.now()
+    # Вычисляем первый день предыдущего месяца
+    first_day_of_last_month = datetime.datetime(now.year, now.month, 1) - datetime.timedelta(days=1)
+    first_day_of_last_month = first_day_of_last_month.replace(day=1)
+    # Вычисляем последний день предыдущего месяца
+    last_day_of_last_month = first_day_of_last_month.replace(day=1) + datetime.timedelta(days=32)
+    last_day_of_last_month = last_day_of_last_month.replace(day=1) - datetime.timedelta(days=1)
+
+    #data = {
+    #    "dateFrom": first_day_of_last_month.strftime('%Y-%m-%d'),
+    #    "dateTo": last_day_of_last_month.strftime('%Y-%m-%d')
+    #}
+
+    data = {
+        "dateFrom": "2024-10-28",
+        "dateTo": "2024-11-03"
+    }
+
+    response = requests.get(url, headers=headers['wildberries_headers'], params=data).json()
+
+    for item in response:
+        offer_id = item.get('sa_name')
+        new_entry = {
+            'total_price': int(item.get('retail_amount')), # Сумма продаж (возвратов)
+            'quantity': int(item.get('quantity')),
+            'commission_percent': item.get('commission_percent'),
+            'sales_commission': item.get('ppvz_sales_commission'), # Вознаграждение с продаж до вычета услуг поверенного, без НДС
+            'for_pay': item.get('ppvz_for_pay'), # К перечислению продавцу за реализованный товар
+        }
+
+    # 'doc_type_name': 'Продажа'
+    print(f'data wb {data}')
+    print(f'response wb {response}')
+
+    translated_keys = {
+        'date_from': 'Дата начала',
+        'date_to': 'Дата окончания',
+        'rrd_id': 'ID записи отчета',
+        'gi_id': 'ID товарной позиции',
+        'dlv_prc': 'Процент доставки',
+        'fix_tariff_date_from': 'Начало действия фиксированного тарифа',
+        'fix_tariff_date_to': 'Окончание действия фиксированного тарифа',
+        'subject_name': 'Наименование товара',
+        'nm_id': 'Код товара',
+        'brand_name': 'Бренд',
+        'sa_name': 'Краткое имя SA',
+        'ts_name': 'Имя TS',
+        'barcode': 'Штрихкод',
+        'doc_type_name': 'Тип документа',
+        'quantity': 'Количество',
+        'retail_price': 'Розничная цена',
+        'retail_amount': 'Розничная сумма',
+        'sale_percent': 'Процент продаж',
+        'commission_percent': 'Процент комиссии',
+        'office_name': 'Название офиса',
+        'supplier_oper_name': 'Операция поставщика',
+        'order_dt': 'Дата заказа',
+        'sale_dt': 'Дата продажи',
+        'rr_dt': 'Дата отчета',
+        'shk_id': 'ID SHK',
+        'retail_price_withdisc_rub': 'Цена с учетом скидки, RUB',
+        'delivery_amount': 'Сумма доставки',
+        'return_amount': 'Сумма возврата',
+        'delivery_rub': 'Стоимость доставки, RUB',
+        'gi_box_type_name': 'Тип упаковки',
+        'product_discount_for_report': 'Скидка на товар для отчета',
+        'rid': 'RID',
+        'ppvz_spp_prc': 'PPVZ SPP PRC',
+        'ppvz_kvw_prc_base': 'Основа PPVZ KVW PRC',
+        'ppvz_kvw_prc': 'PPVZ KVW PRC',
+        'sup_rating_prc_up': 'Повышение рейтинга поставщика',
+        'is_kgvp_v2': 'Is KGVP V2',
+        'ppvz_sales_commission': 'Комиссия WB',
+        'ppvz_for_pay': 'К выплате',
+        'ppvz_reward': 'Комиссия ПВЗ',
+        'acquiring_fee': 'Комиссия за эквайринг',
+        'acquiring_percent': 'Процент эквайринга',
+        'payment_processing': 'Обработка платежей',
+        'acquiring_bank': 'Банк эквайринга',
+        'ppvz_vw': 'Вознаграждение WB',
+        'ppvz_vw_nds': 'PPVZ VW НДС',
+        'declaration_number': 'Номер декларации',
+        'bonus_type_name': 'Тип бонуса',
+        'sticker_id': 'ID стикера',
+        'site_country': 'Страна сайта',
+        'srv_dbs': 'SRV DBS',
+        'penalty': 'Штраф',
+        'additional_payment': 'Дополнительная оплата',
+        'rebill_logistic_cost': 'Стоимость перевозки при пересчете',
+        'storage_fee': 'Плата за хранение',
+        'deduction': 'Вычет',
+        'acceptance': 'Принятие',
+        'assembly_id': 'ID сборки',
+        'srid': 'SRID',
+    }
+
+    filtered_response = [{key: item.get(key, None) for key in translated_keys.keys()} for item in response]
+
+    df = pd.DataFrame(filtered_response)
+
+    # Rename the columns using the translated keys
+    df.rename(columns=translated_keys, inplace=True)
+
+    df.to_excel('Products_Report.xlsx', index=False)
+
+    df.head()
+
+    return ''
+
 
 def delete_files_with_prefix(directory_path, prefix):
     """

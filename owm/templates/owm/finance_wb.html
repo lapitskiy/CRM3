@@ -1,0 +1,74 @@
+{% extends "base.html" %}
+{% block title %}{{ title }} - {{ block.super }}{% endblock %}
+{% block sidebar %}
+    {% include 'include/_sidebar_owm.html' %}
+{% endblock %}
+{% block content %}
+{% load custom_filters %}
+
+<script>
+function input() {
+  var IDs = [];
+  $(".table").find("tr").each(function(){ IDs.push(this.id); });
+
+  var input_taker = document.getElementById('search').value;
+
+  if (input_taker != '')
+      {
+    $("tr").each(function (i, el) {
+         //It'll be an array of elements
+        $(this).hide();
+     });
+} else {
+    $("tr").each(function (i, el) {
+         //It'll be an array of elements
+        $(this).show();
+     });
+}
+
+
+  $("tr[id*=" + input_taker + "]").each(function (i, el) {
+         //It'll be an array of elements
+        $(this).show();
+     });
+
+
+
+}
+
+</script>
+    <script>
+  $(document).ready(function() {
+    $('[data-toggle="tooltip"]').tooltip();
+  });
+</script>
+
+header_data {{ header_data }}
+    <br><br>
+    all_totals {{ all_totals }}
+    <!--Шапка-->
+<div class="position-relative mb-17">
+    <div class="overlay overlay-show">
+        <div class="bgi-no-repeat bgi-position-center bgi-size-cover card-rounded min-h-250px" style="background-image:url('/media/owm/fin_owm.jpg')">
+        </div>
+        <div class="overlay-layer rounded bg-black" style="opacity: 0.4">
+        </div>
+    </div>
+    <!--begin::Heading-->
+    <div class="position-absolute text-white mb-8 ms-10 bottom-0">
+        <!--begin::Title-->
+        <h3 class="text-white fs-2qx fw-bold mb-3 m">Финансовый отчет OZON</h3>
+        <!--end::Title-->
+
+        <!--begin::Text-->
+        <div class="fs-5 fw-semibold">
+            Данные за предыдущший месяц
+        </div>
+        <!--end::Text-->
+    </div>
+    <!--end::Heading-->
+</div>
+
+
+<!--end::Accordion-->
+{% endblock %}

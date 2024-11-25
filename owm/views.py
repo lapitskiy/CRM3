@@ -382,3 +382,30 @@ class PostavkaOzon(View):
         offer_dict = price_POST_to_offer_dict(request.POST.dict())
         update_price_ozon(parser, offer_dict)
         return render(request, 'owm/finance_ozon.html', context)
+
+class FinanceWb(View):
+    def get(self, request, *args, **kwargs):
+        context = {}
+        try:
+            parser = Parser.objects.get(user=request.user)
+            # дальнейшая логика
+        except TypeError:
+            return HttpResponse('Пользователь не аутентифицирован', status=401)
+
+        headers = get_headers(parser)
+        data = get_finance_wb(headers, period='month')
+
+        #print(f"headers {context['headers']}")
+        print(f"$$$$$$$$$$$$$$$$$")
+        print(f"$$$$$$$$$$$$$$$$$")
+        print(f"$$$$$$$$$$$$$$$$$")
+        #print(f"all_total {all_totals}")
+
+        return render(request, 'owm/finance_wb.html', context)
+
+    def post(self, request, *args, **kwargs):
+        context = {}
+        parser = Parser.objects.get(user=request.user)
+        offer_dict = price_POST_to_offer_dict(request.POST.dict())
+        update_price_ozon(parser, offer_dict)
+        return render(request, 'owm/finance_ozon.html', context)
