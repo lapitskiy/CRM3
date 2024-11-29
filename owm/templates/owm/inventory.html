@@ -50,14 +50,16 @@
                     <div class="row mb-2 align-items-center pb-2" style="border-bottom: 1px solid #c2bfbf;">
                         <!-- Колонка для чекбокса и label -->
                         <div class="col-sm-2 d-flex align-items-center">
-                            <input class="form-check-input align-middle child-checkbox" type="checkbox" value="" id="input{{ offer_id }}" />
-                            <label class="form-check-label text-dark ms-2" for="input{{ offer_id }}" style="margin: 0;">
+                            <input class="form-check-input align-middle child-checkbox" type="checkbox"
+                                   name="{{ offer_id }}_checked" id="checkbox{{ offer_id }}" />
+                            <label class="form-check-label text-dark ms-2" for="checkbox{{ offer_id }}" style="margin: 0;">
                                 {{ offer_id }}
                             </label>
                         </div>
                         <!-- Колонка для input -->
                         <div class="col-sm-3 d-flex align-items-center">
-                            <input type="text" class="form-control" name="{{ offer_id }}_stock" id="input{{ offer_id }}" value="{{ value.stock }}" style="width: 150px;">
+                            <input type="text" class="form-control" name="{{ offer_id }}_stock"
+                                   id="input{{ offer_id }}" value="{{ value.stock }}" style="width: 150px;">
                         </div>
                     </div>
                 {% endfor %}

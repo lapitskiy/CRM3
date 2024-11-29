@@ -242,9 +242,13 @@ class Inventory(View):
         parser = Parser.objects.get(user=request.user)
         parser.replenishment = True
         parser.save()
+        #print(f"request.POST.dict() {request.POST.dict()}")
         print(f"invent_dict {invent_dict}")
+
+
+
         #context['resp'] = inventory_update(parser, invent_dict)
-        print(f"responce {context['resp']}")
+        #print(f"responce {context['resp']}")
         return render(request, 'owm/inventory.html', context)
 
 class Autoupdate(View):

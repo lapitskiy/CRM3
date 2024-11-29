@@ -291,12 +291,18 @@ def get_inventory_row_data(headers, offer_dict):
     return data
 
 # создание dict из POST запроса для инвенаризации (inventory)
-def inventory_POST_to_offer_dict(post):
+def inventory_POST_to_offer_dict(post_data):
     offer_dict = {}
-    for key, value in post.items():
-        if value == 'offer_id':
-            stock = post[key+'_stock'] # convert float format from ',' to '.'
-            offer_dict[key] = {'stock' : stock.replace(',', '.')}
+
+    # Обрабатываем все данные из словаря post_data
+    for key, value in post_data.items():
+        if key.endswith("_checked"):  # Проверяем только чекбоксы
+            offer_id = key.replace("_checked", "")  # Извлекаем offer_id
+            is_checked = value == "on"
+            stock_value = post_data.get(f"{offer_id}_stock", None)  # Получаем значение stock
+
+            if is_checked:
+                offer_dict[offer_id] = {'stock' : f"{float(stock_value):.1f}".replace(',', '.')}
     return offer_dict
 
 def get_moysklad_opt_price(headers):
