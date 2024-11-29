@@ -49,26 +49,330 @@ header_data {{ header_data }}
     <!--Шапка-->
 <div class="position-relative mb-17">
     <div class="overlay overlay-show">
-        <div class="bgi-no-repeat bgi-position-center bgi-size-cover card-rounded min-h-250px" style="background-image:url('/media/owm/fin_owm.jpg')">
+        <div class="bgi-no-repeat bgi-position-center bgi-size-cover card-rounded min-h-250px" style="background-image:url('/media/owm/wb_finance_header.jpg')">
         </div>
         <div class="overlay-layer rounded bg-black" style="opacity: 0.4">
         </div>
     </div>
-    <!--begin::Heading-->
-    <div class="position-absolute text-white mb-8 ms-10 bottom-0">
-        <!--begin::Title-->
-        <h3 class="text-white fs-2qx fw-bold mb-3 m">Финансовый отчет OZON</h3>
-        <!--end::Title-->
 
-        <!--begin::Text-->
+    <div class="position-absolute text-white mb-8 ms-10 bottom-0">
+
+        <h3 class="text-white fs-2qx fw-bold mb-3 m">Финансовый отчет WB</h3>
         <div class="fs-5 fw-semibold">
-            Данные за предыдущший месяц
+            Данные за {{ date.dateFrom}} по {{ date.dateTo}}
         </div>
         <!--end::Text-->
     </div>
     <!--end::Heading-->
 </div>
 
+
+<!--Табличик-->
+<div class="row gy-5 gx-xl-10">
+
+    <div class="col-sm-6 col-xl-2 mb-xl-10">
+
+        <div class="card h-lg-100">
+            <!--begin::Body-->
+            <div class="card-body d-flex justify-content-between align-items-start flex-column">
+                <!--begin::Icon-->
+                <div class="m-0">
+                                    <i class="fa-regular fa-handshake fs-2hx text-gray-600"><span class="path1"></span><span class="path2"></span></i>
+                </div>
+                <!--end::Icon-->
+                <!--begin::Section-->
+                <div class="d-flex flex-column my-7">
+                    <div class="fw-semibold fs-3x text-gray-800 lh-1 ls-n2" data-kt-countup="true" data-kt-countup-value="{{ all_totals.all_for_pay_sum }}" data-kt-countup-prefix="₽">0</div>
+                    <div class="m-0"><span class="fw-semibold fs-6 text-gray-500">Переведено денег</span></div>
+
+                </div>
+                <!--end::Section-->
+
+                <!--begin::Badge-->
+                <span class="badge badge-light-success fs-base">
+                    <i class="ki-duotone ki-arrow-up fs-5 text-success ms-n1"><span class="path1"></span><span class="path2"></span></i>
+                    <i class="fa fa-rub" aria-hidden="true"></i>
+                </span>
+                <!--end::Badge-->
+            </div>
+            <!--end::Body-->
+        </div>
+        </div>
+
+    <div class="col-sm-6 col-xl-2 mb-xl-10">
+<!--begin::Card widget 2-->
+<div class="card h-lg-100">
+    <!--begin::Body-->
+    <div class="card-body d-flex justify-content-between align-items-start flex-column">
+        <!--begin::Icon-->
+        <div class="m-0">
+           <i class="fas fa-coins fs-2hx text-gray-600"><span class="path1"></span><span class="path2"></span><span class="path3"></span><span class="path4"></span></i>
+        </div>
+        <!--end::Icon-->
+
+        <!--begin::Section-->
+        <div class="d-flex flex-column my-7">
+            <!--begin::Number-->
+            <span class="fw-semibold fs-3x text-gray-800 lh-1 ls-n2">₽{{ all_totals.all_net_profit_sum }}</span>
+            <!--end::Number-->
+            <!--begin::Follower-->
+            <div class="m-0">
+                                    <span class="fw-semibold fs-6 text-gray-500">Чистая без опта</span>
+            </div>
+            <!--end::Follower-->
+        </div>
+        <!--end::Section-->
+        <!--begin::Badge-->
+        <span class="badge badge-light-success fs-base">
+                            <i class="ki-duotone ki-arrow-up fs-5 text-success ms-n1"><span class="path1"></span><span class="path2"></span></i><i class="fa fa-rub" aria-hidden="true"></i>
+        </span>
+        <!--end::Badge-->
+    </div>
+    <!--end::Body-->
+</div>
+<!--end::Card widget 2-->
+     </div>
+
+    <div class="col-sm-6 col-xl-2 mb-xl-10">
+
+<!--begin::Card widget 2-->
+<div class="card h-lg-100">
+    <!--begin::Body-->
+    <div class="card-body d-flex justify-content-between align-items-start flex-column">
+        <!--begin::Icon-->
+        <div class="m-0">
+                            <i class="fas fa-hand-holding-usd fs-2hx text-gray-600"><span class="path1"></span><span class="path2"></span></i>
+
+        </div>
+        <!--end::Icon-->
+
+        <!--begin::Section-->
+        <div class="d-flex flex-column my-7">
+            <!--begin::Number-->
+            <span class="fw-semibold fs-3x text-gray-800 lh-1 ls-n2">₽{{ all_totals.all_posttax_profit_sum }}</span>
+            <!--end::Number-->
+
+            <!--begin::Follower-->
+            <div class="m-0">
+                                    <span class="fw-semibold fs-6 text-gray-500">После 6% налог</span>
+
+            </div>
+            <!--end::Follower-->
+        </div>
+        <!--end::Section-->
+
+        <!--begin::Badge-->
+        <span class="badge badge-light-danger fs-base">
+                            <i class="ki-duotone ki-arrow-down fs-5 text-danger ms-n1"><span class="path1"></span><span class="path2"></span></i>
+
+            <i class="fa fa-rub" aria-hidden="true"></i>
+        </span>
+        <!--end::Badge-->
+    </div>
+    <!--end::Body-->
+</div>
+<!--end::Card widget 2-->
+
+
+     </div>
+
+    <div class="col-sm-6 col-xl-2 mb-xl-10">
+        <div class="card h-lg-100">
+    <!--begin::Body-->
+    <div class="card-body d-flex justify-content-between align-items-start flex-column">
+        <!--begin::Icon-->
+        <div class="m-0">
+                            <i class="fa-solid fa-cash-register fs-2hx text-gray-600"><span class="path1"></span><span class="path2"></span><span class="path3"></span></i>
+
+        </div>
+        <!--end::Icon-->
+
+        <!--begin::Section-->
+        <div class="d-flex flex-column my-7">
+            <!--begin::Number-->
+            <span class="fw-semibold fs-3x text-gray-800 lh-1 ls-n2">{{ all_totals.all_quantity }}</span>
+            <!--end::Number-->
+
+            <!--begin::Follower-->
+            <div class="m-0">
+                                    <span class="fw-semibold fs-6 text-gray-500">Продано товара</span>
+
+            </div>
+            <!--end::Follower-->
+        </div>
+        <!--end::Section-->
+
+        <!--begin::Badge-->
+        <span class="badge badge-light-success fs-base">
+                            <i class="ki-duotone ki-arrow-up fs-5 text-success ms-n1"><span class="path1"></span><span class="path2"></span></i>-
+        </span>
+        <!--end::Badge-->
+    </div>
+    <!--end::Body-->
+</div>
+        </div>
+
+    <div class="col-sm-6 col-xl-2 mb-5 mb-xl-10">
+        <div class="card h-lg-100">
+            <div class="card-body d-flex justify-content-between align-items-start flex-column">
+                <div class="m-0">
+                    <i class="fa-regular fa-thumbs-down fs-2hx text-gray-600"><span class="path1"></span><span class="path2"></span></i>
+                </div>
+                <div class="d-flex flex-column my-7">
+                    <span class="fw-semibold fs-3x text-gray-800 lh-1 ls-n2">₽{{ all_totals.all_return_total }}</span>
+                    <div class="m-0"><span class="fw-semibold fs-6 text-gray-500">Возвраты товара</span>
+                    </div>
+                </div>
+                <span class="badge badge-light-success fs-base">
+                    <i class="ki-duotone ki-arrow-up fs-5 text-success ms-n1"><span class="path1"></span><span class="path2"></span></i>-
+                </span>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-sm-6 col-xl-2 mb-5 mb-xl-10">
+        <div class="card h-lg-100">
+            <div class="card-body d-flex justify-content-between align-items-start flex-column">
+                <div class="m-0">
+                    <i class="fa-regular fa-calendar-days fs-2hx text-gray-600"><span class="path1"></span><span class="path2"></span></i>
+                </div>
+                <div class="d-flex flex-column my-7">
+                    <!--begin::Number-->
+                    <span class="fw-semibold fs-3x text-gray-800 lh-1 ls-n2">{{ header_data.month }}</span>
+                    <div class="m-0">
+                        <span class="fw-semibold fs-6 text-gray-500">{{ header_data.day_delta }} дней</span>
+                    </div>
+                </div>
+                <span class="badge badge-light-danger fs-base">
+                    <i class="ki-duotone ki-arrow-down fs-5 text-danger ms-n1"><span class="path1"></span><span class="path2"></span></i>-</span>
+                <!--end::Badge-->
+            </div>
+        </div>
+    </div>
+
+</div>
+<br><br><br>
+
+
+{% if code == 8 %}
+    pass
+{% else %}
+    <div class="alert alert-primary d-flex align-items-center p-5" style="max-width: 600px;">
+        <!--begin::Icon-->
+        <i class="ki-duotone ki-shield-tick fs-2hx text-warning me-4"><span class="path1"></span><span class="path2"></span></i>
+        <!--end::Icon-->
+
+        <!--begin::Wrapper-->
+        <div class="d-flex flex-column">
+            <!--begin::Title-->
+            <h4 class="mb-1 text-dark">Файлы финансовый отчет WB</h4>
+            <!--end::Title-->
+
+            <!--begin::Content-->
+            <span class="text-dark">Данные с отчета WB через api -
+                 <a href="https://dev.wildberries.ru/openapi/financial-reports-and-accounting#tag/Finansovye-otchyoty/paths/~1api~1v5~1supplier~1reportDetailByPeriod/get" target="_blank">описание полей</a>
+                <br>Полный "сырой "файл отчета - <a href="{{ path.all|urlencode }}" target="_blank">скачать</a>
+            </span>
+            <!--end::Content-->
+        </div>
+        <!--end::Wrapper-->
+    </div>
+    <div class="d-flex flex-wrap gap-2">
+        <a href="{{ path.sale|urlencode }}" class="btn btn-primary btn-sm" style="width: 150px;" target="_blank">
+            <i class="fa-solid fa-piggy-bank fs-1"></i>
+            <span class="path1"></span><span class="path2"></span><span class="path3"></span><span class="path4"></span></i><br>
+            ПРОДАЖИ<br>
+            Скачать xlsx файл финансовый отчет
+        </a>
+        <a href="{{ path.return|urlencode }}" class="btn btn-primary btn-sm" style="width: 150px;" target="_blank">
+            <i class="fa-regular fa-face-angry fs-1"></i>
+            <span class="path1"></span><span class="path2"></span><span class="path3"></span><span class="path4"></span></i>
+            <br>
+            ВОЗВРАТЫ<br>
+            Скачать xlsx файл отчет о возвратах
+        </a>
+        <a href="{{ path.logistic|urlencode }}" class="btn btn-primary btn-sm" style="width: 150px;" target="_blank">
+            <i class="fa-solid fa-jet-fighter fs-1"></i>
+<span class="path1"></span><span class="path2"></span><span class="path3"></span><span class="path4"></span></i><br>
+            ЛОГИСТИКА<br>
+            Скачать xlsx файл отчет логистики
+        </a>
+        <a href="{{ path.reimbursement|urlencode }}" class="btn btn-primary btn-sm" style="width: 150px;" target="_blank">
+            <i class="fa-solid fa-download fs-1"><span class="path1"></span><span class="path2"></span><span class="path3"></span><span class="path4"></span></i>
+            ВОЗМЕЩЕНИЕ<br>
+            Скачать xlsx файл отчет возмещений
+        </a>
+        <a href="{{ path.storage|urlencode }}" class="btn btn-primary btn-sm" style="width: 150px;" target="_blank">
+            <i class="fa-solid fa-school fs-1"></i>
+            <span class="path1"></span><span class="path2"></span><span class="path3"></span><span class="path4"></span></i><br>
+            ХРАНЕНИЕ<br>
+            Скачать xlsx файл отчет хранения
+        </a>
+        <a href="{{ path.acceptance|urlencode }}" class="btn btn-primary btn-sm" style="width: 150px;" target="_blank">
+            <i class="fa-solid fa-shop fs-1"></i>
+            <span class="path1"></span><span class="path2"></span><span class="path3"></span><span class="path4"></span></i>
+            <br>ПРИЕМКА<br>
+            Скачать xlsx файл отчет приемки
+        </a>
+        </div>
+    <br><br>
+
+<div class="py-5">
+        <div class="rounded border p-10">
+            <!--begin::Accordion-->
+            <div class="accordion" id="kt_accordion_1">
+                <div class="accordion-item">
+                    <h2 class="accordion-header" id="kt_accordion_1_header_1">
+                        <button class="accordion-button fs-4 fw-semibold collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#kt_accordion_1_body_1" aria-expanded="false" aria-controls="kt_accordion_1_body_1">
+                            Accordion Item #1
+                        </button>
+                    </h2>
+                    <div id="kt_accordion_1_body_1" class="accordion-collapse collapse" aria-labelledby="kt_accordion_1_header_1" data-bs-parent="#kt_accordion_1" style="">
+                        <div class="accordion-body">
+                            <strong>This is the first item's accordion body.</strong> It is hidden by default, until the collapse plugin adds the
+                            appropriate classes that we use to style each element. These classes control the overall appearance, as well as the
+                            showing and hiding via CSS transitions. You can modify any of this with custom CSS or overriding our default variables.
+                            It's also worth noting that just about any HTML can go within the <code>.accordion-body</code>, though the transition does limit overflow.
+                        </div>
+                    </div>
+                </div>
+
+                <div class="accordion-item">
+                    <h2 class="accordion-header" id="kt_accordion_1_header_2">
+                        <button class="accordion-button fs-4 fw-semibold collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#kt_accordion_1_body_2" aria-expanded="false" aria-controls="kt_accordion_1_body_2">
+                        Accordion Item #2
+                        </button>
+                    </h2>
+                    <div id="kt_accordion_1_body_2" class="accordion-collapse collapse" aria-labelledby="kt_accordion_1_header_2" data-bs-parent="#kt_accordion_1" style="">
+                        <div class="accordion-body">
+                            <strong>This is the second item's accordion body.</strong> It is hidden by default, until the collapse plugin adds the
+                            appropriate classes that we use to style each element. These classes control the overall appearance, as well as the showing
+                            and hiding via CSS transitions. You can modify any of this with custom CSS or overriding our default variables.
+                            It's also worth noting that just about any HTML can go within the <code>.accordion-body</code>, though the transition does limit overflow.
+                        </div>
+                    </div>
+                </div>
+
+                <div class="accordion-item">
+                    <h2 class="accordion-header" id="kt_accordion_1_header_3">
+                        <button class="accordion-button fs-4 fw-semibold collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#kt_accordion_1_body_3" aria-expanded="false" aria-controls="kt_accordion_1_body_3">
+                        Accordion Item #3
+                        </button>
+                    </h2>
+                    <div id="kt_accordion_1_body_3" class="accordion-collapse collapse" aria-labelledby="kt_accordion_1_header_3" data-bs-parent="#kt_accordion_1" style="">
+                        <div class="accordion-body">
+                            <strong>This is the third item's accordion body.</strong> It is hidden by default, until the collapse plugin adds the appropriate
+                            classes that we use to style each element. These classes control the overall appearance, as well as the showing and hiding via CSS transitions.
+                            You can modify any of this with custom CSS or overriding our default variables. It's also worth noting that just about any
+                            HTML can go within the <code>.accordion-body</code>, though the transition does limit overflow.
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <!--end::Accordion-->
+        </div>
+    </div>
+{% endif %}
 
 <!--end::Accordion-->
 {% endblock %}

@@ -4,7 +4,7 @@
     {% include 'include/_sidebar_owm.html' %}
 {% endblock %}
 {% block content %}
-    <h1>ИНВЕНТАРИЗАЦИЯ MoySklad + Ozon + Wb + Market</h1>
+    <h1>ИНВЕНТАРИЗАЦИЯ FBS (MoySklad + Ozon + Wb + Market)</h1>
 
     {% if resp %}
         <div class="accordion" id="kt_accordion_1">
@@ -32,17 +32,72 @@
     {% else %}
 
     <form action="#" method="POST">
+    {% csrf_token %}
         <button type="submit" class="btn btn-primary btn-block">Обновить остатки</button>
-        {% for offer_id, value in stock.items %}
-            {% csrf_token %}
-            <div class="input-group mb-5">
-                <span class="input-group-text" name="basic-addon3">{{ offer_id }}</span>
-                <input type="hidden" id="{{ offer_id }}" name="{{ offer_id }}" value="offer_id" />
-                <input type="text" class="form-control" name="{{ offer_id }}_stock" id="{{ offer_id }}" aria-describedby="basic-addon3" value="{{ value.stock }}"/>
+        <br><br><br>
+
+        <div class="container">
+            <!-- Основной чекбокс -->
+            <div class="form-check mb-3">
+                <input class="form-check-input" type="checkbox" id="selectAll" />
+                <label class="form-check-label text-dark" for="selectAll">
+                    Выбрать все
+                </label>
             </div>
-        {% endfor %}
+
+            <div id="checkboxList">
+                {% for offer_id, value in stock.items %}
+                    <div class="row mb-2 align-items-center pb-2" style="border-bottom: 1px solid #c2bfbf;">
+                        <!-- Колонка для чекбокса и label -->
+                        <div class="col-sm-2 d-flex align-items-center">
+                            <input class="form-check-input align-middle child-checkbox" type="checkbox" value="" id="input{{ offer_id }}" />
+                            <label class="form-check-label text-dark ms-2" for="input{{ offer_id }}" style="margin: 0;">
+                                {{ offer_id }}
+                            </label>
+                        </div>
+                        <!-- Колонка для input -->
+                        <div class="col-sm-3 d-flex align-items-center">
+                            <input type="text" class="form-control" name="{{ offer_id }}_stock" id="input{{ offer_id }}" value="{{ value.stock }}" style="width: 150px;">
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+        </div>
         <button type="submit" class="btn btn-primary btn-block">Обновить остатки</button>
     </form>
 
     {% endif %}
+
+<script>
+    // Получаем основной чекбокс
+    const selectAll = document.getElementById('selectAll');
+    // Получаем все дочерние чекбоксы
+    const childCheckboxes = document.querySelectorAll('.child-checkbox');
+
+    // Слушаем изменения основного чекбокса
+    selectAll.addEventListener('change', () => {
+        childCheckboxes.forEach(checkbox => {
+            checkbox.checked = selectAll.checked; // Устанавливаем состояние всех чекбоксов
+        });
+    });
+
+    // Обновляем состояние основного чекбокса при изменении любого дочернего чекбокса
+    childCheckboxes.forEach(checkbox => {
+        checkbox.addEventListener('change', () => {
+            const allChecked = Array.from(childCheckboxes).every(cb => cb.checked);
+            const someChecked = Array.from(childCheckboxes).some(cb => cb.checked);
+
+            if (allChecked) {
+                selectAll.checked = true;
+                selectAll.indeterminate = false;
+            } else if (someChecked) {
+                selectAll.checked = false;
+                selectAll.indeterminate = true; // Устанавливаем "промежуточное" состояние
+            } else {
+                selectAll.checked = false;
+                selectAll.indeterminate = false;
+            }
+        });
+    });
+</script>
 {% endblock %}

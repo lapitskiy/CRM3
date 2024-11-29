@@ -242,6 +242,28 @@ class Inventory(View):
         parser = Parser.objects.get(user=request.user)
         parser.replenishment = True
         parser.save()
+        print(f"invent_dict {invent_dict}")
+        #context['resp'] = inventory_update(parser, invent_dict)
+        print(f"responce {context['resp']}")
+        return render(request, 'owm/inventory.html', context)
+
+class Autoupdate(View):
+    def get(self, request, *args, **kwargs):
+        context = {}
+        parser = Parser.objects.get(user=request.user)
+        headers = get_headers(parser)
+        stock = auto_update_owm_moysklad(headers['moysklad_headers'])
+        context['stock'] = stock
+        #print(f"stock {stock}")
+        return render(request, 'owm/inventory.html', context)
+
+    def post(self, request):
+        #print(f"post {request.POST.dict()}")
+        context = {}
+        invent_dict = inventory_POST_to_offer_dict(request.POST.dict())
+        parser = Parser.objects.get(user=request.user)
+        parser.replenishment = True
+        parser.save()
         context['resp'] = inventory_update(parser, invent_dict)
         print(f"responce {context['resp']}")
         return render(request, 'owm/inventory.html', context)
@@ -394,10 +416,13 @@ class FinanceWb(View):
 
         headers = get_headers(parser)
         data = get_finance_wb(headers, period='month')
-
+        context['path'] = data['path']
+        context['code'] = data['code']
+        context['date'] = data['date']
+        context['report'] = data['sorted_report']  # dict(list(price.items())[:1]) # price
+        context['summed_totals'] = data['summed_totals']  # dict(list(price.items())[:1]) # price
+        context['all_totals'] = data['all_totals']
         #print(f"headers {context['headers']}")
-        print(f"$$$$$$$$$$$$$$$$$")
-        print(f"$$$$$$$$$$$$$$$$$")
         print(f"$$$$$$$$$$$$$$$$$")
         #print(f"all_total {all_totals}")
 

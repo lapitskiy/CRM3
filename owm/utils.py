@@ -64,7 +64,7 @@ def get_all_moysklad_stock(headers):
     response = requests.get(url, headers=headers, params=params).json()
     #print(f'response {response}')
     for stock in response['rows']:
-        stock_tuple[stock['article']] = {'stock': stock['stock'], 'price' : stock['salePrice']/100 }
+        stock_tuple[stock['article']] = {'stock': int(stock['stock']), 'price' : stock['salePrice']/100 }
     return stock_tuple
 
 def sort_stock_and_invent(invent_dict, stock):
@@ -552,6 +552,56 @@ def update_price_ozon(obj, offer_dict):
     #print(f'ozon price response {response.status_code}')
     print(f'ozon price json {response.json()}')
 
+def get_postavka_ozon(headers: dict):
+    uuid_suffix = str(uuid.uuid4())[:6]
+
+    path = os.path.join(settings.MEDIA_ROOT, 'owm/report/')
+    url_path = os.path.join(settings.MEDIA_URL, 'owm/report/', f'stock_data_ozn_{uuid_suffix}.xlsx')
+    file_path = os.path.join(settings.MEDIA_ROOT, 'owm/report/', f'stock_data_ozn_{uuid_suffix}.xlsx')
+    os.makedirs(os.path.dirname(file_path), exist_ok=True)
+
+    url = "https://api-seller.ozon.ru/v1/analytics/turnover/stocks"
+    data = {
+        "limit": 1000,
+    }
+
+    response = requests.post(url, headers=headers['ozon_headers'], json=data).json()
+
+    rows = []
+    for item in response.get('items', []):
+        offer_id = item.get('offer_id')
+        # Шаг 1: Считаем, сколько товара нужно на 90 дней
+        total_stock_needed = 90 * item.get('ads')
+        rows.append({
+            'offer_id': item['offer_id'],
+            'name': '',  # Имя оставляем пустым
+            'stock_needed': int(round(max(0, total_stock_needed - item.get('current_stock')))) # Округляем до целого
+            })
+
+    # Создание XLSX файла
+
+    prefix = 'stock_data'
+    delete_files_with_prefix(path, prefix)
+
+    workbook = xlsxwriter.Workbook(file_path)
+    worksheet = workbook.add_worksheet()
+    headers = ['Артикул', 'Имя', 'Количество']
+
+    rows_sorted = sorted(rows, key=lambda x: x['offer_id'])  # Сортировка по 'offer_id'
+
+    for col_num, header in enumerate(headers):
+        worksheet.write(0, col_num, header)
+    for row_num, row in enumerate(rows_sorted, start=1):
+        worksheet.write(row_num, 0, row['offer_id'])  # Артикул
+        worksheet.write(row_num, 1, row['name'])  # Имя (пустое)
+        worksheet.write(row_num, 2, row['stock_needed'])  # Количество
+    workbook.close()
+
+    result = {}
+    result['row'] = rows_sorted
+    result['path'] = url_path
+    result['code'] = 8 if response.get('code') == 8 else 0
+    return result
 def get_finance_ozon(headers: dict, period: str):
     opt_price = get_moysklad_opt_price(headers['moysklad_headers'])
     opt_price_clear = {}
@@ -680,61 +730,10 @@ def get_finance_ozon(headers: dict, period: str):
 
     # Выводим отсортированный словарь
     result = {}
-    result['sorted_report']= sorted_report
+    result['sorted_report'] = sorted_report
     result['all_totals'] = all_totals
     result['summed_totals'] = summed_totals
     result['header_data'] = header_data
-    return result
-
-def get_postavka_ozon(headers: dict):
-    uuid_suffix = str(uuid.uuid4())[:6]
-
-    path = os.path.join(settings.MEDIA_ROOT, 'owm/report/')
-    url_path = os.path.join(settings.MEDIA_URL, 'owm/report/', f'stock_data_{uuid_suffix}.xlsx')
-    file_path = os.path.join(settings.MEDIA_ROOT, 'owm/report/', f'stock_data_{uuid_suffix}.xlsx')
-    os.makedirs(os.path.dirname(file_path), exist_ok=True)
-
-    url = "https://api-seller.ozon.ru/v1/analytics/turnover/stocks"
-    data = {
-        "limit": 1000,
-    }
-
-    response = requests.post(url, headers=headers['ozon_headers'], json=data).json()
-
-    rows = []
-    for item in response.get('items', []):
-        offer_id = item.get('offer_id')
-        # Шаг 1: Считаем, сколько товара нужно на 90 дней
-        total_stock_needed = 90 * item.get('ads')
-        rows.append({
-            'offer_id': item['offer_id'],
-            'name': '',  # Имя оставляем пустым
-            'stock_needed': int(round(max(0, total_stock_needed - item.get('current_stock')))) # Округляем до целого
-            })
-
-    # Создание XLSX файла
-
-    prefix = 'stock_data'
-    delete_files_with_prefix(path, prefix)
-
-    workbook = xlsxwriter.Workbook(file_path)
-    worksheet = workbook.add_worksheet()
-    headers = ['Артикул', 'Имя', 'Количество']
-
-    rows_sorted = sorted(rows, key=lambda x: x['offer_id'])  # Сортировка по 'offer_id'
-
-    for col_num, header in enumerate(headers):
-        worksheet.write(0, col_num, header)
-    for row_num, row in enumerate(rows_sorted, start=1):
-        worksheet.write(row_num, 0, row['offer_id'])  # Артикул
-        worksheet.write(row_num, 1, row['name'])  # Имя (пустое)
-        worksheet.write(row_num, 2, row['stock_needed'])  # Количество
-    workbook.close()
-
-    result = {}
-    result['row'] = rows_sorted
-    result['path'] = url_path
-    result['code'] = 8 if response.get('code') == 8 else 0
     return result
 
 def get_finance_wb(headers: dict, period: str):
@@ -756,43 +755,40 @@ def get_finance_wb(headers: dict, period: str):
     last_day_of_last_month = first_day_of_last_month.replace(day=1) + datetime.timedelta(days=32)
     last_day_of_last_month = last_day_of_last_month.replace(day=1) - datetime.timedelta(days=1)
 
-    #data = {
+    #date = {
     #    "dateFrom": first_day_of_last_month.strftime('%Y-%m-%d'),
-    #    "dateTo": last_day_of_last_month.strftime('%Y-%m-%d')
+    #    "dateTo": last_day_of_last_month.strftime('%Y-%m-%d'),
+    #    "limit": 10000
     #}
 
-    data = {
-        "dateFrom": "2024-10-28",
-        "dateTo": "2024-11-03"
+
+    date = {
+        "dateFrom": "2024-11-01",
+        "dateTo": "2024-11-28"
     }
 
-    response = requests.get(url, headers=headers['wildberries_headers'], params=data).json()
+    print(f'date {date}')
 
-    for item in response:
-        offer_id = item.get('sa_name')
-        new_entry = {
-            'total_price': int(item.get('retail_amount')), # Сумма продаж (возвратов)
-            'quantity': int(item.get('quantity')),
-            'commission_percent': item.get('commission_percent'),
-            'sales_commission': item.get('ppvz_sales_commission'), # Вознаграждение с продаж до вычета услуг поверенного, без НДС
-            'for_pay': item.get('ppvz_for_pay'), # К перечислению продавцу за реализованный товар
-        }
+    response = requests.get(url, headers=headers['wildberries_headers'], params=date).json()
 
-    # 'doc_type_name': 'Продажа'
-    print(f'data wb {data}')
-    print(f'response wb {response}')
+    count_dicts = len(response)
+    print(f"Количество словарей: {count_dicts}")
+
+    print(f'response {response}')
+
+
 
     translated_keys = {
         'date_from': 'Дата начала',
         'date_to': 'Дата окончания',
-        'rrd_id': 'ID записи отчета',
-        'gi_id': 'ID товарной позиции',
+        #'rrd_id': 'ID записи отчета',
+        #'gi_id': 'ID товарной позиции',
         'dlv_prc': 'Процент доставки',
-        'fix_tariff_date_from': 'Начало действия фиксированного тарифа',
-        'fix_tariff_date_to': 'Окончание действия фиксированного тарифа',
+        #'fix_tariff_date_from': 'Начало действия фиксированного тарифа',
+        #'fix_tariff_date_to': 'Окончание действия фиксированного тарифа',
         'subject_name': 'Наименование товара',
         'nm_id': 'Код товара',
-        'brand_name': 'Бренд',
+        #'brand_name': 'Бренд',
         'sa_name': 'Краткое имя SA',
         'ts_name': 'Имя TS',
         'barcode': 'Штрихкод',
@@ -802,23 +798,22 @@ def get_finance_wb(headers: dict, period: str):
         'retail_amount': 'Розничная сумма',
         'sale_percent': 'Процент продаж',
         'commission_percent': 'Процент комиссии',
-        'office_name': 'Название офиса',
         'supplier_oper_name': 'Операция поставщика',
-        'order_dt': 'Дата заказа',
-        'sale_dt': 'Дата продажи',
-        'rr_dt': 'Дата отчета',
+        #'order_dt': 'Дата заказа',
+        #'sale_dt': 'Дата продажи',
+        #'rr_dt': 'Дата отчета',
         'shk_id': 'ID SHK',
         'retail_price_withdisc_rub': 'Цена с учетом скидки, RUB',
         'delivery_amount': 'Сумма доставки',
         'return_amount': 'Сумма возврата',
         'delivery_rub': 'Стоимость доставки, RUB',
-        'gi_box_type_name': 'Тип упаковки',
+        #'gi_box_type_name': 'Тип упаковки',
         'product_discount_for_report': 'Скидка на товар для отчета',
         'rid': 'RID',
         'ppvz_spp_prc': 'PPVZ SPP PRC',
         'ppvz_kvw_prc_base': 'Основа PPVZ KVW PRC',
         'ppvz_kvw_prc': 'PPVZ KVW PRC',
-        'sup_rating_prc_up': 'Повышение рейтинга поставщика',
+        #'sup_rating_prc_up': 'Повышение рейтинга поставщика',
         'is_kgvp_v2': 'Is KGVP V2',
         'ppvz_sales_commission': 'Комиссия WB',
         'ppvz_for_pay': 'К выплате',
@@ -848,14 +843,131 @@ def get_finance_wb(headers: dict, period: str):
 
     df = pd.DataFrame(filtered_response)
 
-    # Rename the columns using the translated keys
-    df.rename(columns=translated_keys, inplace=True)
+    result = {}
+    result['path'] = {}
 
-    df.to_excel('Products_Report.xlsx', index=False)
+    uuid_suffix = str(uuid.uuid4())[:6]
+    prefix = 'stock_wb'
+    path = os.path.join(settings.MEDIA_ROOT, 'owm/report/')
+    url_path = os.path.join(settings.MEDIA_URL, 'owm/report/', f'stock_wb_all_{uuid_suffix}.xlsx')
+    root_path = os.path.join(settings.MEDIA_ROOT, 'owm/report/', f'stock_wb_all_{uuid_suffix}.xlsx')
+    os.makedirs(os.path.dirname(path), exist_ok=True)
+    delete_files_with_prefix(path, prefix)
+    #df.rename(columns=translated_keys, inplace=True)
+    df.to_excel(root_path, index=False)
 
-    df.head()
+    result['path']['all'] = os.path.join(settings.MEDIA_URL, 'owm/report/', f'{url_path}')
 
-    return ''
+
+    category_translation = {
+        'Логистика': 'logistic',
+        'Продажа': 'sale',
+        'Возмещение': 'reimbursement',
+        'Хранение': 'storage',
+        'приемка': 'acceptance',
+        'Возврат': 'return'
+    }
+
+    category_dfs = {
+        category: df[df['supplier_oper_name'].str.contains(category, na=False)]
+        for category in category_translation.keys()
+    }
+
+    summed_totals = {}
+    offer_id_result = {}
+    for index, row in category_dfs['Продажа'].iterrows():
+        offer_id = row['sa_name']
+        opt = opt_price_clear[offer_id]['opt_price']
+        new_entry = {
+            'name': row['subject_name'],
+            'for_pay': int(row['ppvz_for_pay'],), # к выплате
+            'quantity': int(row['quantity'],),  # Сумма продаж (возвратов)
+            'opt': int(opt)
+            }
+        net_profit = new_entry['for_pay'] - (opt * new_entry['quantity']) #чистая без опта
+        net_profit_perc = (net_profit / (opt * new_entry['quantity'])) * 100 if opt * new_entry['quantity'] != 0 else 0
+        posttax_profit = net_profit - (new_entry['for_pay'] * 0.06)
+        posttax_profit_perc = (posttax_profit / (opt * new_entry['quantity'])) * 100 if opt * new_entry['quantity'] != 0 else 0
+        new_entry.update({
+            'net_profit': net_profit,
+            'net_profit_perc': int(net_profit_perc),
+            'posttax_profit': posttax_profit,
+            'posttax_profit_perc': int(posttax_profit_perc),
+        })
+        if offer_id in offer_id_result:
+            offer_id_result[offer_id].append(new_entry)
+        else:
+            offer_id_result[offer_id] = [new_entry]
+
+    # print(f'result ozon price {result}')
+    # seller_price_per_instance Цена продавца с учётом скидки.
+    # 'item': {'offer_id': 'cer_black_20', 'barcode': 'OZN1249002486', 'sku': 1249002486},
+    sorted_report = dict(sorted(offer_id_result.items(), key=lambda item: (item[0][:3], item[0][3:])))
+
+    # Итерация по результатам и вычисление суммы total_price
+    for offer_id, entries in offer_id_result.items():
+        for_pay_sum = sum(entry['for_pay'] for entry in entries)
+        net_profit_sum = sum(entry['net_profit'] for entry in entries)
+        posttax_profit_sum = sum(entry['posttax_profit'] for entry in entries)
+        total_quantity = sum(entry['quantity'] for entry in entries)
+
+        # Расчет средней цены продажи
+        average_sales_price = for_pay_sum / total_quantity if total_quantity > 0 else 0
+
+        average_percent_posttax = sum(entry['posttax_profit_perc'] for entry in entries) / len(entries) if entries else 0
+
+        # Сохраняем результаты в словарь
+        summed_totals[offer_id] = {
+            "for_pay_sum": int(for_pay_sum),
+            "net_profit_sum": int(net_profit_sum),
+            "posttax_profit_sum": int(posttax_profit_sum),
+            "average_sales_price": int(average_sales_price),
+            "average_percent_posttax": int(average_percent_posttax),
+            "total_quantity": int(total_quantity),
+        }
+
+    #print(f'summed_totals {summed_totals}')
+    all_for_pay_sum = sum(value["for_pay_sum"] for value in summed_totals.values())
+    all_return_total = 0
+    all_return_total = int(category_dfs['Возврат']["retail_amount"].sum())
+    all_totals = {
+        "all_for_pay_sum": all_for_pay_sum,
+        "all_net_profit_sum": sum(value["net_profit_sum"] for value in summed_totals.values()),
+        "all_posttax_profit_sum": sum(value["posttax_profit_sum"] for value in summed_totals.values()),
+        "all_quantity": sum(value["total_quantity"] for value in summed_totals.values()),
+        "all_return_total": all_return_total
+    }
+    all_totals = {
+        key: f"{value:,}" if isinstance(value, (int, float)) else value
+        for key, value in all_totals.items()
+    }
+
+    for category, english_name in category_translation.items():
+        # Создаём путь для каждого файла
+        category_path = os.path.join(settings.MEDIA_ROOT,'owm/report/',f'stock_wb_{english_name}_{uuid_suffix}.xlsx')
+        # Сохраняем DataFrame в Excel
+        result['path'][f'{english_name}'] = os.path.join(settings.MEDIA_URL, 'owm/report/', f'stock_wb_{english_name}_{uuid_suffix}.xlsx')
+        if category in category_dfs:
+            category_dfs[category].to_excel(category_path, index=False)
+            print(f"Файл для категории '{category}' сохранён как {result['path'][f'{english_name}']}")
+        else:
+            print(f"Категория '{category}' отсутствует в данных.")
+
+
+    result['translated_keys'] = translated_keys
+    result['date'] = date
+    if isinstance(response, list):
+        for item in response:
+            if isinstance(item, dict) and item.get('code') == 8:
+                result['code'] = 8
+                break
+        else:
+            result['code'] = 0
+    # Выводим отсортированный словарь
+    result['sorted_report'] = sorted_report
+    result['all_totals'] = all_totals
+    result['summed_totals'] = summed_totals
+    return result
 
 
 def delete_files_with_prefix(directory_path, prefix):

@@ -62,7 +62,7 @@ header_data {{ header_data }}
 
         <!--begin::Text-->
         <div class="fs-5 fw-semibold">
-            Данные за предыдущший месяц, по 5 число.
+            Данные c {{ header_data.start_date}} по {{ header_data.stop_date}}
         </div>
         <!--end::Text-->
     </div>
@@ -83,8 +83,9 @@ header_data {{ header_data }}
                 <!--end::Icon-->
                 <!--begin::Section-->
                 <div class="d-flex flex-column my-7">
-                    <span class="fw-semibold fs-3x text-gray-800 lh-1 ls-n2">{{ all_totals.all_total_price_sum }}</span>
+                    <div class="fw-semibold fs-3x text-gray-800 lh-1 ls-n2" data-kt-countup="true" data-kt-countup-value="{{ all_totals.all_total_price_sum }}" data-kt-countup-prefix="₽">0</div>
                     <div class="m-0"><span class="fw-semibold fs-6 text-gray-500">Переведено денег</span></div>
+
                 </div>
                 <!--end::Section-->
 
@@ -113,7 +114,7 @@ header_data {{ header_data }}
         <!--begin::Section-->
         <div class="d-flex flex-column my-7">
             <!--begin::Number-->
-            <span class="fw-semibold fs-3x text-gray-800 lh-1 ls-n2">{{ all_totals.all_net_profit_sum }}</span>
+            <span class="fw-semibold fs-3x text-gray-800 lh-1 ls-n2">₽{{ all_totals.all_net_profit_sum }}</span>
             <!--end::Number-->
             <!--begin::Follower-->
             <div class="m-0">
@@ -149,7 +150,7 @@ header_data {{ header_data }}
         <!--begin::Section-->
         <div class="d-flex flex-column my-7">
             <!--begin::Number-->
-            <span class="fw-semibold fs-3x text-gray-800 lh-1 ls-n2">{{ all_totals.all_posttax_profit_sum }}</span>
+            <span class="fw-semibold fs-3x text-gray-800 lh-1 ls-n2">₽{{ all_totals.all_posttax_profit_sum }}</span>
             <!--end::Number-->
 
             <!--begin::Follower-->
@@ -219,7 +220,7 @@ header_data {{ header_data }}
                     <i class="fa-regular fa-thumbs-down fs-2hx text-gray-600"><span class="path1"></span><span class="path2"></span></i>
                 </div>
                 <div class="d-flex flex-column my-7">
-                    <span class="fw-semibold fs-3x text-gray-800 lh-1 ls-n2">{{ all_totals.all_return_total }}</span>
+                    <span class="fw-semibold fs-3x text-gray-800 lh-1 ls-n2">₽{{ all_totals.all_return_total }}</span>
                     <div class="m-0"><span class="fw-semibold fs-6 text-gray-500">Возвраты товара</span>
                     </div>
                 </div>
