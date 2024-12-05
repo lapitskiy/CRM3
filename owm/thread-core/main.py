@@ -4,7 +4,7 @@ import requests
 import yandex, ozon, wb
 import django
 
-os.environ['DJANGO_SETTINGS_MODULE'] = 'ServiceCRM3.settings'
+os.environ['DJANGO_SETTINGS_MODULE'] = 'crm3.settings'
 os.environ["DJANGO_ALLOW_ASYNC_UNSAFE"] = "true"
 django.setup()
 

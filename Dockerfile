@@ -25,12 +25,15 @@ ENV LC_ALL=ru_RU.UTF-8
 # Скопируйте файлы зависимостей и установите их
 COPY requirements.txt .
 RUN cat requirements.txt
-RUN pip install --no-cache-dir -v -r requirements.txt > /tmp/pip_install_log.txt 2>&1
-RUN pip install --no-cache-dir -v --force-reinstall pandas
-
+RUN pip install --no-cache-dir -v -r requirements.txt
 
 # Скопируйте остальные файлы вашего приложения в контейнер
 COPY . /app
 
-# Определите команду для запуска приложения
-CMD ["python", "manage.py", "runserver", "0.0.0.0:8000"]
+# Добавляем скрипт запуска
+COPY entrypoint.sh /entrypoint.sh
+RUN chmod +x /entrypoint.sh
+
+ENV PYTHONPATH=/app
+
+ENTRYPOINT ["/entrypoint.sh"]

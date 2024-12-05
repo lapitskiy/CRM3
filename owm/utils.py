@@ -12,6 +12,8 @@ from django.conf import settings
 
 import pandas as pd
 
+from collections import OrderedDict
+
 def get_headers(user):
     headers = {}
     if user.moysklad_api:
@@ -45,6 +47,14 @@ def get_headers(user):
         }
     return headers
 
+def get_warehouse(headers):
+    result = {}
+    url = 'https://api-seller.ozon.ru/v1/warehouse/list'
+    response = requests.post(url, headers=headers['ozon_headers']).json()
+    #print(f'OZON get_warehouse {response}')
+    result['ozon_warehouses'] = response['result'][0]['warehouse_id']
+    return result
+
 def get_organization_meta(headers):
     url = 'https://api.moysklad.ru/api/remap/1.2/entity/organization'
     response = requests.get(url, headers=headers).json()
@@ -65,30 +75,44 @@ def get_all_moysklad_stock(headers):
     #print(f'response {response}')
     for stock in response['rows']:
         stock_tuple[stock['article']] = {'stock': int(stock['stock']), 'price' : stock['salePrice']/100 }
-    return stock_tuple
+    sorted_stock_tuple = OrderedDict(sorted(stock_tuple.items()))
+    return sorted_stock_tuple
 
 def sort_stock_and_invent(invent_dict, stock):
     #print(f"invent_dict {invent_dict}")
     #print(f"stock {stock}")
     loss_dict = {}
     enter_dict = {}
+    print(f'invent_dict TYT {invent_dict}')
+    print(f'sort_stock_and_invent stock {stock}')
     for key, value in stock.items():
+        #if key in invent_dict:
+            #print(f"float(value['stock'] {float(value['stock'])} > {float(invent_dict[key]['stock'])}")
         #print(f"key {key};   value {value};   invent dict {invent_dict[key]}")
-        if key in invent_dict and float(value['stock']) > float(invent_dict[key]['stock']):
-            loss_dict[key] = {}
-            loss_dict[key]['stock'] = float(value['stock'])-float(invent_dict[key]['stock'])
-        if key in invent_dict and float(value['stock']) < float(invent_dict[key]['stock']):
-            enter_dict[key] = {}
-            enter_dict[key]['stock'] = float(invent_dict[key]['stock'])-float(value['stock'])
-    return enter_dict, loss_dict
+        if key in invent_dict:
+            if float(value['stock']) > float(invent_dict[key]['stock']):
+                loss_dict[key] = {}
+                loss_dict[key]['stock'] = float(value['stock'])-float(invent_dict[key]['stock'])
+            if float(value['stock']) < float(invent_dict[key]['stock']):
+                enter_dict[key] = {}
+                enter_dict[key]['stock'] = float(invent_dict[key]['stock'])-float(value['stock'])
+            if float(value['stock']) == float(invent_dict[key]['stock']):
+                print('значения равны, обновления нет смысла делать')
+    result  = {
+        'enter_dict': enter_dict,
+        'loss_dict': loss_dict
+        }
+
+    return result
 
 # инветаризируем (оприходуем и списываем) товары на мойсклад и обновляем остатки на маркетплейсах
 def inventory_update(user, invent_dict):
     context = {}
     headers = get_headers(user)
     stock = get_all_moysklad_stock(headers['moysklad_headers'])
-    enter_dict, loss_dict = sort_stock_and_invent(invent_dict, stock)
-    response = update_inventory_moysklad(headers['moysklad_headers'], enter_dict, loss_dict)
+    stock_dict = sort_stock_and_invent(invent_dict, stock)
+    #print(f'enter_dict, loss_dict {enter_dict} and {loss_dict}')
+    response = update_inventory_moysklad(headers['moysklad_headers'], stock_dict)
     # если мойсклад обновил, то делаем на озоне синхронизацию
     context['moysklad'] = {
         'code': response.status_code,
@@ -96,17 +120,28 @@ def inventory_update(user, invent_dict):
     }
     if response.status_code == 200:
         stock = get_all_moysklad_stock(headers['moysklad_headers']) # вызываем снова, так как остатки изменились
-        context['ozon'] = update_inventory_ozon(headers['ozon_headers'], stock)
+
+        # Оставляем только пересечение ключей
+        common_keys = invent_dict.keys() & stock.keys()
+        stock = {key: stock[key] for key in common_keys}
+        print(f'\n\nstock сравнение {stock}\n\n')
+        context['ozon'] = update_inventory_ozon(headers, stock)
+        #print(f'OZON UPDATE?')
         context['yandex'] = update_inventory_yandex(headers, stock)
         context['wb'] = update_inventory_wb(headers['wildberries_headers'], stock)
-    user.replenishment = False
+    user.replenishment = False # возвращаем возможность скрипту проверять остатки на мп и мс
     user.save()
     return context
 
 # инвентаризация товара мой склад
-def update_inventory_moysklad(headers, enter_dict, loss_dict):
+# MS MS MSM SM MSMSMSMSMSMS
+def update_inventory_moysklad(headers, stock_dict):
+    enter_dict = stock_dict['enter_dict']
+    loss_dict = stock_dict['loss_dict']
+    uuid_suffix = str(uuid.uuid4())[:8]
     url = 'https://api.moysklad.ru/api/remap/1.2/entity/enter'
     data = {
+        'name': f'owm-{uuid_suffix}',
         'store': {"meta": get_store_meta(headers)},
         'organization': {'meta': get_organization_meta(headers)},
         'positions': get_inventory_row_data(headers, enter_dict)
@@ -124,6 +159,38 @@ def update_inventory_moysklad(headers, enter_dict, loss_dict):
     #print(f"responce status {type(responce.status_code)}")
     return responce
 
+def get_inventory_row_data(headers, offer_dict):
+    # url = f'https://api.moysklad.ru/api/remap/1.2/entity/assortment?filter=article={article}'
+    url = f'https://api.moysklad.ru/api/remap/1.2/entity/assortment'
+    response = requests.get(url, headers=headers).json()
+    #print(f'get_prod_meta {response[']}')
+    #print(f'get_inventory_row_data offer_dict {offer_dict}')
+    data = []
+    for row in response['rows']:
+        #print(f'TYT')
+        if row['article'] in offer_dict:
+            #print(f'TYT1')
+            data.append({
+                "quantity": float(offer_dict[row['article']]['stock']),
+                "assortment": {
+                    "meta": row['meta']
+                },
+            }, )
+        # print(f"{row['article']}")
+    #print(f'get_inventory_row_data data {data}')
+    # meta = response['rows'][0]['meta']
+    # data = [
+    #     {
+    #         "quantity": count,
+    #         "price": price * 100,
+    #         "assortment": {
+    #             "meta": meta
+    #         },
+    #         "overhead": 0
+    #     },
+    # ]
+    return data
+
     # url = 'https://api.moysklad.ru/api/remap/1.2/entity/inventory'
     # data = {
     #     'store': {"meta": get_store_meta(headers)},
@@ -135,27 +202,35 @@ def update_inventory_moysklad(headers, enter_dict, loss_dict):
 
 # инвентаризация товара озон
 def update_inventory_ozon(headers,stock):
-    url = 'https://api-seller.ozon.ru/v1/product/import/stocks'
+    warehouseID = get_warehouse(headers)
+    url = 'https://api-seller.ozon.ru/v2/products/stocks'
     ozon_stocks = []
+    print(f'update_inventory_ozon stock {stock}')
     for key, value in stock.items():
-        ozon_stocks.append({
-            'offer_id': key,
-            'stock': value['stock']
+        if value and 'stock' in value:
+            ozon_stocks.append({
+                'offer_id': key,
+                'stock': value['stock'],
+                'warehouse_id': warehouseID['ozon_warehouses']
             })
+        else:
+            print(f"Пропущен ключ {key} из-за отсутствия данных 'stock' или пустого словаря.")
     for i in range(0,len(ozon_stocks),100):
         data = {
             'stocks': ozon_stocks[i:i+99],
         }
-    response = requests.post(url, headers=headers, json=data)
+    #print(f'data stock {data}')
+    response = requests.post(url, headers=headers['ozon_headers'], json=data)
     context = {
         'code': response.status_code,
         'json': response.json()
     }
+    #print(f'OZON response {response.json()}')
     return context
 
 # инвентаризация товара яндекс
 def update_inventory_yandex(headers, stock):
-    print(f"head {headers}")
+    #print(f"head {headers}")
     headers_ya = headers['yandex_headers']
     company_id = headers['yandex_id']['company_id']
     businessId = headers['yandex_id']['businessId']
@@ -247,9 +322,9 @@ def update_inventory_wb(headers, stock):
         'stocks': sku
     }
     response = requests.put(url, json=data, headers=headers)
-    print(f'wb response {response}')
-    print(f'wb response status {response.status_code}')
-    print(f'wb response text {response.text}')
+    #print(f'wb response {response}')
+    #print(f'wb response status {response.status_code}')
+    #print(f'wb response text {response.text}')
     if response.status_code == 204:
         json = 'Update'
     else:
@@ -261,34 +336,6 @@ def update_inventory_wb(headers, stock):
     return context
     #print(f'wb response {response.json()}')
 
-def get_inventory_row_data(headers, offer_dict):
-    #url = f'https://api.moysklad.ru/api/remap/1.2/entity/assortment?filter=article={article}'
-    url = f'https://api.moysklad.ru/api/remap/1.2/entity/assortment'
-    response = requests.get(url, headers=headers).json()
-    #print(f'get_prod_meta {response[']}')
-    data = []
-    for row in response['rows']:
-        if row['article'] in offer_dict:
-            data.append({
-                "quantity": float(offer_dict[row['article']]['stock']),
-                "assortment": {
-                    "meta": row['meta']
-                },
-            },)
-        #print(f"{row['article']}")
-    #print(f'offer_dict {offer_dict}')
-    #meta = response['rows'][0]['meta']
-    # data = [
-    #     {
-    #         "quantity": count,
-    #         "price": price * 100,
-    #         "assortment": {
-    #             "meta": meta
-    #         },
-    #         "overhead": 0
-    #     },
-    # ]
-    return data
 
 # создание dict из POST запроса для инвенаризации (inventory)
 def inventory_POST_to_offer_dict(post_data):

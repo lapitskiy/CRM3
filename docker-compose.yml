@@ -23,7 +23,7 @@ services:
         - REDIS_PASSWORD=Billkill13  # Установка пароля для Redis
       command: redis-server /usr/local/etc/redis/redis.conf --requirepass "Billkill13"  # Запуск Redis с паролем и файлом конфигурации
 
-  kvadrober:  # Название вашего приложения на Python
+  crm3:  # Название вашего приложения на Python
     build: .
     image: crm3:latest
     container_name: crm3_container
@@ -39,6 +39,37 @@ services:
     depends_on:
       - postgres
       - redis
+    command: gunicorn --bind 0.0.0.0:8000 crm3.wsgi
+
+  celery:  # Celery Worker
+    image: crm3:latest
+    command: celery -A crm3 worker --loglevel=info --events
+    environment:
+      - DATABASE_NAME=postgres
+      - DATABASE_USER=crm3
+      - DATABASE_PASSWORD=Billkill13
+      - DATABASE_HOST=postgres
+      - REDIS_PASSWORD=Billkill13
+      - CELERY_BROKER_URL=redis://:Billkill13@redis:6379/0
+    depends_on:
+      - redis
+    volumes:
+      - .:/app
+
+  celery_beat:  # Celery Beat
+    image: crm3:latest
+    command: celery -A crm3 beat --loglevel=info
+    environment:
+      - DATABASE_NAME=postgres
+      - DATABASE_USER=crm3
+      - DATABASE_PASSWORD=Billkill13
+      - DATABASE_HOST=postgres
+      - REDIS_PASSWORD=Billkill13
+      - CELERY_BROKER_URL=redis://:Billkill13@redis:6379/0
+    depends_on:
+      - redis
+    volumes:
+      - .:/app
 
 volumes:
   postgres_data: {}

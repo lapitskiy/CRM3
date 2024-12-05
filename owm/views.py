@@ -239,16 +239,14 @@ class Inventory(View):
         #print(f"post {request.POST.dict()}")
         context = {}
         invent_dict = inventory_POST_to_offer_dict(request.POST.dict())
-        parser = Parser.objects.get(user=request.user)
-        parser.replenishment = True
-        parser.save()
+        user = Parser.objects.get(user=request.user)
+        user.replenishment = True # защита от
+        user.save()
         #print(f"request.POST.dict() {request.POST.dict()}")
-        print(f"invent_dict {invent_dict}")
+        #print(f"invent_dict {invent_dict}")
 
-
-
-        #context['resp'] = inventory_update(parser, invent_dict)
-        #print(f"responce {context['resp']}")
+        context['resp'] = inventory_update(user, invent_dict)
+        print(f"context resp {context['resp']}")
         return render(request, 'owm/inventory.html', context)
 
 class Autoupdate(View):
@@ -256,10 +254,10 @@ class Autoupdate(View):
         context = {}
         parser = Parser.objects.get(user=request.user)
         headers = get_headers(parser)
-        stock = auto_update_owm_moysklad(headers['moysklad_headers'])
+        #stock = auto_update_owm_moysklad(headers['moysklad_headers'])
         context['stock'] = stock
         #print(f"stock {stock}")
-        return render(request, 'owm/inventory.html', context)
+        return render(request, 'owm/autoupdate.html', context)
 
     def post(self, request):
         #print(f"post {request.POST.dict()}")
@@ -270,7 +268,7 @@ class Autoupdate(View):
         parser.save()
         context['resp'] = inventory_update(parser, invent_dict)
         print(f"responce {context['resp']}")
-        return render(request, 'owm/inventory.html', context)
+        return render(request, 'owm/autoupdate.html', context)
 
 class Create(View):
     def get(self, request, *args, **kwargs):
