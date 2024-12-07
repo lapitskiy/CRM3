@@ -4,7 +4,7 @@ import requests
 from django.http import HttpResponseRedirect
 from django.shortcuts import render
 from django.views import View
-from .models import Parser
+from .models import Parser, Crontab
 from .utils import *
 from django.core.exceptions import ObjectDoesNotExist
 
@@ -269,6 +269,66 @@ class Autoupdate(View):
         context['resp'] = inventory_update(parser, invent_dict)
         print(f"responce {context['resp']}")
         return render(request, 'owm/autoupdate.html', context)
+
+class AutoupdateSettings(View):
+    def get(self, request, *args, **kwargs):
+        context = {}
+        try:
+            obj = Crontab.objects.get(user=request.user)
+            if obj.active:
+                context['active'] = True
+            if obj.yandex:
+                context['active_yandex'] = True
+            if obj.ozon:
+                context['active_ozon'] = True
+            if obj.wb:
+                context['active_wb'] = True
+        except Crontab.DoesNotExist:
+            Crontab.objects.create(user=request.user, name='autoupdate', active=False)
+            print(f"Created new Crontab")
+        return render(request, 'owm/autoupdate_settings.html', context)
+
+    def post(self, request):
+        context = {}
+        sync_checkbox = request.POST.get('sync_checkbox', False)
+        sync_checkbox_ozon = request.POST.get('sync_checkbox_ozon', False)
+        sync_checkbox_yandex = request.POST.get('sync_checkbox_yandex', False)
+        sync_checkbox_wb = request.POST.get('sync_checkbox_wb', False)
+
+        crontab = Crontab.objects.filter(user=request.user).first()
+
+        if sync_checkbox  == 'on':
+            crontab.active = True
+            context['active'] = True
+            print("Checkbox is checked")
+        else:
+            crontab.active = False
+            context['active'] = False
+            # Чекбокс не отмечен
+            print("Checkbox is not checked")
+
+        if sync_checkbox_ozon  == 'on':
+            crontab.ozon = True
+            context['active_ozon'] = True
+        else:
+            crontab.ozon = False
+            context['active_ozon'] = False
+
+        if sync_checkbox_yandex  == 'on':
+            crontab.yandex = True
+            context['active_yandex'] = True
+        else:
+            crontab.yandex = False
+            context['active_ozon'] = False
+
+        if sync_checkbox_wb  == 'on':
+            crontab.wb = True
+            context['active_wb'] = True
+        else:
+            crontab.wb = False
+            context['active_wb'] = False
+        crontab.save()
+        return render(request, 'owm/autoupdate_settings.html', context)
 
 class Create(View):
     def get(self, request, *args, **kwargs):

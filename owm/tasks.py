@@ -1,25 +1,17 @@
-from .models import Parser
+from .models import Crontab
 
 from crm3.celery import app
 
 @app.task
-def my_periodic_task():
-    print("This task runs every 10 minutes.")
+def sync_inventory_owm():
+    crontab = Crontab.objects.filter(name='autoupdate', active=True)  # Замените `.all()` фильтром, если необходимо
+
+    for cron in crontab:
+        # Проверяем булевое поле, например, 'is_active'
+        if cron.active:  # Замените 'is_active' на название вашего поля
+            print(f"Cron task")  # Замените 'name' на поле, содержащее имя пользователя
+
+        else:
+            print(f"No cron task")
+
     return "Task completed"
-
-@app.task
-def test_task():
-    print("Beat task works!")
-    return "Success"
-
-'''
-@shared_task
-def sync_products():
-    # Проходим по всем пользователям с флагом
-    parsers = Parser.objects.filter(flag=True)
-    for parser in parsers:
-        # Здесь ваша логика работы с каждым пользователем
-        result = add(2, 3)  # Или что-то более сложное
-        print(f"Processed parser for user_id={parser.user_id}")
-    return f"Processed {parsers.count()} parsers"
-'''

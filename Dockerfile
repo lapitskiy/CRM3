@@ -30,10 +30,5 @@ RUN pip install --no-cache-dir -v -r requirements.txt
 # Скопируйте остальные файлы вашего приложения в контейнер
 COPY . /app
 
-# Добавляем скрипт запуска
-COPY entrypoint.sh /entrypoint.sh
-RUN chmod +x /entrypoint.sh
 
 ENV PYTHONPATH=/app
-
-ENTRYPOINT ["/entrypoint.sh"]

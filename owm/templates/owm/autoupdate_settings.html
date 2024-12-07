@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+{% block title %}{{ title }} - {{ block.super }}{% endblock %}
+{% block sidebar %}
+    {% include 'include/_sidebar_owm.html' %}
+{% endblock %}
+{% block content %}
+    <h1>Настройки автообнолвение остатков O W M</h1>
+<br><br>
+<form action="#" method="POST" class="update-form">
+        {% csrf_token %}
+<div class="form-check form-switch">
+  <input class="form-check-input" type="checkbox" id="flexSwitchCheckDefault"
+         {% if active %}checked="checked"{% endif %} name="sync_checkbox">
+  <label class="form-check-label" for="flexSwitchCheckDefault">
+    <b>Синхронизация остатков между маркетплейсами по артиклю</b>
+  </label>
+</div>
+    <br><br>
+<div class="form-check form-switch">
+  <input class="form-check-input" type="checkbox" id="flexSwitchCheckDefault"
+         {% if active_ozon %}checked="checked"{% endif %} name="sync_checkbox_ozon">
+  <label class="form-check-label" for="flexSwitchCheckDefault">
+    <b>Синхронизация Ozon</b>
+  </label>
+</div>
+    <br><br>
+<div class="form-check form-switch">
+  <input class="form-check-input" type="checkbox" id="flexSwitchCheckDefault"
+         {% if active_wb %}checked="checked"{% endif %} name="sync_checkbox_wb">
+  <label class="form-check-label" for="flexSwitchCheckDefault">
+    <b>Синхронизация WB</b>
+  </label>
+</div>
+    <br><br>
+<div class="form-check form-switch">
+  <input class="form-check-input" type="checkbox" id="flexSwitchCheckDefault"
+         {% if active_yandex %}checked="checked"{% endif %} name="sync_checkbox_yandex">
+  <label class="form-check-label" for="flexSwitchCheckDefault">
+    <b>Синхронизация Yandex</b>
+  </label>
+</div>
+    <br><br>
+        <button type="submit" class="btn btn-primary btn-block">Сохранить</button>
+    </form>
+{% endblock %}

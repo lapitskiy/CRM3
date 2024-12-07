@@ -1038,3 +1038,7 @@ def delete_files_with_prefix(directory_path, prefix):
                     print(f"Ошибка при удалении {file_path}: {e}")
     else:
         print(f"Директория {directory_path} не существует.")
+
+def sync_inventory():
+    pass
+
