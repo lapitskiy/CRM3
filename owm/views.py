@@ -331,17 +331,16 @@ class AutoupdateSettings(View):
             crontab.save()
 
         elif form_type == "sync_start":
-
+            print('tyt0')
             mp_reserv = request.POST.get('mp_reserv', False)
             if mp_reserv == 'on':
+                reserv_dict = get_reserv_from_mp(headers=headers)
+            else:
+                print('tyt')
                 parser = Parser.objects.get(user=request.user)
                 headers = get_headers(parser)
-                reserv_dict = get_reserv_from_mp(headers=headers)
-                update_stock_mp_from_ms(headers=headers)
-            else:
-                pass
-
-
+                context['update_data'] = update_stock_mp_from_ms(headers=headers)
+                context['sync_update'] = True
         return render(request, 'owm/autoupdate_settings.html', context)
 
 class Create(View):

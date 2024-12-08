@@ -125,7 +125,6 @@ def inventory_update(user: object, invent_dict: dict):
 
 
     if response.status_code == 200:
-
         stock = get_all_moysklad_stock(headers['moysklad_headers']) # вызываем снова, так как остатки изменились
 
         # Оставляем только пересечение ключей
@@ -145,10 +144,12 @@ def inventory_update(user: object, invent_dict: dict):
 
 # остатки на МС отравляем на все MP
 def update_stock_mp_from_ms(headers):
+    context = {}
     stock = get_all_moysklad_stock(headers['moysklad_headers'])  # вызываем снова, так как остатки изменились
     context['ozon'] = update_inventory_ozon(headers, stock)
     context['yandex'] = update_inventory_yandex(headers, stock)
     context['wb'] = update_inventory_wb(headers, stock)
+    return context
 
 # оприходование и списание на основе двух словарей
 def update_inventory_moysklad(headers, stock_dict):
@@ -1067,6 +1068,7 @@ def autoupdate_sync_inventory(cron: object, headers: dict):
 
 # получаем последние название оприходвание и списания
 def autoupdate_get_last_sync_acquisition_writeoff_ms(headers: dict):
+    pass
 
 
 

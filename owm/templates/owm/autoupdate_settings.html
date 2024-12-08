@@ -74,9 +74,36 @@
     <br>
         <button type="submit" class="btn btn-primary btn-block" name="form_type" value="sync_start" style="max-width: 150px; width: 100%;">Синхронизация</button>
     </div>
+
+
     <!--end::Wrapper-->
 </div>
+    <br><br>
 <!--end::Alert-->
-
+    {% if sync_update %}
+        <h2>ozon</h2>
+        {{ update_data.ozon }}<br><br>
+        <h2>wb</h2>
+        {{ update_data.wb }}<br><br>
+        <h2>yandex</h2>
+        {{ update_data.yandex }}
+    {% endif %}
     </form>
 {% endblock %}
+
+<script>
+    const syncUpdate = {{ sync_update|safe }};
+
+    if (syncUpdate) {
+        Swal.fire({
+            text: "Here's a basic example of SweetAlert!",
+            icon: "success",
+            buttonsStyling: false,
+            confirmButtonText: "Ok, got it!",
+            customClass: {
+                confirmButton: "btn btn-primary"
+            }
+        });
+    }
+</script>
+
