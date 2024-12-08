@@ -78,6 +78,10 @@ def get_all_moysklad_stock(headers):
     sorted_stock_tuple = OrderedDict(sorted(stock_tuple.items()))
     return sorted_stock_tuple
 
+def get_reserv_from_mp(headers):
+    return {}
+
+
 def sort_stock_and_invent(invent_dict, stock):
     #print(f"invent_dict {invent_dict}")
     #print(f"stock {stock}")
@@ -106,7 +110,7 @@ def sort_stock_and_invent(invent_dict, stock):
     return result
 
 # инветаризируем (оприходуем и списываем) товары на мойсклад и обновляем остатки на маркетплейсах
-def inventory_update(user, invent_dict):
+def inventory_update(user: object, invent_dict: dict):
     context = {}
     headers = get_headers(user)
     stock = get_all_moysklad_stock(headers['moysklad_headers'])
@@ -118,27 +122,41 @@ def inventory_update(user, invent_dict):
         'code': response.status_code,
         'json': response.json()
     }
+
+
     if response.status_code == 200:
+
         stock = get_all_moysklad_stock(headers['moysklad_headers']) # вызываем снова, так как остатки изменились
 
         # Оставляем только пересечение ключей
         common_keys = invent_dict.keys() & stock.keys()
         stock = {key: stock[key] for key in common_keys}
-        print(f'\n\nstock сравнение {stock}\n\n')
+        #print(f'\n\nstock сравнение {stock}\n\n')
         context['ozon'] = update_inventory_ozon(headers, stock)
         #print(f'OZON UPDATE?')
         context['yandex'] = update_inventory_yandex(headers, stock)
         context['wb'] = update_inventory_wb(headers['wildberries_headers'], stock)
-    user.replenishment = False # возвращаем возможность скрипту проверять остатки на мп и мс
-    user.save()
     return context
+
+
 
 # инвентаризация товара мой склад
 # MS MS MSM SM MSMSMSMSMSMS
+
+# остатки на МС отравляем на все MP
+def update_stock_mp_from_ms(headers):
+    stock = get_all_moysklad_stock(headers['moysklad_headers'])  # вызываем снова, так как остатки изменились
+    context['ozon'] = update_inventory_ozon(headers, stock)
+    context['yandex'] = update_inventory_yandex(headers, stock)
+    context['wb'] = update_inventory_wb(headers, stock)
+
+# оприходование и списание на основе двух словарей
 def update_inventory_moysklad(headers, stock_dict):
     enter_dict = stock_dict['enter_dict']
     loss_dict = stock_dict['loss_dict']
     uuid_suffix = str(uuid.uuid4())[:8]
+
+    # оприходование
     url = 'https://api.moysklad.ru/api/remap/1.2/entity/enter'
     data = {
         'name': f'owm-{uuid_suffix}',
@@ -149,6 +167,7 @@ def update_inventory_moysklad(headers, stock_dict):
     responce = requests.post(url=url, json=data, headers=headers)
     #print(f"responce moysklad {responce.json()}")
 
+    # списание
     url = 'https://api.moysklad.ru/api/remap/1.2/entity/loss'
     data = {
         'store': {"meta": get_store_meta(headers)},
@@ -281,7 +300,7 @@ def update_inventory_wb(headers, stock):
         #print(f"data {data}")
         while True:
             try:
-                response = requests.post(url, json=data, headers=headers).json()
+                response = requests.post(url, json=data, headers=headers['wildberries_headers']).json()
                 print(f"response try")
                 break
             except requests.exceptions.JSONDecodeError:
@@ -307,7 +326,7 @@ def update_inventory_wb(headers, stock):
         if response['cursor']['total'] < 100: break
     #print(f'stock {len(stock)}')
     url = 'https://suppliers-api.wildberries.ru/api/v3/warehouses'
-    response = requests.get(url, headers=headers).json()
+    response = requests.get(url, headers=headers['wildberries_headers']).json()
     warehouseId = response[0]['id']
     url = f'https://suppliers-api.wildberries.ru/api/v3/stocks/{warehouseId}'
     sku = []
@@ -321,7 +340,7 @@ def update_inventory_wb(headers, stock):
     data = {
         'stocks': sku
     }
-    response = requests.put(url, json=data, headers=headers)
+    response = requests.put(url, json=data, headers=headers['wildberries_headers'])
     #print(f'wb response {response}')
     #print(f'wb response status {response.status_code}')
     #print(f'wb response text {response.text}')
@@ -335,7 +354,6 @@ def update_inventory_wb(headers, stock):
     }
     return context
     #print(f'wb response {response.json()}')
-
 
 # создание dict из POST запроса для инвенаризации (inventory)
 def inventory_POST_to_offer_dict(post_data):
@@ -533,7 +551,6 @@ def get_all_price_wb(headers):
     #print(f'result ozon price {result}')
     return result
 
-
 def get_all_price_yandex(headers):
     # калулутяор fbs fby https: // dev - market - partner - api.docs - viewer.yandex.ru / ru / reference / tariffs / calculateTariffs
 
@@ -577,7 +594,6 @@ def get_all_price_yandex(headers):
             result['error'] = response['message']
 
     return result
-
 
 # обновление цены товара озон
 def update_price_ozon(obj, offer_dict):
@@ -655,6 +671,7 @@ def get_postavka_ozon(headers: dict):
     result['path'] = url_path
     result['code'] = 8 if response.get('code') == 8 else 0
     return result
+
 def get_finance_ozon(headers: dict, period: str):
     opt_price = get_moysklad_opt_price(headers['moysklad_headers'])
     opt_price_clear = {}
@@ -1022,7 +1039,6 @@ def get_finance_wb(headers: dict, period: str):
     result['summed_totals'] = summed_totals
     return result
 
-
 def delete_files_with_prefix(directory_path, prefix):
     """
     Удаляет все файлы в указанной папке, начинающиеся с заданного префикса.
@@ -1039,6 +1055,18 @@ def delete_files_with_prefix(directory_path, prefix):
     else:
         print(f"Директория {directory_path} не существует.")
 
-def sync_inventory():
-    pass
+
+'''
+Auto Update function
+'''
+
+def autoupdate_sync_inventory(cron: object, headers: dict):
+    parser = Parser.objects.get(user=cron.user)
+    headers = get_headers(parser)
+    bool_ = check_last_sync_acquisition_writeoff_ms(headers['moysklad_headers'])
+
+# получаем последние название оприходвание и списания
+def autoupdate_get_last_sync_acquisition_writeoff_ms(headers: dict):
+
+
 

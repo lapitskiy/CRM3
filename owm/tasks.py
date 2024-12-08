@@ -1,16 +1,17 @@
 from .models import Crontab
 
 from crm3.celery import app
+from .utils import sync_inventory
+
 
 @app.task
 def sync_inventory_owm():
     crontab = Crontab.objects.filter(name='autoupdate', active=True)  # Замените `.all()` фильтром, если необходимо
 
     for cron in crontab:
-        # Проверяем булевое поле, например, 'is_active'
-        if cron.active:  # Замените 'is_active' на название вашего поля
-            print(f"Cron task")  # Замените 'name' на поле, содержащее имя пользователя
-
+        if cron.active:
+            sync_inventory(obj=cron)
+            print(f"Cron task")
         else:
             print(f"No cron task")
 

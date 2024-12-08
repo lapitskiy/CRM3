@@ -40,6 +40,43 @@
   </label>
 </div>
     <br><br>
-        <button type="submit" class="btn btn-primary btn-block">Сохранить</button>
+        <button type="submit" class="btn btn-primary btn-block" name="form_type" value="save_settings">Сохранить</button>
+    </form>
+    <hr>
+    <h1>Синхронизация</h1>
+
+    <form action="#" method="POST" class="update-form">
+        {% csrf_token %}
+
+    <div class="alert alert-primary d-flex align-items-center p-5">
+    <!--begin::Icon-->
+    <i class="ki-duotone ki-shield-tick fs-2hx text-success me-4"><span class="path1"></span><span class="path2"></span></i>
+    <!--end::Icon-->
+
+    <!--begin::Wrapper-->
+    <div class="d-flex flex-column">
+          <div class="form-check form-switch">
+              <input class="form-check-input" type="checkbox" id="flexSwitchCheckDefault" {% if active %}checked="checked"{% endif %} name="mp_reserv">
+              <label class="form-check-label" for="flexSwitchCheckDefault">
+                <b>Учитывая уже созданные заказы на маркетплейсах, но не отгруженные</b>
+              </label>
+          </div>
+        <!--begin::Content-->
+            <span>Сформированные, но ещё не отправленные заказы на маркетплейсах по модели FBS, которые должны быть отгружены с вашего склада.
+                Эти заказы будут учитываться при синхронизации остатков: сначала из остатков в МойСклад будут вычтены эти заказы,
+                а затем произойдёт автоматическое обновление остатков товаров. (Для тех кто в танке: Это заказы, которые уже есть, но вы их ещё не отправили.
+                Перед обновлением остатков они сначала вычтутся из того, что есть на складе, а потом остатки обновятся.)</span>
+        <!--end::Content--><br>
+            <span>Синхронизацию надо делать только при старте автообновления или при сбое работы автообновления или
+            при активации дополнительного маркетплейса.
+            При синхронизации, последние остатки на мойсклад отправляются на все указанные маркетплейсы.
+            <u>Без синхронизации не запустится автообновление</u></span>
+    <br>
+        <button type="submit" class="btn btn-primary btn-block" name="form_type" value="sync_start" style="max-width: 150px; width: 100%;">Синхронизация</button>
+    </div>
+    <!--end::Wrapper-->
+</div>
+<!--end::Alert-->
+
     </form>
 {% endblock %}
