@@ -8,6 +8,11 @@ from .models import Parser, Crontab
 from .utils import *
 from django.core.exceptions import ObjectDoesNotExist
 
+
+from asgiref.sync import sync_to_async
+from django.template.loader import render_to_string
+from django.http import HttpResponse
+
 from datetime import datetime
 
 def get_prod_meta(headers, offer_dict):
@@ -197,11 +202,11 @@ def price_POST_to_offer_dict(post):
 
 # оприходование
 class Enter(View):
-    def get(self, request, *args, **kwargs):
+    async def get(self, request, *args, **kwargs):
         context = {}
         try:
             parser = Parser.objects.get(user=request.user)
-            headers = get_headers(parser)
+            headers = await get_headers(parser_data)
             stock = get_all_moysklad_stock(headers['moysklad_headers'])
             context['stock'] = stock
         except ObjectDoesNotExist:
@@ -209,7 +214,7 @@ class Enter(View):
         #print(f"stock {stock}")
         return render(request, 'owm/enter.html', context)
 
-    def post(self, request):
+    async def post(self, request):
         #print(f"post {request.POST.dict()}")
         offer_dict = enter_POST_to_offer_dict(request.POST.dict())
         #print(f"offer {offer_dict}")
@@ -249,6 +254,7 @@ class Autoupdate(View):
         context = {}
         parser = Parser.objects.get(user=request.user)
         headers = get_headers(parser)
+        autoupdate_get_last_sync_acquisition_writeoff_ms(headers)
         #stock = auto_update_owm_moysklad(headers['moysklad_headers'])
         context['stock'] = stock
         #print(f"stock {stock}")
@@ -264,10 +270,11 @@ class Autoupdate(View):
         return render(request, 'owm/autoupdate.html', context)
 
 class AutoupdateSettings(View):
-    def get(self, request, *args, **kwargs):
+    async def get(self, request, *args, **kwargs):
         context = {}
         try:
-            obj = Crontab.objects.get(user=request.user)
+            obj = await sync_to_async(Crontab.objects.get)(parser__user=request.user)
+
             if obj.active:
                 context['active'] = True
             if obj.yandex:
@@ -276,18 +283,42 @@ class AutoupdateSettings(View):
                 context['active_ozon'] = True
             if obj.wb:
                 context['active_wb'] = True
-        except Crontab.DoesNotExist:
-            parser = Parser.objects.get(user=request.user)
-            headers = get_headers(parser)
-            dict_ = get_last_sync_acquisition_writeoff_ms(headers['moysklad_headers'])
-            Crontab.objects.create(user=request.user, name='autoupdate', active=False)
+
+            parser_data = {
+                'moysklad_api': obj.parser.moysklad_api,
+                'yandex_api': obj.parser.yandex_api,
+                'wildberries_api': obj.parser.wildberries_api,
+                'ozon_api': obj.parser.ozon_api,
+            }
+
+            cron_data = {
+                'cron_dict': obj.crontab_dict,
+            }
+
+            await autoupdate_get_last_sync_acquisition_writeoff_ms(headers=headers, cron_data=cron_data)
+
+        except obj.DoesNotExist:
+            user = await sync_to_async(Parser.objects.get)(user=request.user)
+
+            parser_data = {
+                'moysklad_api': user.moysklad_api,
+                'yandex_api': user.yandex_api,
+                'wildberries_api': user.wildberries_api,
+                'ozon_api': user.ozon_api,
+            }
+
+            try:
+                headers = await get_headers(parser_data)
+            except Exception as e:
+                print("Error occurred:", e)
+
+            await sync_to_async(Crontab.objects.create)(parser=user, name='autoupdate', active=False)
+
             print(f"Created new Crontab")
         return render(request, 'owm/autoupdate_settings.html', context)
 
-    def post(self, request):
+    async def post(self, request):
         context = {}
-
-
 
         form_type = request.POST.get("form_type")
         if form_type == "save_settings":

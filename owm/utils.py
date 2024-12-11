@@ -2,7 +2,6 @@ import fnmatch
 
 import requests
 import datetime
-import numpy as np
 import uuid
 import xlsxwriter
 import locale
@@ -12,39 +11,82 @@ from django.conf import settings
 
 import pandas as pd
 
+from sqlalchemy import MetaData
+from sqlalchemy.future import select
+from crm3.utils_db import AsyncSessionLocal
+import asyncio
+import aiohttp
+
 from collections import OrderedDict
 
-def get_headers(user):
+metadata = MetaData()
+
+async def get_headers(parser_data):
     headers = {}
-    if user.moysklad_api:
+
+    moysklad_api = parser_data.get('moysklad_api')
+    yandex_api = parser_data.get('yandex_api')
+    wildberries_api = parser_data.get('wildberries_api')
+    ozon_api = parser_data.get('ozon_api')
+
+    if moysklad_api:
         headers['moysklad_headers'] = {
-            "Authorization": f"Bearer {user.moysklad_api}",
+            "Authorization": f"Bearer {moysklad_api}",
         }
-    if user.yandex_api:
+
+    # Yandex API
+    if yandex_api:
         headers['yandex_headers'] = {
-            "Api-Key": user.yandex_api,
+            "Api-Key": yandex_api,
             "Content-Type": "application/json"
         }
 
+        # Получение кампаний через Yandex API
         url = 'https://api.partner.market.yandex.ru/campaigns'
-        response = requests.get(url, headers=headers['yandex_headers']).json()
-        headers['yandex_id'] = {
-           'company_id': response['campaigns'][0]['id'],
-           'businessId': response['campaigns'][0]['business']['id']}
-        url = f"https://api.partner.market.yandex.ru/businesses/{headers['yandex_id']['businessId']}/warehouses"
-        response = requests.get(url, headers=headers['yandex_headers']).json()
-        headers['yandex_id'].update({
-            'warehouseId': response['result']['warehouses'][0]['id']
-                })
-    if user.ozon_api and user.client_id:
+        async with aiohttp.ClientSession() as session:
+            async with session.get(url, headers=headers['yandex_headers']) as response:
+                if response.status == 200:
+                    campaigns_data = await response.json()
+                    campaigns = campaigns_data.get('campaigns', [])
+                    if not campaigns:
+                        raise Exception("No campaigns found in response.")
+
+                    # Извлечение company_id и businessId
+                    headers['yandex_id'] = {
+                        'company_id': campaigns[0]['id'],
+                        'businessId': campaigns[0]['business']['id']
+                    }
+                else:
+                    error_message = await response.text()
+                    raise Exception(f"Error {response.status}: {error_message}")
+
+        # Получение складов через Yandex API
+        warehouse_url = f"https://api.partner.market.yandex.ru/businesses/{headers['yandex_id']['businessId']}/warehouses"
+        async with aiohttp.ClientSession() as session:
+            async with session.get(warehouse_url, headers=headers['yandex_headers']) as response:
+                if response.status == 200:
+                    warehouses_data = await response.json()
+                    warehouses = warehouses_data.get('result', {}).get('warehouses', [])
+                    if not warehouses:
+                        raise Exception("No warehouses found in response.")
+                    headers['yandex_id']['warehouseId'] = warehouses[0]['id']
+                else:
+                    error_message = await response.text()
+                    raise Exception(f"Error {response.status}: {error_message}")
+
+    # Ozon API
+    if ozon_api and parser_data.get('client_id'):
         headers['ozon_headers'] = {
-            'Client-Id': user.client_id,
-            'Api-Key': user.ozon_api
+            'Client-Id': parser_data['client_id'],
+            'Api-Key': ozon_api
         }
-    if user.wildberries_api:
+
+    # Wildberries API
+    if wildberries_api:
         headers['wildberries_headers'] = {
-            'Authorization': user.wildberries_api
+            'Authorization': wildberries_api
         }
+
     return headers
 
 def get_warehouse(headers):
@@ -112,7 +154,13 @@ def sort_stock_and_invent(invent_dict, stock):
 # инветаризируем (оприходуем и списываем) товары на мойсклад и обновляем остатки на маркетплейсах
 def inventory_update(user: object, invent_dict: dict):
     context = {}
-    headers = get_headers(user)
+    parser_data = {
+        'moysklad_api': user.moysklad_api,
+        'yandex_api': user.yandex_api,
+        'wildberries_api': user.wildberries_api,
+        'ozon_api': user.ozon_api,
+    }
+    headers = get_headers(parser_data)
     stock = get_all_moysklad_stock(headers['moysklad_headers'])
     stock_dict = sort_stock_and_invent(invent_dict, stock)
     #print(f'enter_dict, loss_dict {enter_dict} and {loss_dict}')
@@ -226,24 +274,36 @@ def update_inventory_ozon(headers,stock):
     url = 'https://api-seller.ozon.ru/v2/products/stocks'
     ozon_stocks = []
     print(f'update_inventory_ozon stock {stock}')
+    invalid_offer_ids = []
+
+
     for key, value in stock.items():
         if value and 'stock' in value:
-            ozon_stocks.append({
+            if value['stock'] < 0:
+                invalid_offer_ids.append(key)
+                value['stock'] = 0  # Замена значения на 0
+            dict_ = {
                 'offer_id': key,
                 'stock': value['stock'],
                 'warehouse_id': warehouseID['ozon_warehouses']
-            })
+                }
+            ozon_stocks.append(dict_)
         else:
             print(f"Пропущен ключ {key} из-за отсутствия данных 'stock' или пустого словаря.")
     for i in range(0,len(ozon_stocks),100):
         data = {
             'stocks': ozon_stocks[i:i+99],
         }
+    print('#####')
+    print('#####')
+    print('#####')
+    print(f'ozon_data #### {data}')
     #print(f'data stock {data}')
     response = requests.post(url, headers=headers['ozon_headers'], json=data)
     context = {
         'code': response.status_code,
-        'json': response.json()
+        'json': response.json(),
+        'invalid': invalid_offer_ids
     }
     #print(f'OZON response {response.json()}')
     return context
@@ -599,7 +659,13 @@ def get_all_price_yandex(headers):
 # обновление цены товара озон
 def update_price_ozon(obj, offer_dict):
     url = 'https://api-seller.ozon.ru/v1/product/import/prices'
-    headers = get_headers(obj)
+    parser_data = {
+        'moysklad_api': obj.moysklad_api,
+        'yandex_api': obj.yandex_api,
+        'wildberries_api': v.wildberries_api,
+        'ozon_api': obj.ozon_api,
+    }
+    headers = get_headers(parser_data)
     ozon_price = []
     for key, value in offer_dict.items():
         ozon_price.append({
@@ -1057,18 +1123,74 @@ def delete_files_with_prefix(directory_path, prefix):
         print(f"Директория {directory_path} не существует.")
 
 
-'''
+"""
+async 
 Auto Update function
-'''
+Auto Update function
+Auto Update function
+"""
 
-def autoupdate_sync_inventory(cron: object, headers: dict):
-    parser = Parser.objects.get(user=cron.user)
-    headers = get_headers(parser)
-    bool_ = check_last_sync_acquisition_writeoff_ms(headers['moysklad_headers'])
+async def autoupdate_sync_inventory(cron_id):
+    """
+    асинхрон
+    """
+    async with AsyncSessionLocal() as session:
+        await session.run_sync(metadata.reflect, bind=session.bind)
+
+        # Предполагаем, что у вас есть связь между таблицами, например, через foreign key
+        parser_table = metadata.tables["app_parser"]
+        crontab_table = metadata.tables["app_crontab"]
+
+        # Создаем запрос, который включает данные из связанной таблицы
+        query = select(crontab_table).options(joinedload(crontab_table.c.parser)).where(crontab_table.c.id == cron_id)
+        result = await session.execute(query)
+        cron = result.fetchone()
+
+        if cron:
+            cron_owm = {
+                'yandex': cron.yandex,
+                'ozon': cron.ozon,
+                'wb': cron.wb
+            }
+            # Дополнительные данные из связанной таблицы
+            parser_data = {
+                'moysklad_api': cron.parser.moysklad_api,
+                'yandex_api': cron.parser.yandex_api,
+                'wildberries_api': cron.parser.wildberries_api,
+                'ozon_api': cron.parser.ozon_api,
+            }
+            try:
+                headers = await get_headers(parser_data)
+            except Exception as e:
+                print("Error occurred:", e)
+            cron_data = {
+                'cron_dict': cron.crontab_dict,
+            }
+            bool = autoupdate_get_last_sync_acquisition_writeoff_ms(headers=headers, cron_data=cron_data)
+
 
 # получаем последние название оприходвание и списания
-def autoupdate_get_last_sync_acquisition_writeoff_ms(headers: dict):
-    pass
+async def autoupdate_get_last_sync_acquisition_writeoff_ms(headers: dict, cron_data: dict):
+    result = {}
+
+    moysklad_headers = headers.get('moysklad_headers')
+
+    if cron_data:
+        # оприходование
+        url = 'https://api.moysklad.ru/api/remap/1.2/entity/enter'
+        async with aiohttp.ClientSession() as session:
+            async with session.get(url, headers=moysklad_headers) as response:
+                if response.status == 200:
+                    print(response.json())
+                    result['response'] = response.json()
+                else:
+                    error_message = await response.text()
+                    result['response'] = error_message
+        return result['response']
+
+
+
+
 
 
 

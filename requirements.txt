@@ -94,3 +94,6 @@ wcwidth==0.2.13
 webencodings==0.5.1
 XlsxWriter==3.2.0
 yarg==0.1.9
+sqlalchemy
+asyncpg
+aiohttp

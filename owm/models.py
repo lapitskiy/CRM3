@@ -14,7 +14,7 @@ class Parser(models.Model):
     stock_update_at = models.DateTimeField(blank=True, null=True, verbose_name='Последняя инвентаризация')
 
 class Crontab(models.Model):
-    user = models.OneToOneField(User, on_delete=models.CASCADE, null=True, blank=True)
+    parser = models.ForeignKey(Parser, on_delete=models.CASCADE, verbose_name='Связанный парсер')
     active = models.BooleanField(default=False, verbose_name='Синхрон включен')
     name = models.CharField(max_length=150, null=True, blank=True)
     yandex = models.BooleanField(default=False, verbose_name='yandex')
