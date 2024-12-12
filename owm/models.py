@@ -22,3 +22,31 @@ class Crontab(models.Model):
     wb = models.BooleanField(default=False, verbose_name='wb')
     crontab_dict = models.JSONField(null=True, blank=True)
 
+
+from sqlalchemy import Table, Column, Integer, String, Boolean, JSON, ForeignKey, DateTime, MetaData
+
+metadata = MetaData()
+
+parser_table = Table(
+    'owm_parser', metadata,
+    Column('id', Integer, primary_key=True),
+    Column('user_id', Integer, ForeignKey('auth_user.id'), nullable=True),
+    Column('moysklad_api', String(512), unique=True),
+    Column('yandex_api', String(512), unique=True),
+    Column('wildberries_api', String(512), unique=True),
+    Column('client_id', String(512), unique=True),
+    Column('ozon_api', String(512), unique=True),
+    Column('stock_update_at', DateTime, nullable=True),
+)
+
+crontab_table = Table(
+    'owm_crontab', metadata,
+    Column('id', Integer, primary_key=True),
+    Column('parser_id', Integer, ForeignKey('owm_parser.id')),
+    Column('active', Boolean, default=False),
+    Column('name', String(150), nullable=True),
+    Column('yandex', Boolean, default=False),
+    Column('ozon', Boolean, default=False),
+    Column('wb', Boolean, default=False),
+    Column('crontab_dict', JSON, nullable=True),
+)

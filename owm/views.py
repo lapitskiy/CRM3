@@ -275,36 +275,18 @@ class AutoupdateSettings(View):
         try:
             obj = await sync_to_async(Crontab.objects.get)(parser__user=request.user)
 
-            if obj.active:
-                context['active'] = True
-            if obj.yandex:
-                context['active_yandex'] = True
-            if obj.ozon:
-                context['active_ozon'] = True
-            if obj.wb:
-                context['active_wb'] = True
+            context['active'] = obj.active
+            context['active_yandex'] = obj.yandex
+            context['active_ozon'] = obj.ozon
+            context['active_wb'] = obj.wb
+
+            parser = await sync_to_async(lambda: obj.parser)()  # Асинхронный доступ к связанному объекту
 
             parser_data = {
-                'moysklad_api': obj.parser.moysklad_api,
-                'yandex_api': obj.parser.yandex_api,
-                'wildberries_api': obj.parser.wildberries_api,
-                'ozon_api': obj.parser.ozon_api,
-            }
-
-            cron_data = {
-                'cron_dict': obj.crontab_dict,
-            }
-
-            await autoupdate_get_last_sync_acquisition_writeoff_ms(headers=headers, cron_data=cron_data)
-
-        except obj.DoesNotExist:
-            user = await sync_to_async(Parser.objects.get)(user=request.user)
-
-            parser_data = {
-                'moysklad_api': user.moysklad_api,
-                'yandex_api': user.yandex_api,
-                'wildberries_api': user.wildberries_api,
-                'ozon_api': user.ozon_api,
+                'moysklad_api': parser.moysklad_api,
+                'yandex_api': parser.yandex_api,
+                'wildberries_api': parser.wildberries_api,
+                'ozon_api': parser.ozon_api,
             }
 
             try:
@@ -312,10 +294,20 @@ class AutoupdateSettings(View):
             except Exception as e:
                 print("Error occurred:", e)
 
+
+            cron_data = {
+                'cron_dict': obj.crontab_dict,
+            }
+
+            await autoupdate_get_last_sync_acquisition_writeoff_ms(headers=headers, cron_data=cron_data)
+
+        except Crontab.DoesNotExist:
+            user = await sync_to_async(Parser.objects.get)(user=request.user)
+
             await sync_to_async(Crontab.objects.create)(parser=user, name='autoupdate', active=False)
 
             print(f"Created new Crontab")
-        return render(request, 'owm/autoupdate_settings.html', context)
+        return await sync_to_async(render)(request, 'owm/autoupdate_settings.html', context)
 
     async def post(self, request):
         context = {}

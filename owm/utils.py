@@ -13,11 +13,17 @@ import pandas as pd
 
 from sqlalchemy import MetaData
 from sqlalchemy.future import select
+from sqlalchemy.orm import joinedload
+
 from crm3.utils_db import AsyncSessionLocal
 import asyncio
 import aiohttp
 
 from collections import OrderedDict
+
+from .models import parser_table, crontab_table
+
+from sqlalchemy import join
 
 metadata = MetaData()
 
@@ -1135,38 +1141,45 @@ async def autoupdate_sync_inventory(cron_id):
     асинхрон
     """
     async with AsyncSessionLocal() as session:
-        await session.run_sync(metadata.reflect, bind=session.bind)
+        async with session.begin():
+            connection = await session.connection()
+            metadata = MetaData()
+            await connection.run_sync(metadata.reflect)
 
-        # Предполагаем, что у вас есть связь между таблицами, например, через foreign key
-        parser_table = metadata.tables["app_parser"]
-        crontab_table = metadata.tables["app_crontab"]
+            # Создаем запрос, который включает данные из связанной таблицы
+            stmt = (
+                select(crontab_table, parser_table)
+                .select_from(join(crontab_table, parser_table, crontab_table.c.parser_id == parser_table.c.id))
+                .where(crontab_table.c.id == cron_id)
+            )
+            result = await session.execute(stmt)
+            row = result.fetchone()
 
-        # Создаем запрос, который включает данные из связанной таблицы
-        query = select(crontab_table).options(joinedload(crontab_table.c.parser)).where(crontab_table.c.id == cron_id)
-        result = await session.execute(query)
-        cron = result.fetchone()
+            if row:
+                print(f'ROW {row}')
 
-        if cron:
-            cron_owm = {
-                'yandex': cron.yandex,
-                'ozon': cron.ozon,
-                'wb': cron.wb
-            }
-            # Дополнительные данные из связанной таблицы
-            parser_data = {
-                'moysklad_api': cron.parser.moysklad_api,
-                'yandex_api': cron.parser.yandex_api,
-                'wildberries_api': cron.parser.wildberries_api,
-                'ozon_api': cron.parser.ozon_api,
-            }
-            try:
-                headers = await get_headers(parser_data)
-            except Exception as e:
-                print("Error occurred:", e)
-            cron_data = {
-                'cron_dict': cron.crontab_dict,
-            }
-            bool = autoupdate_get_last_sync_acquisition_writeoff_ms(headers=headers, cron_data=cron_data)
+                # Индексация значений в кортеже
+                cron_owm = {
+                    'yandex': row[4],  # yandex значение из crontab_table
+                    'ozon': row[5],  # ozon значение из crontab_table
+                    'wb': row[6],  # wb значение из crontab_table
+                }
+                # Дополнительные данные из связанной таблицы
+                parser_data = {
+                    'moysklad_api': row[10],  # moysklad_api значение из parser_table
+                    'yandex_api': row[11],  # yandex_api значение из parser_table
+                    'wildberries_api': row[12],  # wildberries_api значение из parser_table
+                    'ozon_api': row[14],  # ozon_api значение из parser_table
+                }
+                try:
+                    headers = await get_headers(parser_data)
+                except Exception as e:
+                    print("Error occurred:", e)
+                cron_data = {
+                    'cron_dict': row[7],  # crontab_dict значение из crontab_table
+                }
+                success = await autoupdate_get_last_sync_acquisition_writeoff_ms(headers=headers, cron_data=cron_data)
+                return success
 
 
 # получаем последние название оприходвание и списания
@@ -1178,11 +1191,13 @@ async def autoupdate_get_last_sync_acquisition_writeoff_ms(headers: dict, cron_d
     if cron_data:
         # оприходование
         url = 'https://api.moysklad.ru/api/remap/1.2/entity/enter'
+        params = {'limit': 1}
         async with aiohttp.ClientSession() as session:
-            async with session.get(url, headers=moysklad_headers) as response:
+            async with session.get(url, headers=moysklad_headers, params=params) as response:
                 if response.status == 200:
-                    print(response.json())
-                    result['response'] = response.json()
+                    response_json = await response.json()
+                    print(f'enter: {response_json}')
+                    result['response'] = response.json
                 else:
                     error_message = await response.text()
                     result['response'] = error_message
