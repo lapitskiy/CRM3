@@ -1137,6 +1137,10 @@ Auto Update function
 """
 
 async def autoupdate_sync_inventory(cron_id):
+    print(f"autoupdate_sync_inventory success:")
+    return {"cron_id": cron_id, "status": "completed"}
+
+async def a1utoupdate_sync_inventory(cron_id):
     """
     асинхрон
     """
@@ -1179,8 +1183,8 @@ async def autoupdate_sync_inventory(cron_id):
                     'cron_dict': row[7],  # crontab_dict значение из crontab_table
                 }
                 success = await autoupdate_get_last_sync_acquisition_writeoff_ms(headers=headers, cron_data=cron_data)
+                print(f"autoupdate_sync_inventory success: {success}")
                 return success
-
 
 # получаем последние название оприходвание и списания
 async def autoupdate_get_last_sync_acquisition_writeoff_ms(headers: dict, cron_data: dict):
@@ -1191,7 +1195,9 @@ async def autoupdate_get_last_sync_acquisition_writeoff_ms(headers: dict, cron_d
     if cron_data:
         # оприходование
         url = 'https://api.moysklad.ru/api/remap/1.2/entity/enter'
-        params = {'limit': 1}
+        params = {
+            'limit': 10,
+            }
         async with aiohttp.ClientSession() as session:
             async with session.get(url, headers=moysklad_headers, params=params) as response:
                 if response.status == 200:

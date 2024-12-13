@@ -1,63 +1,77 @@
-from .models import parser_table, crontab_table
+from eventlet import monkey_patch
+monkey_patch()
 import asyncio
+
+from .models import parser_table, crontab_table
 from crm3.celery import app
 from .utils import autoupdate_sync_inventory
 from sqlalchemy.future import select
-from crm3.utils_db import AsyncSessionLocal
-
+from crm3.utils_db import AsyncSessionLocal, engine
+from asgiref.sync import async_to_sync
+from sqlalchemy.sql import join
+from sqlalchemy.schema import MetaData
+import aiohttp
+import contextlib
 
 @app.task
 def sync_inventory_owm():
     """
     Основная задача, которая диспетчеризует асинхронные задачи для всех активных cron.
     """
-    loop = asyncio.get_event_loop()
-    if loop.is_running():
-        coroutine = run_sync_inventory()
-        task = loop.create_task(coroutine)
-    else:
-        asyncio.run(run_sync_inventory())
+    print('Starting sync_inventory_owm...')
+    result = async_to_sync(run_sync_inventory)()  # Запуск корутины синхронно
+    print('sync_inventory_owm completed.')
+    return result
+
+
+#@app.task(name="run_sync_inventory", bind=True)
+#async def run_sync_inventory(self):
+
+
 
 async def run_sync_inventory():
     """
     Асинхронная обработка всех активных cron через SQLAlchemy.
     """
-    async with AsyncSessionLocal() as session:
-        async with session.begin():
-            # Выполняем запрос для получения всех активных cron
-            query = select(crontab_table).where(
-                (crontab_table.c.name == "autoupdate") & (crontab_table.c.active == True)
-            )
-            result = await session.execute(query, execution_options={"prebuffer_rows": False})
-            crontabs = result.fetchall()
+    print('Fetching cron jobs...')
 
-            await session.commit()
+    async with get_db_session() as session:
+        query = select(crontab_table).where(
+            (crontab_table.c.name == "autoupdate") & (crontab_table.c.active == True)
+        )
+        result = await session.execute(query)
+        crontabs = result.fetchall()
 
-            # Диспетчеризация задач для каждого cron
-            for cron in crontabs:
-                execute_autoupdate.delay(cron.id)
+    # Создаем задачи для каждого cron
+    tasks = [execute_autoupdate.apply_async((cron.id,)) for cron in crontabs]
 
-    return "All tasks dispatched"
+    print(f"Dispatched {len(tasks)} tasks.")
+    return {"dispatched_tasks": len(tasks)}
 
 
 @app.task
 def execute_autoupdate(cron_id):
     """
-    Обертка для запуска асинхронной задачи с использованием asyncio.run.
+    Обработка одного cron.
     """
-    loop = asyncio.get_event_loop()
-    if loop.is_running():
-        coroutine = run_autoupdate(cron_id)
-        task = loop.create_task(coroutine)
-    else:
-        asyncio.run(run_autoupdate(cron_id))
+    print(f"Processing cron job ID: {cron_id}")
+    # Здесь вы можете реализовать дополнительную логику обработки
+    return {"cron_id": cron_id, "status": "success"}
 
 
-async def run_autoupdate(cron_id):
+@contextlib.asynccontextmanager
+async def get_db_session():
     """
-    Асинхронная обработка одного cron через SQLAlchemy.
+    Контекстный менеджер для управления сессией базы данных.
     """
-    await autoupdate_sync_inventory(cron_id=cron_id)  # Асинхронная обработка
+    try:
+        session = AsyncSessionLocal()
+        yield session
+    finally:
+        await session.close()
+        await engine.dispose()
+
+
 
 
 

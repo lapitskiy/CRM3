@@ -43,7 +43,7 @@ services:
 
   celery:  # Celery Worker
     image: crm3:latest
-    command: celery -A crm3 worker --loglevel=info --events
+    command: celery -A crm3 worker --pool=eventlet --loglevel=info
     environment:
       - DATABASE_NAME=postgres
       - DATABASE_USER=crm3
@@ -51,6 +51,7 @@ services:
       - DATABASE_HOST=postgres
       - REDIS_PASSWORD=Billkill13
       - CELERY_BROKER_URL=redis://:Billkill13@redis:6379/0
+      - CELERY_RESULT_BACKEND=redis://:Billkill13@redis:6379/1
     depends_on:
       - redis
     volumes:
