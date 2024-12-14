@@ -22,6 +22,11 @@ class Crontab(models.Model):
     wb = models.BooleanField(default=False, verbose_name='wb')
     crontab_dict = models.JSONField(null=True, blank=True)
 
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(fields=['parser', 'name'], name='unique_parser_name')
+        ]
+
 
 from sqlalchemy import Table, Column, Integer, String, Boolean, JSON, ForeignKey, DateTime, MetaData
 

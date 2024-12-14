@@ -273,7 +273,7 @@ class AutoupdateSettings(View):
     async def get(self, request, *args, **kwargs):
         context = {}
         try:
-            obj = await sync_to_async(Crontab.objects.get)(parser__user=request.user)
+            obj = await sync_to_async(Crontab.objects.get)(parser__user=request.user, name='autoupdate')
 
             context['active'] = obj.active
             context['active_yandex'] = obj.yandex
@@ -287,6 +287,7 @@ class AutoupdateSettings(View):
                 'yandex_api': parser.yandex_api,
                 'wildberries_api': parser.wildberries_api,
                 'ozon_api': parser.ozon_api,
+                'ozon_id': parser.client_id,
             }
 
             try:
@@ -303,7 +304,6 @@ class AutoupdateSettings(View):
 
         except Crontab.DoesNotExist:
             user = await sync_to_async(Parser.objects.get)(user=request.user)
-
             await sync_to_async(Crontab.objects.create)(parser=user, name='autoupdate', active=False)
 
             print(f"Created new Crontab")
@@ -313,13 +313,15 @@ class AutoupdateSettings(View):
         context = {}
 
         form_type = request.POST.get("form_type")
+        crontab = await sync_to_async(Crontab.objects.get)(parser__user=request.user, name='autoupdate')
+
         if form_type == "save_settings":
             sync_checkbox = request.POST.get('sync_checkbox', False)
             sync_checkbox_ozon = request.POST.get('sync_checkbox_ozon', False)
             sync_checkbox_yandex = request.POST.get('sync_checkbox_yandex', False)
             sync_checkbox_wb = request.POST.get('sync_checkbox_wb', False)
 
-            crontab = Crontab.objects.filter(user=request.user).first()
+
 
             if sync_checkbox == 'on':
                 crontab.active = True
@@ -354,17 +356,34 @@ class AutoupdateSettings(View):
             crontab.save()
 
         elif form_type == "sync_start":
-            print('tyt0')
             mp_reserv = request.POST.get('mp_reserv', False)
             if mp_reserv == 'on':
                 reserv_dict = get_reserv_from_mp(headers=headers)
             else:
-                print('tyt')
-                parser = Parser.objects.get(user=request.user)
-                headers = get_headers(parser)
+                #print('tyt')
+                #parser = Parser.objects.get(user=request.user)
+                parser = await sync_to_async(lambda: crontab.parser)()  # Асинхронный доступ к связанному объекту
+
+                parser_data = {
+                    'moysklad_api': parser.moysklad_api,
+                    'yandex_api': parser.yandex_api,
+                    'wildberries_api': parser.wildberries_api,
+                    'ozon_api': parser.ozon_api,
+                    'ozon_id': parser.client_id,
+                }
+                try:
+                    headers = await get_headers(parser_data)
+                except Exception as e:
+                    print("Error occurred:", e)
                 context['update_data'] = update_stock_mp_from_ms(headers=headers)
-                context['sync_update'] = True
-        return render(request, 'owm/autoupdate_settings.html', context)
+                codes = [context['update_data']['code'], context['wb']['code'], context['yandex']['code']]
+                # Проверка, все ли значения равны 200 или 204
+                if all(code in (200, 204) for code in codes):
+                    context['sync_update'] = True
+                    response = await autoupdate_get_last_sync_acquisition_writeoff_ms(headers=headers)
+                    crontab.crontab_dict =
+
+        return await sync_to_async(render)(request, 'owm/autoupdate_settings.html', context)
 
 class Create(View):
     def get(self, request, *args, **kwargs):

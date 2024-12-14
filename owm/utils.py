@@ -15,7 +15,7 @@ from sqlalchemy import MetaData
 from sqlalchemy.future import select
 from sqlalchemy.orm import joinedload
 
-from crm3.utils_db import AsyncSessionLocal
+from crm3.utils_db import AsyncSessionLocal, get_db_session, get_http_session
 import asyncio
 import aiohttp
 
@@ -34,6 +34,7 @@ async def get_headers(parser_data):
     yandex_api = parser_data.get('yandex_api')
     wildberries_api = parser_data.get('wildberries_api')
     ozon_api = parser_data.get('ozon_api')
+    ozon_id = parser_data.get('ozon_id')
 
     if moysklad_api:
         headers['moysklad_headers'] = {
@@ -49,7 +50,8 @@ async def get_headers(parser_data):
 
         # Получение кампаний через Yandex API
         url = 'https://api.partner.market.yandex.ru/campaigns'
-        async with aiohttp.ClientSession() as session:
+        async with get_http_session() as session:
+        #async with aiohttp.ClientSession() as session:
             async with session.get(url, headers=headers['yandex_headers']) as response:
                 if response.status == 200:
                     campaigns_data = await response.json()
@@ -81,9 +83,9 @@ async def get_headers(parser_data):
                     raise Exception(f"Error {response.status}: {error_message}")
 
     # Ozon API
-    if ozon_api and parser_data.get('client_id'):
+    if ozon_api and ozon_id:
         headers['ozon_headers'] = {
-            'Client-Id': parser_data['client_id'],
+            'Client-Id': ozon_id,
             'Api-Key': ozon_api
         }
 
@@ -1136,21 +1138,12 @@ Auto Update function
 Auto Update function
 """
 
-async def autoupdate_sync_inventory(cron_id):
-    print(f"autoupdate_sync_inventory success:")
-    return {"cron_id": cron_id, "status": "completed"}
 
-async def a1utoupdate_sync_inventory(cron_id):
+async def autoupdate_sync_inventory(cron_id):
     """
     асинхрон
     """
-    async with AsyncSessionLocal() as session:
-        async with session.begin():
-            connection = await session.connection()
-            metadata = MetaData()
-            await connection.run_sync(metadata.reflect)
-
-            # Создаем запрос, который включает данные из связанной таблицы
+    async with get_db_session() as session:
             stmt = (
                 select(crontab_table, parser_table)
                 .select_from(join(crontab_table, parser_table, crontab_table.c.parser_id == parser_table.c.id))
@@ -1158,9 +1151,9 @@ async def a1utoupdate_sync_inventory(cron_id):
             )
             result = await session.execute(stmt)
             row = result.fetchone()
-
+            row_list = []
             if row:
-                print(f'ROW {row}')
+                #print(f'ROW {row}')
 
                 # Индексация значений в кортеже
                 cron_owm = {
@@ -1182,32 +1175,43 @@ async def a1utoupdate_sync_inventory(cron_id):
                 cron_data = {
                     'cron_dict': row[7],  # crontab_dict значение из crontab_table
                 }
-                success = await autoupdate_get_last_sync_acquisition_writeoff_ms(headers=headers, cron_data=cron_data)
-                print(f"autoupdate_sync_inventory success: {success}")
-                return success
+                row_list.append({
+                    'headers': headers,
+                    'cron_data': cron_data
+                })
+                if row[7] is not None:
+                    response = await autoupdate_get_last_sync_acquisition_writeoff_ms(headers=headers)
+
+
+
+
+    #return row_list
+    #for item in row_list:
+    #    print(f"autoupdate_sync_inventory success")
+    #    await autoupdate_get_last_sync_acquisition_writeoff_ms(headers=item['headers'], cron_data=item['cron_data'])
+
 
 # получаем последние название оприходвание и списания
-async def autoupdate_get_last_sync_acquisition_writeoff_ms(headers: dict, cron_data: dict):
+async def autoupdate_get_last_sync_acquisition_writeoff_ms(headers: dict):
     result = {}
 
     moysklad_headers = headers.get('moysklad_headers')
-
-    if cron_data:
-        # оприходование
-        url = 'https://api.moysklad.ru/api/remap/1.2/entity/enter'
-        params = {
-            'limit': 10,
-            }
-        async with aiohttp.ClientSession() as session:
-            async with session.get(url, headers=moysklad_headers, params=params) as response:
-                if response.status == 200:
-                    response_json = await response.json()
-                    print(f'enter: {response_json}')
-                    result['response'] = response.json
-                else:
-                    error_message = await response.text()
-                    result['response'] = error_message
-        return result['response']
+    # оприходование
+    url = 'https://api.moysklad.ru/api/remap/1.2/entity/enter'
+    params = {
+        'limit': 1,
+        'order': 'created,desc'
+        }
+    async with get_http_session() as session:
+        async with session.get(url, headers=moysklad_headers, params=params) as response:
+            if response.status == 200:
+                response_json = await response.json()
+                print(f'enter: {response_json}')
+                result['response'] = response.json
+            else:
+                error_message = await response.text()
+                result['response'] = error_message
+    return result['response']
 
 
 
