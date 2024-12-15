@@ -105,11 +105,6 @@ def get_warehouse(headers):
     result['ozon_warehouses'] = response['result'][0]['warehouse_id']
     return result
 
-def get_organization_meta(headers):
-    url = 'https://api.moysklad.ru/api/remap/1.2/entity/organization'
-    response = requests.get(url, headers=headers).json()
-    return response['rows'][0]['meta']
-
 def get_store_meta(headers):
     url = 'https://api.moysklad.ru/api/remap/1.2/entity/store'
     response = requests.get(url, headers=headers).json()
@@ -1131,8 +1126,257 @@ def delete_files_with_prefix(directory_path, prefix):
         print(f"Директория {directory_path} не существует.")
 
 
+
+"""
+OZONOZONOZONOZONOZONOZON
+OZONOZONOZONOZONOZONOZON
+OZONOZONOZONOZONOZONOZON
+OZONOZONOZONOZONOZONOZON
+OZONOZONOZONOZONOZONOZON
+OZONOZONOZONOZONOZONOZON
+OZONOZONOZONOZONOZONOZON
+OZONOZONOZONOZONOZONOZON
+OZONOZONOZONOZONOZONOZON
+OZONOZONOZONOZONOZONOZON
+OZONOZONOZONOZONOZONOZON
+OZONOZONOZONOZONOZONOZON
+"""
+# получаем последние отгрузки (отправления)
+async def get_otpravlenie_ozon(headers: dict):
+    result = {}
+
+    current_date = datetime.datetime.now()
+
+    # Вычисляем дату неделю назад
+    one_week_ago = current_date - datetime.timedelta(weeks=4)
+
+    # Форматируем даты в строковый формат (YYYY-MM-DD)
+    current_date_str = current_date.strftime('%Y-%m-%dT%H:%M:%SZ')
+    one_week_ago_str = one_week_ago.strftime('%Y-%m-%dT%H:%M:%SZ')
+
+    ozon_headers = headers.get('ozon_headers')
+    # оприходование
+    url_awaiting = 'https://api-seller.ozon.ru/v3/posting/fbs/unfulfilled/list'
+    params_awaiting = {
+        "filter": {
+            "delivering_date_from": one_week_ago_str,
+            "delivering_date_to": current_date_str,
+            "delivery_method_id": [],
+            "is_quantum": False,
+            "provider_id": [],
+            "status": "awaiting_packaging",
+            "warehouse_id": []
+        },
+        "dir": "ASC",
+        "limit": 1000,
+        "offset": 0,
+        "with": {
+            "analytics_data": False,
+            "barcodes": False,
+            "financial_data": False,
+            "translit": False
+        }
+        }
+    # awaiting_deliver - ожидает отгрузки
+    url_packag = 'https://api-seller.ozon.ru/v3/posting/fbs/list'
+    params_packag = {
+        "filter": {
+            "is_quantum": False,
+            "last_changed_status_date": {
+                "from": one_week_ago_str,
+                "to": current_date_str
+            },
+            #"order_id": 0,
+            "since": one_week_ago_str,
+            "status": "awaiting_deliver",
+            "to": current_date_str,
+        },
+        "dir": "ASC",
+        "limit": 1000,
+        "offset": 0,
+        "with": {
+            "analytics_data": False,
+            "barcodes": False,
+            "financial_data": False,
+            "translit": False
+        }
+        }
+
+    async with get_http_session() as session:
+        async with session.post(url_awaiting, headers=ozon_headers, json=params_awaiting) as response:
+            if response.status == 200:
+                response_json = await response.json()
+                result['awaiting'] = response_json
+                print(f"response_json {response_json}")
+            else:
+                error_message = await response.text()
+                result['error'] = error_message
+        async with session.post(url_packag, headers=ozon_headers, json=params_packag) as response:
+            if response.status == 200:
+                response_json = await response.json()
+                result['packag'] = response_json
+                print(f"response_json {response_json}")
+            else:
+                error_message = await response.text()
+                result['error'] = error_message
+    return result
+
+"""
+OWM
+OWM
+OWM
+OWM
+OWM
+OWM
+OWM
+OWM
+OWM
+OWM
+"""
+
+async def update_awaiting_deliver_from_owm(headers: dict):
+    """
+    получаем данные о неотгруженных заказах с МП и добавляем их в заказы МС в резерв
+    """
+    order_dict = await ms_check_customerorder(headers)
+    return ''
+    #packag = awaiting_dict.get('packag')
+    #awaiting_dict = get_otpravlenie_ozon(headers=headers)
+    #if order_dict is Not:
+    #    add_result = create_customorder_ms(order_dict)
+
+"""
+MS
+MS
+MS
+MS
+MS
+MS
+MS
+MS
+MS
+"""
+
+async def get_organization_meta(headers):
+    url = 'https://api.moysklad.ru/api/remap/1.2/entity/organization'
+    async with get_http_session() as session:
+        async with session.get(url, headers=headers) as response:
+            if response.status == 200:
+                response_json = await response.json()
+                print(f"enter: {tag['rows']}")
+                result['enter'] = tag['rows'][0]['name']
+            else:
+                error_message = await response.text()
+                return error_message
+    return response_json['rows'][0]['meta']
+
+async def get_agent_meta_ms(headers):
+    moysklad_headers = headers.get('moysklad_headers')
+    url = 'https://api.moysklad.ru/api/remap/1.2/entity/counterparty/'
+    async with get_http_session() as session:
+        async with session.get(url, headers=moysklad_headers) as response:
+            if response.status == 200:
+                response_json = await response.json()
+            else:
+                error_message = await response.text()
+                return error_message
+    return response_json['rows'][0]['meta']
+
+async def ms_check_customerorder(headers: dict):
+    result = {}
+
+    moysklad_headers = headers.get('moysklad_headers')
+    # оприходование
+
+    url = 'https://api.moysklad.ru/api/remap/1.2/entity/customerorder'
+    params = {
+        'limit': 10,
+        'order': 'created,desc'
+        }
+    async with get_http_session() as session:
+        async with session.get(url, headers=moysklad_headers, params=params) as response:
+            if response.status == 200:
+                response_json = await response.json()
+                print(f"customerorder response_json: {response_json}")
+            else:
+                error_message = await response.text()
+                result['response'] = error_message
+    return result
+
+async def ms_create_customerorder(headers: dict):
+    result = {}
+
+    moysklad_headers = headers.get('moysklad_headers')
+    # оприходование
+
+    url = 'https://api.moysklad.ru/api/remap/1.2/entity/customerorder'
+    params = {
+         "organization": {'meta': meta},
+         "agent": {'meta': meta},
+        }
+    async with get_http_session() as session:
+        async with session.post(url, headers=moysklad_headers, params=params) as response:
+            if response.status == 200:
+                response_json = await response.json()
+                tag = response_json
+                print(f"enter: {tag['rows']}")
+                result['enter'] = tag['rows'][0]['name']
+            else:
+                error_message = await response.text()
+                result['response'] = error_message
+        url = 'https://api.moysklad.ru/api/remap/1.2/entity/loss'
+        async with session.get(url, headers=moysklad_headers, params=params) as response:
+            if response.status == 200:
+                response_json = await response.json()
+                tag = response_json
+                result['loss'] = tag['rows'][0]['name']
+            else:
+                error_message = await response.text()
+                result['response'] = error_message
+
+
+    return result
+
+# получаем последние название оприходвание и списания
+async def autoupdate_get_last_sync_acquisition_writeoff_ms(headers: dict):
+    result = {}
+
+    moysklad_headers = headers.get('moysklad_headers')
+    # оприходование
+    url = 'https://api.moysklad.ru/api/remap/1.2/entity/enter'
+    params = {
+        'limit': 1,
+        'order': 'created,desc'
+        }
+    async with get_http_session() as session:
+        async with session.get(url, headers=moysklad_headers, params=params) as response:
+            if response.status == 200:
+                response_json = await response.json()
+                tag = response_json
+                print(f"enter: {tag['rows']}")
+                result['enter'] = tag['rows'][0]['name']
+            else:
+                error_message = await response.text()
+                result['response'] = error_message
+        url = 'https://api.moysklad.ru/api/remap/1.2/entity/loss'
+        async with session.get(url, headers=moysklad_headers, params=params) as response:
+            if response.status == 200:
+                response_json = await response.json()
+                tag = response_json
+                result['loss'] = tag['rows'][0]['name']
+            else:
+                error_message = await response.text()
+                result['response'] = error_message
+
+
+    return result
+
+
 """
 async 
+Auto Update function
+Auto Update function
+Auto Update function
 Auto Update function
 Auto Update function
 Auto Update function
@@ -1172,16 +1416,36 @@ async def autoupdate_sync_inventory(cron_id):
                     headers = await get_headers(parser_data)
                 except Exception as e:
                     print("Error occurred:", e)
-                cron_data = {
-                    'cron_dict': row[7],  # crontab_dict значение из crontab_table
-                }
-                row_list.append({
-                    'headers': headers,
-                    'cron_data': cron_data
-                })
-                if row[7] is not None:
-                    response = await autoupdate_get_last_sync_acquisition_writeoff_ms(headers=headers)
+                cron_dict = row[7]  # crontab_dict значение из crontab_table
+                #row_list.append({
+                #    'headers': headers,
+                #    'cron_data': cron_dict
+                #})
 
+                result_update_awaiting = await update_awaiting_deliver_from_owm(headers=headers)
+
+                '''
+                context['update_data'] = update_stock_mp_from_ms(headers=headers)
+                codes = [context['update_data']['code'], context['wb']['code'], context['yandex']['code']]
+                if all(code in (200, 204) for code in codes):
+                    context['sync_update'] = True
+                '''
+
+
+                #if row[7] is not None:
+                #    result_dict = await autoupdate_get_last_sync_acquisition_writeoff_ms(headers=headers)
+                #    if result_dict['enter'] == cron_dict['enter'] and result_dict['loss'] == cron_dict['loss']:
+                        # запускаем тут автообноление синхронизация
+                #        pass
+                #    else:
+                #        context['update_data'] = update_stock_mp_from_ms(headers=headers)
+                #        codes = [context['update_data']['code'], context['wb']['code'], context['yandex']['code']]
+                        # Проверка, все ли значения равны 200 или 204
+                #        if all(code in (200, 204) for code in codes):
+                #            context['sync_update'] = True
+                #            update_stmt = (update(crontab_table).where(crontab_table.c.id == cron_id).values(cron_dict=result_dict))
+            #await session.execute(update_stmt)
+            #await session.commit()
 
 
 
@@ -1191,27 +1455,7 @@ async def autoupdate_sync_inventory(cron_id):
     #    await autoupdate_get_last_sync_acquisition_writeoff_ms(headers=item['headers'], cron_data=item['cron_data'])
 
 
-# получаем последние название оприходвание и списания
-async def autoupdate_get_last_sync_acquisition_writeoff_ms(headers: dict):
-    result = {}
 
-    moysklad_headers = headers.get('moysklad_headers')
-    # оприходование
-    url = 'https://api.moysklad.ru/api/remap/1.2/entity/enter'
-    params = {
-        'limit': 1,
-        'order': 'created,desc'
-        }
-    async with get_http_session() as session:
-        async with session.get(url, headers=moysklad_headers, params=params) as response:
-            if response.status == 200:
-                response_json = await response.json()
-                print(f'enter: {response_json}')
-                result['response'] = response.json
-            else:
-                error_message = await response.text()
-                result['response'] = error_message
-    return result['response']
 
 
 

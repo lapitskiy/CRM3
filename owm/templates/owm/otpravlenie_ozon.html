@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+{% block title %}{{ title }} - {{ block.super }}{% endblock %}
+{% block sidebar %}
+    {% include 'include/_sidebar_owm.html' %}
+{% endblock %}
+{% block content %}
+{% load custom_filters %}
+
+
+
+    <br><br>
+
+<div class="position-relative mb-17">
+    <div class="overlay overlay-show">
+        <div class="bgi-no-repeat bgi-position-center bgi-size-cover card-rounded min-h-250px" style="background-image:url('/media/owm/fin_owm.jpg')">
+        </div>
+        <div class="overlay-layer rounded bg-black" style="opacity: 0.4">
+        </div>
+    </div>
+
+    <div class="position-absolute text-white mb-8 ms-10 bottom-0">
+        <h3 class="text-white fs-2qx fw-bold mb-3 m">Отгрузки и отправления FBS OZON</h3>
+
+        <div class="fs-5 fw-semibold">
+            Данные об отправлениях FBS
+        </div>
+        <!--end::Text-->
+    </div>
+    <!--end::Heading-->
+</div>
+
+    <h1>otpravlenie</h1>
+    {{ otpravlenie }}
+    <h1>packag</h1>
+
+    {{ packag }}
+
+{% endblock %}

@@ -300,7 +300,7 @@ class AutoupdateSettings(View):
                 'cron_dict': obj.crontab_dict,
             }
 
-            await autoupdate_get_last_sync_acquisition_writeoff_ms(headers=headers, cron_data=cron_data)
+            #await autoupdate_get_last_sync_acquisition_writeoff_ms(headers=headers)
 
         except Crontab.DoesNotExist:
             user = await sync_to_async(Parser.objects.get)(user=request.user)
@@ -376,12 +376,15 @@ class AutoupdateSettings(View):
                 except Exception as e:
                     print("Error occurred:", e)
                 context['update_data'] = update_stock_mp_from_ms(headers=headers)
-                codes = [context['update_data']['code'], context['wb']['code'], context['yandex']['code']]
+
+                codes = [context['update_data']['wb']['code'], context['update_data']['wb']['code'], context['update_data']['yandex']['code']]
                 # Проверка, все ли значения равны 200 или 204
                 if all(code in (200, 204) for code in codes):
                     context['sync_update'] = True
-                    response = await autoupdate_get_last_sync_acquisition_writeoff_ms(headers=headers)
-                    crontab.crontab_dict =
+                    result_dict = await autoupdate_get_last_sync_acquisition_writeoff_ms(headers=headers)
+                    crontab.crontab_dict = result_dict
+                    await sync_to_async(crontab.save)()
+
 
         return await sync_to_async(render)(request, 'owm/autoupdate_settings.html', context)
 
@@ -521,6 +524,109 @@ class PostavkaOzon(View):
         offer_dict = price_POST_to_offer_dict(request.POST.dict())
         update_price_ozon(parser, offer_dict)
         return render(request, 'owm/finance_ozon.html', context)
+
+class OtpravlenieOzon(View):
+    async def get(self, request, *args, **kwargs):
+        context = {}
+        try:
+            context = {}
+            parser = await sync_to_async(Parser.objects.get)(user=request.user)
+            parser_data = {
+                'moysklad_api': parser.moysklad_api,
+                'yandex_api': parser.yandex_api,
+                'wildberries_api': parser.wildberries_api,
+                'ozon_api': parser.ozon_api,
+                'ozon_id': parser.client_id,
+            }
+
+            headers = await get_headers(parser_data)
+
+            result = await get_otpravlenie_ozon(headers)
+
+            context['otpravlenie'] = result['awaiting']
+            context['packag'] = result['packag']
+        except ObjectDoesNotExist:
+            context['error'] = 'нет api'
+        return await sync_to_async(render)(request, 'owm/otpravlenie_ozon.html', context)
+
+    async def post(self, request):
+        context = {}
+
+        form_type = request.POST.get("form_type")
+        crontab = await sync_to_async(Crontab.objects.get)(parser__user=request.user, name='autoupdate')
+
+        if form_type == "save_settings":
+            sync_checkbox = request.POST.get('sync_checkbox', False)
+            sync_checkbox_ozon = request.POST.get('sync_checkbox_ozon', False)
+            sync_checkbox_yandex = request.POST.get('sync_checkbox_yandex', False)
+            sync_checkbox_wb = request.POST.get('sync_checkbox_wb', False)
+
+
+
+            if sync_checkbox == 'on':
+                crontab.active = True
+                context['active'] = True
+                print("Checkbox is checked")
+            else:
+                crontab.active = False
+                context['active'] = False
+                # Чекбокс не отмечен
+                print("Checkbox is not checked")
+
+            if sync_checkbox_ozon == 'on':
+                crontab.ozon = True
+                context['active_ozon'] = True
+            else:
+                crontab.ozon = False
+                context['active_ozon'] = False
+
+            if sync_checkbox_yandex == 'on':
+                crontab.yandex = True
+                context['active_yandex'] = True
+            else:
+                crontab.yandex = False
+                context['active_ozon'] = False
+
+            if sync_checkbox_wb == 'on':
+                crontab.wb = True
+                context['active_wb'] = True
+            else:
+                crontab.wb = False
+                context['active_wb'] = False
+            crontab.save()
+
+        elif form_type == "sync_start":
+            mp_reserv = request.POST.get('mp_reserv', False)
+            if mp_reserv == 'on':
+                reserv_dict = get_reserv_from_mp(headers=headers)
+            else:
+                #print('tyt')
+                #parser = Parser.objects.get(user=request.user)
+                parser = await sync_to_async(lambda: crontab.parser)()  # Асинхронный доступ к связанному объекту
+
+                parser_data = {
+                    'moysklad_api': parser.moysklad_api,
+                    'yandex_api': parser.yandex_api,
+                    'wildberries_api': parser.wildberries_api,
+                    'ozon_api': parser.ozon_api,
+                    'ozon_id': parser.client_id,
+                }
+                try:
+                    headers = await get_headers(parser_data)
+                except Exception as e:
+                    print("Error occurred:", e)
+                context['update_data'] = update_stock_mp_from_ms(headers=headers)
+
+                codes = [context['update_data']['wb']['code'], context['update_data']['wb']['code'], context['update_data']['yandex']['code']]
+                # Проверка, все ли значения равны 200 или 204
+                if all(code in (200, 204) for code in codes):
+                    context['sync_update'] = True
+                    result_dict = await autoupdate_get_last_sync_acquisition_writeoff_ms(headers=headers)
+                    crontab.crontab_dict = result_dict
+                    await sync_to_async(crontab.save)()
+
+
+        return await sync_to_async(render)(request, 'owm/autoupdate_settings.html', context)
 
 class FinanceWb(View):
     def get(self, request, *args, **kwargs):
