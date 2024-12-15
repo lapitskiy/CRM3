@@ -1155,6 +1155,7 @@ async def get_otpravlenie_ozon(headers: dict):
     one_week_ago_str = one_week_ago.strftime('%Y-%m-%dT%H:%M:%SZ')
 
     ozon_headers = headers.get('ozon_headers')
+    print(f'OZON HEDERA {ozon_headers}')
     # оприходование
     url_awaiting = 'https://api-seller.ozon.ru/v3/posting/fbs/unfulfilled/list'
     params_awaiting = {
@@ -1238,7 +1239,20 @@ async def update_awaiting_deliver_from_owm(headers: dict):
     """
     получаем данные о неотгруженных заказах с МП и добавляем их в заказы МС в резерв
     """
-    order_dict = await ms_check_customerorder(headers)
+    otpravlenie = await get_otpravlenie_ozon(headers)
+    print(f'otpravlenie {otpravlenie}')
+    awaiting = otpravlenie.get('awaiting')
+    packag = otpravlenie.get('packag')
+
+    for pack in packag['result']['postings'][0]:
+        posting_number = pack['posting_number']
+        for product in pack['products']:
+            price = product['price']
+            offer_id = product['offer_id']
+            quantity =  product['quantity']
+            #"sku": 1728663479,
+
+    customerorder_dict = await ms_check_customerorder(headers)
     return ''
     #packag = awaiting_dict.get('packag')
     #awaiting_dict = get_otpravlenie_ozon(headers=headers)
@@ -1411,6 +1425,7 @@ async def autoupdate_sync_inventory(cron_id):
                     'yandex_api': row[11],  # yandex_api значение из parser_table
                     'wildberries_api': row[12],  # wildberries_api значение из parser_table
                     'ozon_api': row[14],  # ozon_api значение из parser_table
+                    'ozon_id': row[13],  # ozon_api значение из parser_table
                 }
                 try:
                     headers = await get_headers(parser_data)
