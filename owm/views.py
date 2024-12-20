@@ -15,6 +15,9 @@ from django.http import HttpResponse
 
 from datetime import datetime
 
+from .utils.base_utils import update_stock_mp_from_ms
+
+
 def get_prod_meta(headers, offer_dict):
     #url = f'https://api.moysklad.ru/api/remap/1.2/entity/assortment?filter=article={article}'
     url = f'https://api.moysklad.ru/api/remap/1.2/entity/assortment'
@@ -270,17 +273,17 @@ class Autoupdate(View):
         return render(request, 'owm/autoupdate.html', context)
 
 class AutoupdateSettings(View):
-    async def get(self, request, *args, **kwargs):
+    def get(self, request, *args, **kwargs):
         context = {}
         try:
-            obj = await sync_to_async(Crontab.objects.get)(parser__user=request.user, name='autoupdate')
+            obj = sync_to_async(Crontab.objects.get)(parser__user=request.user, name='autoupdate')
 
             context['active'] = obj.active
             context['active_yandex'] = obj.yandex
             context['active_ozon'] = obj.ozon
             context['active_wb'] = obj.wb
 
-            parser = await sync_to_async(lambda: obj.parser)()  # Асинхронный доступ к связанному объекту
+            parser = obj.parser  # Асинхронный доступ к связанному объекту
 
             parser_data = {
                 'moysklad_api': parser.moysklad_api,
@@ -291,7 +294,7 @@ class AutoupdateSettings(View):
             }
 
             try:
-                headers = await get_headers(parser_data)
+                headers = get_headers(parser_data)
             except Exception as e:
                 print("Error occurred:", e)
 
@@ -303,17 +306,17 @@ class AutoupdateSettings(View):
             #await autoupdate_get_last_sync_acquisition_writeoff_ms(headers=headers)
 
         except Crontab.DoesNotExist:
-            user = await sync_to_async(Parser.objects.get)(user=request.user)
-            await sync_to_async(Crontab.objects.create)(parser=user, name='autoupdate', active=False)
+            user = sync_to_async(Parser.objects.get)(user=request.user)
+            sync_to_async(Crontab.objects.create)(parser=user, name='autoupdate', active=False)
 
             print(f"Created new Crontab")
-        return await sync_to_async(render)(request, 'owm/autoupdate_settings.html', context)
+        return sync_to_async(render)(request, 'owm/autoupdate_settings.html', context)
 
     async def post(self, request):
         context = {}
 
         form_type = request.POST.get("form_type")
-        crontab = await sync_to_async(Crontab.objects.get)(parser__user=request.user, name='autoupdate')
+        crontab = sync_to_async(Crontab.objects.get)(parser__user=request.user, name='autoupdate')
 
         if form_type == "save_settings":
             sync_checkbox = request.POST.get('sync_checkbox', False)
@@ -362,7 +365,7 @@ class AutoupdateSettings(View):
             else:
                 #print('tyt')
                 #parser = Parser.objects.get(user=request.user)
-                parser = await sync_to_async(lambda: crontab.parser)()  # Асинхронный доступ к связанному объекту
+                parser = crontab.parser  # Асинхронный доступ к связанному объекту
 
                 parser_data = {
                     'moysklad_api': parser.moysklad_api,
@@ -372,7 +375,7 @@ class AutoupdateSettings(View):
                     'ozon_id': parser.client_id,
                 }
                 try:
-                    headers = await get_headers(parser_data)
+                    headers = get_headers(parser_data)
                 except Exception as e:
                     print("Error occurred:", e)
                 context['update_data'] = update_stock_mp_from_ms(headers=headers)
@@ -381,12 +384,10 @@ class AutoupdateSettings(View):
                 # Проверка, все ли значения равны 200 или 204
                 if all(code in (200, 204) for code in codes):
                     context['sync_update'] = True
-                    result_dict = await autoupdate_get_last_sync_acquisition_writeoff_ms(headers=headers)
+                    result_dict = autoupdate_get_last_sync_acquisition_writeoff_ms(headers=headers)
                     crontab.crontab_dict = result_dict
-                    await sync_to_async(crontab.save)()
-
-
-        return await sync_to_async(render)(request, 'owm/autoupdate_settings.html', context)
+                    crontab.save()
+        return render(request, 'owm/autoupdate_settings.html', context)
 
 class Create(View):
     def get(self, request, *args, **kwargs):

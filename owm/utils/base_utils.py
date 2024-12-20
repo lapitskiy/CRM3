@@ -1,5 +1,5 @@
 import fnmatch
-
+import time
 import requests
 import datetime
 import uuid
@@ -11,25 +11,16 @@ from django.conf import settings
 
 import pandas as pd
 
-from sqlalchemy import MetaData
-from sqlalchemy.future import select
-from sqlalchemy.orm import joinedload
-
-from crm3.utils_db import AsyncSessionLocal, get_db_session, get_http_session
-import asyncio
-import aiohttp
+from crm3.utils_db import db_check_awaiting_postingnumber, db_create_customerorder
 
 from collections import OrderedDict
 
-from .models import parser_table, crontab_table
+from owm.utils.ms_utils import ms_create_customerorder
+from owm.models import Crontab
 
-from sqlalchemy import join
 
-metadata = MetaData()
-
-async def get_headers(parser_data):
+def get_headers(parser_data):
     headers = {}
-
     moysklad_api = parser_data.get('moysklad_api')
     yandex_api = parser_data.get('yandex_api')
     wildberries_api = parser_data.get('wildberries_api')
@@ -50,37 +41,34 @@ async def get_headers(parser_data):
 
         # Получение кампаний через Yandex API
         url = 'https://api.partner.market.yandex.ru/campaigns'
-        async with get_http_session() as session:
-        #async with aiohttp.ClientSession() as session:
-            async with session.get(url, headers=headers['yandex_headers']) as response:
-                if response.status == 200:
-                    campaigns_data = await response.json()
-                    campaigns = campaigns_data.get('campaigns', [])
-                    if not campaigns:
-                        raise Exception("No campaigns found in response.")
+        response = requests.get(url, headers=headers['yandex_headers'])
+        if response.status_code == 200:
+            campaigns_data = response.json()
+            campaigns = campaigns_data.get('campaigns', [])
+            if not campaigns:
+                raise Exception("No campaigns found in response.")
 
-                    # Извлечение company_id и businessId
-                    headers['yandex_id'] = {
-                        'company_id': campaigns[0]['id'],
-                        'businessId': campaigns[0]['business']['id']
-                    }
-                else:
-                    error_message = await response.text()
-                    raise Exception(f"Error {response.status}: {error_message}")
+            # Извлечение company_id и businessId
+            headers['yandex_id'] = {
+                'company_id': campaigns[0]['id'],
+                'businessId': campaigns[0]['business']['id']
+            }
+        else:
+            error_message = response.text
+            raise Exception(f"Error {response.status_code}: {error_message}")
 
         # Получение складов через Yandex API
         warehouse_url = f"https://api.partner.market.yandex.ru/businesses/{headers['yandex_id']['businessId']}/warehouses"
-        async with aiohttp.ClientSession() as session:
-            async with session.get(warehouse_url, headers=headers['yandex_headers']) as response:
-                if response.status == 200:
-                    warehouses_data = await response.json()
-                    warehouses = warehouses_data.get('result', {}).get('warehouses', [])
-                    if not warehouses:
-                        raise Exception("No warehouses found in response.")
-                    headers['yandex_id']['warehouseId'] = warehouses[0]['id']
-                else:
-                    error_message = await response.text()
-                    raise Exception(f"Error {response.status}: {error_message}")
+        response = requests.get(warehouse_url, headers=headers['yandex_headers'])
+        if response.status_code == 200:
+            warehouses_data = response.json()
+            warehouses = warehouses_data.get('result', {}).get('warehouses', [])
+            if not warehouses:
+                raise Exception("No warehouses found in response.")
+            headers['yandex_id']['warehouseId'] = warehouses[0]['id']
+        else:
+            error_message = response.text
+            raise Exception(f"Error {response.status_code}: {error_message}")
 
     # Ozon API
     if ozon_api and ozon_id:
@@ -94,7 +82,7 @@ async def get_headers(parser_data):
         headers['wildberries_headers'] = {
             'Authorization': wildberries_api
         }
-
+    time.sleep(1)
     return headers
 
 def get_warehouse(headers):
@@ -109,6 +97,9 @@ def get_store_meta(headers):
     url = 'https://api.moysklad.ru/api/remap/1.2/entity/store'
     response = requests.get(url, headers=headers).json()
     return response['rows'][0]['meta']
+
+
+
 
 def get_all_moysklad_stock(headers):
     stock_tuple = {}
@@ -151,7 +142,6 @@ def sort_stock_and_invent(invent_dict, stock):
         'enter_dict': enter_dict,
         'loss_dict': loss_dict
         }
-
     return result
 
 # инветаризируем (оприходуем и списываем) товары на мойсклад и обновляем остатки на маркетплейсах
@@ -1142,7 +1132,7 @@ OZONOZONOZONOZONOZONOZON
 OZONOZONOZONOZONOZONOZON
 """
 # получаем последние отгрузки (отправления)
-async def get_otpravlenie_ozon(headers: dict):
+def get_otpravlenie_ozon(headers: dict):
     result = {}
 
     current_date = datetime.datetime.now()
@@ -1155,7 +1145,6 @@ async def get_otpravlenie_ozon(headers: dict):
     one_week_ago_str = one_week_ago.strftime('%Y-%m-%dT%H:%M:%SZ')
 
     ozon_headers = headers.get('ozon_headers')
-    print(f'OZON HEDERA {ozon_headers}')
     # оприходование
     url_awaiting = 'https://api-seller.ozon.ru/v3/posting/fbs/unfulfilled/list'
     params_awaiting = {
@@ -1203,23 +1192,27 @@ async def get_otpravlenie_ozon(headers: dict):
         }
         }
 
-    async with get_http_session() as session:
-        async with session.post(url_awaiting, headers=ozon_headers, json=params_awaiting) as response:
-            if response.status == 200:
-                response_json = await response.json()
-                result['awaiting'] = response_json
-                print(f"response_json {response_json}")
-            else:
-                error_message = await response.text()
-                result['error'] = error_message
-        async with session.post(url_packag, headers=ozon_headers, json=params_packag) as response:
-            if response.status == 200:
-                response_json = await response.json()
-                result['packag'] = response_json
-                print(f"response_json {response_json}")
-            else:
-                error_message = await response.text()
-                result['error'] = error_message
+    try:
+        response = requests.post(url_awaiting, headers=ozon_headers, json=params_awaiting)
+        if response.status_code == 200:
+            response_json = response.json()
+            result['awaiting'] = response_json
+            print(f"response_json (awaiting): {response_json}")
+        else:
+            result['error'] = response.text
+    except Exception as e:
+        result['error'] = f"Error in awaiting request: {e}"
+
+    try:
+        response = requests.post(url_packag, headers=ozon_headers, json=params_packag)
+        if response.status_code == 200:
+            response_json = response.json()
+            result['packag'] = response_json
+            print(f"response_json (packag): {response_json}")
+        else:
+            result['error'] = response.text
+    except Exception as e:
+        result['error'] = f"Error in packag request: {e}"
     return result
 
 """
@@ -1235,155 +1228,75 @@ OWM
 OWM
 """
 
-async def update_awaiting_deliver_from_owm(headers: dict):
+def update_awaiting_deliver_from_owm(headers: dict):
+
     """
     получаем данные о неотгруженных заказах с МП и добавляем их в заказы МС в резерв
     """
-    otpravlenie = await get_otpravlenie_ozon(headers)
-    print(f'otpravlenie {otpravlenie}')
+    otpravlenie = get_otpravlenie_ozon(headers)
     awaiting = otpravlenie.get('awaiting')
     packag = otpravlenie.get('packag')
-
-    for pack in packag['result']['postings'][0]:
+    current_product = []
+    print(f'*' * 40)
+    print(f"packag {packag}")
+    print(f"awaiting {awaiting}")
+    print(f'*' * 40)
+    for pack in packag['result']['postings']:
+        product_list = []
+        #print(f'pack {pack}')
         posting_number = pack['posting_number']
+        status = pack['status']
+        #print(f"Posting Number: {posting_number}")
         for product in pack['products']:
             price = product['price']
             offer_id = product['offer_id']
             quantity =  product['quantity']
-            #"sku": 1728663479,
+            # "sku": 1728663479,
+            print(f"  Offer ID: {offer_id}")
+            print(f"  Price: {price}")
+            print(f"  Quantity: {quantity}")
+            print("_" * 40)
+            product_list.append({
+                "offer_id": offer_id,
+                "price": price,
+                "quantity": quantity
+                })
 
-    customerorder_dict = await ms_check_customerorder(headers)
+        current_product.append(
+            {'posting_number': posting_number,
+             'status': status,
+             'product_list': product_list
+             })
+
+
+    posting_numbers = [item['posting_number'] for item in current_product]
+    check_result_dict = db_check_awaiting_postingnumber(posting_numbers)
+    ms_create_customerorder(headers)
+    if check_result_dict['not_found']:
+       #print(f'current_product {current_product}')
+       print(f'*' * 40)
+       #print(f"check_result_dict {check_result_dict['not_found']}")
+
+       not_found_product = {key: product for key in check_result_dict['not_found'] for product in current_product if key in product.get('posting_number', '')}
+       print(f'not_found_product {not_found_product}')
+       print(f'*' * 40)
+       #print(f'*' * 40)
+       #db_create_customerorder(not_found_product)
+       #ms_create_customerorder(not_found_product)
+    if check_result_dict['found']:
+       found_product = {key: current_product[key] for key in check_result_dict['found'] if key in current_product}
+       print(f'*' * 40)
+       print(f'found_product {found_product}')
+       print(f'*' * 40)
     return ''
-    #packag = awaiting_dict.get('packag')
-    #awaiting_dict = get_otpravlenie_ozon(headers=headers)
-    #if order_dict is Not:
+
+
+    #customerorder_dict = await ms_check_customerorder(headers)
+
+
+
     #    add_result = create_customorder_ms(order_dict)
 
-"""
-MS
-MS
-MS
-MS
-MS
-MS
-MS
-MS
-MS
-"""
-
-async def get_organization_meta(headers):
-    url = 'https://api.moysklad.ru/api/remap/1.2/entity/organization'
-    async with get_http_session() as session:
-        async with session.get(url, headers=headers) as response:
-            if response.status == 200:
-                response_json = await response.json()
-                print(f"enter: {tag['rows']}")
-                result['enter'] = tag['rows'][0]['name']
-            else:
-                error_message = await response.text()
-                return error_message
-    return response_json['rows'][0]['meta']
-
-async def get_agent_meta_ms(headers):
-    moysklad_headers = headers.get('moysklad_headers')
-    url = 'https://api.moysklad.ru/api/remap/1.2/entity/counterparty/'
-    async with get_http_session() as session:
-        async with session.get(url, headers=moysklad_headers) as response:
-            if response.status == 200:
-                response_json = await response.json()
-            else:
-                error_message = await response.text()
-                return error_message
-    return response_json['rows'][0]['meta']
-
-async def ms_check_customerorder(headers: dict):
-    result = {}
-
-    moysklad_headers = headers.get('moysklad_headers')
-    # оприходование
-
-    url = 'https://api.moysklad.ru/api/remap/1.2/entity/customerorder'
-    params = {
-        'limit': 10,
-        'order': 'created,desc'
-        }
-    async with get_http_session() as session:
-        async with session.get(url, headers=moysklad_headers, params=params) as response:
-            if response.status == 200:
-                response_json = await response.json()
-                print(f"customerorder response_json: {response_json}")
-            else:
-                error_message = await response.text()
-                result['response'] = error_message
-    return result
-
-async def ms_create_customerorder(headers: dict):
-    result = {}
-
-    moysklad_headers = headers.get('moysklad_headers')
-    # оприходование
-
-    url = 'https://api.moysklad.ru/api/remap/1.2/entity/customerorder'
-    params = {
-         "organization": {'meta': meta},
-         "agent": {'meta': meta},
-        }
-    async with get_http_session() as session:
-        async with session.post(url, headers=moysklad_headers, params=params) as response:
-            if response.status == 200:
-                response_json = await response.json()
-                tag = response_json
-                print(f"enter: {tag['rows']}")
-                result['enter'] = tag['rows'][0]['name']
-            else:
-                error_message = await response.text()
-                result['response'] = error_message
-        url = 'https://api.moysklad.ru/api/remap/1.2/entity/loss'
-        async with session.get(url, headers=moysklad_headers, params=params) as response:
-            if response.status == 200:
-                response_json = await response.json()
-                tag = response_json
-                result['loss'] = tag['rows'][0]['name']
-            else:
-                error_message = await response.text()
-                result['response'] = error_message
-
-
-    return result
-
-# получаем последние название оприходвание и списания
-async def autoupdate_get_last_sync_acquisition_writeoff_ms(headers: dict):
-    result = {}
-
-    moysklad_headers = headers.get('moysklad_headers')
-    # оприходование
-    url = 'https://api.moysklad.ru/api/remap/1.2/entity/enter'
-    params = {
-        'limit': 1,
-        'order': 'created,desc'
-        }
-    async with get_http_session() as session:
-        async with session.get(url, headers=moysklad_headers, params=params) as response:
-            if response.status == 200:
-                response_json = await response.json()
-                tag = response_json
-                print(f"enter: {tag['rows']}")
-                result['enter'] = tag['rows'][0]['name']
-            else:
-                error_message = await response.text()
-                result['response'] = error_message
-        url = 'https://api.moysklad.ru/api/remap/1.2/entity/loss'
-        async with session.get(url, headers=moysklad_headers, params=params) as response:
-            if response.status == 200:
-                response_json = await response.json()
-                tag = response_json
-                result['loss'] = tag['rows'][0]['name']
-            else:
-                error_message = await response.text()
-                result['response'] = error_message
-
-
-    return result
 
 
 """
@@ -1397,70 +1310,53 @@ Auto Update function
 """
 
 
-async def autoupdate_sync_inventory(cron_id):
-    """
-    асинхрон
-    """
-    async with get_db_session() as session:
-            stmt = (
-                select(crontab_table, parser_table)
-                .select_from(join(crontab_table, parser_table, crontab_table.c.parser_id == parser_table.c.id))
-                .where(crontab_table.c.id == cron_id)
-            )
-            result = await session.execute(stmt)
-            row = result.fetchone()
-            row_list = []
-            if row:
-                #print(f'ROW {row}')
+def autoupdate_sync_inventory(cron_id):
+    try:
+        row = Crontab.objects.select_related('parser').get(id=cron_id)
+    except Crontab.DoesNotExist:
+        print(f"Crontab с id {cron_id} не найден.")
 
-                # Индексация значений в кортеже
-                cron_owm = {
-                    'yandex': row[4],  # yandex значение из crontab_table
-                    'ozon': row[5],  # ozon значение из crontab_table
-                    'wb': row[6],  # wb значение из crontab_table
-                }
-                # Дополнительные данные из связанной таблицы
-                parser_data = {
-                    'moysklad_api': row[10],  # moysklad_api значение из parser_table
-                    'yandex_api': row[11],  # yandex_api значение из parser_table
-                    'wildberries_api': row[12],  # wildberries_api значение из parser_table
-                    'ozon_api': row[14],  # ozon_api значение из parser_table
-                    'ozon_id': row[13],  # ozon_api значение из parser_table
-                }
-                try:
-                    headers = await get_headers(parser_data)
-                except Exception as e:
-                    print("Error occurred:", e)
-                cron_dict = row[7]  # crontab_dict значение из crontab_table
-                #row_list.append({
-                #    'headers': headers,
-                #    'cron_data': cron_dict
-                #})
+    row_list = []
+    if row:
+        cron_active_mp = {
+            'yandex': row.yandex,
+            'ozon': row.ozon,
+            'wb': row.wb,
+        }
 
-                result_update_awaiting = await update_awaiting_deliver_from_owm(headers=headers)
+        parser_data = {
+            'moysklad_api': row.parser.moysklad_api,
+            'yandex_api': row.parser.yandex_api,
+            'wildberries_api': row.parser.wildberries_api,
+            'ozon_api': row.parser.ozon_api,
+            'ozon_id': row.parser.client_id,
+        }
+        headers = get_headers(parser_data)
+        result_update_awaiting = update_awaiting_deliver_from_owm(headers=headers)
+    return result_update_awaiting
 
-                '''
-                context['update_data'] = update_stock_mp_from_ms(headers=headers)
-                codes = [context['update_data']['code'], context['wb']['code'], context['yandex']['code']]
-                if all(code in (200, 204) for code in codes):
-                    context['sync_update'] = True
-                '''
+'''
+context['update_data'] = update_stock_mp_from_ms(headers=headers)
+codes = [context['update_data']['code'], context['wb']['code'], context['yandex']['code']]
+if all(code in (200, 204) for code in codes):
+    context['sync_update'] = True
+'''
 
 
-                #if row[7] is not None:
-                #    result_dict = await autoupdate_get_last_sync_acquisition_writeoff_ms(headers=headers)
-                #    if result_dict['enter'] == cron_dict['enter'] and result_dict['loss'] == cron_dict['loss']:
-                        # запускаем тут автообноление синхронизация
-                #        pass
-                #    else:
-                #        context['update_data'] = update_stock_mp_from_ms(headers=headers)
-                #        codes = [context['update_data']['code'], context['wb']['code'], context['yandex']['code']]
-                        # Проверка, все ли значения равны 200 или 204
-                #        if all(code in (200, 204) for code in codes):
-                #            context['sync_update'] = True
-                #            update_stmt = (update(crontab_table).where(crontab_table.c.id == cron_id).values(cron_dict=result_dict))
-            #await session.execute(update_stmt)
-            #await session.commit()
+        #if row[7] is not None:
+        #    result_dict = await autoupdate_get_last_sync_acquisition_writeoff_ms(headers=headers)
+        #    if result_dict['enter'] == cron_dict['enter'] and result_dict['loss'] == cron_dict['loss']:
+                # запускаем тут автообноление синхронизация
+        #        pass
+        #    else:
+        #        context['update_data'] = update_stock_mp_from_ms(headers=headers)
+        #        codes = [context['update_data']['code'], context['wb']['code'], context['yandex']['code']]
+                # Проверка, все ли значения равны 200 или 204
+        #        if all(code in (200, 204) for code in codes):
+        #            context['sync_update'] = True
+        #            update_stmt = (update(crontab_table).where(crontab_table.c.id == cron_id).values(cron_dict=result_dict))
+    #await session.execute(update_stmt)
+    #await session.commit()
 
 
 

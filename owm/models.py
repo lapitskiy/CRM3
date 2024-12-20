@@ -27,31 +27,21 @@ class Crontab(models.Model):
             models.UniqueConstraint(fields=['parser', 'name'], name='unique_parser_name')
         ]
 
+class Awaiting(models.Model):
+    '''
+    status:
+    awaiting_deliver - ожидает отгрузки
+    '''
+    posting_number = models.CharField(max_length=30, null=False, unique=True)
+    status = models.CharField(max_length=30, null=False)
 
-from sqlalchemy import Table, Column, Integer, String, Boolean, JSON, ForeignKey, DateTime, MetaData
 
-metadata = MetaData()
+class Awaiting_product(models.Model):
+    awaiting = models.ForeignKey(Awaiting, on_delete=models.CASCADE, verbose_name='Связанный заказ')
+    offer_id = models.CharField(max_length=50, null=False)
+    price = models.IntegerField(null=False, verbose_name='Цена')
+    quantity = models.IntegerField(null=False, verbose_name='Количество')
 
-parser_table = Table(
-    'owm_parser', metadata,
-    Column('id', Integer, primary_key=True),
-    Column('user_id', Integer, ForeignKey('auth_user.id'), nullable=True),
-    Column('moysklad_api', String(512), unique=True),
-    Column('yandex_api', String(512), unique=True),
-    Column('wildberries_api', String(512), unique=True),
-    Column('client_id', String(512), unique=True),
-    Column('ozon_api', String(512), unique=True),
-    Column('stock_update_at', DateTime, nullable=True),
-)
+class Metadata(models.Model):
+    parser = models.ForeignKey(Parser, on_delete=models.CASCADE, verbose_name='Связанный парсер')
 
-crontab_table = Table(
-    'owm_crontab', metadata,
-    Column('id', Integer, primary_key=True),
-    Column('parser_id', Integer, ForeignKey('owm_parser.id')),
-    Column('active', Boolean, default=False),
-    Column('name', String(150), nullable=True),
-    Column('yandex', Boolean, default=False),
-    Column('ozon', Boolean, default=False),
-    Column('wb', Boolean, default=False),
-    Column('crontab_dict', JSON, nullable=True),
-)

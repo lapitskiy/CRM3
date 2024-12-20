@@ -18,10 +18,12 @@ services:
         - "6380:6379"  # Публикуем порт Redis
       volumes:
         - redis_data:/data  # Том для данных Redis
-        - ./env/redis.conf:/usr/local/etc/redis/redis.conf
       environment:
         - REDIS_PASSWORD=Billkill13  # Установка пароля для Redis
-      command: redis-server /usr/local/etc/redis/redis.conf --requirepass "Billkill13"  # Запуск Redis с паролем и файлом конфигурации
+      command: sh -c "redis-server --requirepass 'Billkill13' --daemonize yes && sleep 3 && redis-cli -a 'Billkill13' FLUSHDB && redis-cli -a 'Billkill13' SAVE && rm -f /data/dump.rdb && tail -f /dev/null"
+      #command: sh -c "redis-server --requirepass 'Billkill13' --daemonize yes && sleep 3 && redis-cli -a 'Billkill13' FLUSHDB && redis-cli -a 'Billkill13' SAVE && rm -f /data/dump.rdb"
+      #command: sh -c "redis-server --requirepass 'Billkill13' --daemonize yes && sleep 3 && redis-cli -a 'Billkill13' FLUSHDB && redis-cli -a 'Billkill13' SAVE && redis-cli -a 'Billkill13' shutdown && rm -f /data/dump.rdb && redis-server --requirepass 'Billkill13'"
+      #command: sh -c "redis-server --daemonize yes && sleep 3 && redis-cli FLUSHDB && redis-cli SAVE && redis-cli shutdown && rm -f /data/dump.rdb && redis-server"
 
   crm3:  # Название вашего приложения на Python
     build: .
@@ -43,7 +45,7 @@ services:
 
   celery:  # Celery Worker
     image: crm3:latest
-    command: celery -A crm3 worker --pool=eventlet --loglevel=info
+    command: celery -A crm3 worker --pool=prefork --loglevel=info
     environment:
       - DATABASE_NAME=postgres
       - DATABASE_USER=crm3
