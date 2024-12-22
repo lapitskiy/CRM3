@@ -4,19 +4,17 @@ import requests
 import datetime
 import uuid
 import xlsxwriter
-import locale
-import pymorphy2
+
 import os
 from django.conf import settings
 
 import pandas as pd
 
-from crm3.utils_db import db_check_awaiting_postingnumber, db_create_customerorder
-
-from collections import OrderedDict
+from owm.utils.db_utils import db_check_awaiting_postingnumber
 
 from owm.utils.ms_utils import ms_create_customerorder
 from owm.models import Crontab
+from owm.utils.oz_utils import ozon_get_awaiting_fbs
 
 
 def get_headers(parser_data):
@@ -29,7 +27,7 @@ def get_headers(parser_data):
 
     if moysklad_api:
         headers['moysklad_headers'] = {
-            "Authorization": f"Bearer {moysklad_api}",
+            "Authorization": f"Bearer {moysklad_api}"
         }
 
     # Yandex API
@@ -85,13 +83,7 @@ def get_headers(parser_data):
     time.sleep(1)
     return headers
 
-def get_warehouse(headers):
-    result = {}
-    url = 'https://api-seller.ozon.ru/v1/warehouse/list'
-    response = requests.post(url, headers=headers['ozon_headers']).json()
-    #print(f'OZON get_warehouse {response}')
-    result['ozon_warehouses'] = response['result'][0]['warehouse_id']
-    return result
+
 
 def get_store_meta(headers):
     url = 'https://api.moysklad.ru/api/remap/1.2/entity/store'
@@ -101,21 +93,7 @@ def get_store_meta(headers):
 
 
 
-def get_all_moysklad_stock(headers):
-    stock_tuple = {}
-    url = "https://api.moysklad.ru/api/remap/1.2/report/stock/all"
-    params = [
-        ("filter", "quantityMode=all")
-    ]
-    response = requests.get(url, headers=headers, params=params).json()
-    #print(f'response {response}')
-    for stock in response['rows']:
-        stock_tuple[stock['article']] = {'stock': int(stock['stock']), 'price' : stock['salePrice']/100 }
-    sorted_stock_tuple = OrderedDict(sorted(stock_tuple.items()))
-    return sorted_stock_tuple
 
-def get_reserv_from_mp(headers):
-    return {}
 
 
 def sort_stock_and_invent(invent_dict, stock):
@@ -183,14 +161,7 @@ def inventory_update(user: object, invent_dict: dict):
 # инвентаризация товара мой склад
 # MS MS MSM SM MSMSMSMSMSMS
 
-# остатки на МС отравляем на все MP
-def update_stock_mp_from_ms(headers):
-    context = {}
-    stock = get_all_moysklad_stock(headers['moysklad_headers'])  # вызываем снова, так как остатки изменились
-    context['ozon'] = update_inventory_ozon(headers, stock)
-    context['yandex'] = update_inventory_yandex(headers, stock)
-    context['wb'] = update_inventory_wb(headers, stock)
-    return context
+
 
 # оприходование и списание на основе двух словарей
 def update_inventory_moysklad(headers, stock_dict):
@@ -261,154 +232,6 @@ def get_inventory_row_data(headers, offer_dict):
     # responce = requests.post(url=url, json=data, headers=headers)
     #print(f"responce moysklad {responce.json()}")
 
-# инвентаризация товара озон
-def update_inventory_ozon(headers,stock):
-    warehouseID = get_warehouse(headers)
-    url = 'https://api-seller.ozon.ru/v2/products/stocks'
-    ozon_stocks = []
-    print(f'update_inventory_ozon stock {stock}')
-    invalid_offer_ids = []
-
-
-    for key, value in stock.items():
-        if value and 'stock' in value:
-            if value['stock'] < 0:
-                invalid_offer_ids.append(key)
-                value['stock'] = 0  # Замена значения на 0
-            dict_ = {
-                'offer_id': key,
-                'stock': value['stock'],
-                'warehouse_id': warehouseID['ozon_warehouses']
-                }
-            ozon_stocks.append(dict_)
-        else:
-            print(f"Пропущен ключ {key} из-за отсутствия данных 'stock' или пустого словаря.")
-    for i in range(0,len(ozon_stocks),100):
-        data = {
-            'stocks': ozon_stocks[i:i+99],
-        }
-    print('#####')
-    print('#####')
-    print('#####')
-    print(f'ozon_data #### {data}')
-    #print(f'data stock {data}')
-    response = requests.post(url, headers=headers['ozon_headers'], json=data)
-    context = {
-        'code': response.status_code,
-        'json': response.json(),
-        'invalid': invalid_offer_ids
-    }
-    #print(f'OZON response {response.json()}')
-    return context
-
-# инвентаризация товара яндекс
-def update_inventory_yandex(headers, stock):
-    #print(f"head {headers}")
-    headers_ya = headers['yandex_headers']
-    company_id = headers['yandex_id']['company_id']
-    businessId = headers['yandex_id']['businessId']
-    warehouseId = headers['yandex_id']['warehouseId']
-    current_time = datetime.datetime.now()
-    offset = datetime.timezone(datetime.timedelta(hours=3))  # Указываем смещение +03:00
-    formatted_time = current_time.replace(tzinfo=offset).isoformat()
-    url = f'https://api.partner.market.yandex.ru/campaigns/{company_id}/offers/stocks'
-    sku = []
-    for key, value in stock.items():
-        sku.append({
-            'sku': key,
-            'warehouseId': warehouseId,
-            'items': [{
-                'count': int(value['stock']),
-                'type': 'FIT',
-                'updatedAt': formatted_time
-            }]
-        })
-    data = {
-        'skus': sku
-    }
-    #print(f"skus {data['skus'][0]}")
-    response = requests.put(url=url, json=data, headers=headers_ya)
-    context = {
-        'code': response.status_code,
-        'json': response.json()
-    }
-    return context
-    #print(f'yandex response 2 {response}')
-
-# инвентаризация товара яндекс
-def update_inventory_wb(headers, stock):
-    url = 'https://suppliers-api.wildberries.ru/content/v2/get/cards/list'
-    #url = 'https://content-api-sandbox.wildberries.ru/content/v2/get/cards/list'
-    data = {
-        'settings': {
-            'cursor': {
-                'limit': 100,
-            },
-            'filter': {
-                'withPhoto': -1
-            }
-        }
-    }
-
-    while True:
-        #print(f"data {data}")
-        while True:
-            try:
-                response = requests.post(url, json=data, headers=headers['wildberries_headers']).json()
-                print(f"response try")
-                break
-            except requests.exceptions.JSONDecodeError:
-                print(f"exc")
-        #print(f"wb article response {response['cursor']}")
-        #print(f"total {response['cursor']['total']}")
-        #print(f"response {response}")
-        for item in response['cards']:
-            if item['vendorCode'] in stock:
-                stock[item['vendorCode']]['sku'] = item['sizes'][0]['skus'][0]
-        data = {
-            'settings': {
-                'cursor': {
-                    'updatedAt': response['cursor']['updatedAt'],
-                    'nmID': response['cursor']['nmID'],
-                    'limit': 100,
-                },
-                'filter': {
-                    'withPhoto': 1
-                }
-            }
-        }
-        if response['cursor']['total'] < 100: break
-    #print(f'stock {len(stock)}')
-    url = 'https://suppliers-api.wildberries.ru/api/v3/warehouses'
-    response = requests.get(url, headers=headers['wildberries_headers']).json()
-    warehouseId = response[0]['id']
-    url = f'https://suppliers-api.wildberries.ru/api/v3/stocks/{warehouseId}'
-    sku = []
-    #print(f'stock {stock}')
-    for key, value in stock.items():
-        if 'sku' in value:
-            sku.append({
-                'sku': value['sku'],
-                'amount': int(value['stock'])
-                })
-    data = {
-        'stocks': sku
-    }
-    response = requests.put(url, json=data, headers=headers['wildberries_headers'])
-    #print(f'wb response {response}')
-    #print(f'wb response status {response.status_code}')
-    #print(f'wb response text {response.text}')
-    if response.status_code == 204:
-        json = 'Update'
-    else:
-        json = response.json()
-    context = {
-        'code': response.status_code,
-        'json': json
-    }
-    return context
-    #print(f'wb response {response.json()}')
-
 # создание dict из POST запроса для инвенаризации (inventory)
 def inventory_POST_to_offer_dict(post_data):
     offer_dict = {}
@@ -424,14 +247,7 @@ def inventory_POST_to_offer_dict(post_data):
                 offer_dict[offer_id] = {'stock' : f"{float(stock_value):.1f}".replace(',', '.')}
     return offer_dict
 
-def get_moysklad_opt_price(headers):
-    stock_tuple = {}
-    url = "https://api.moysklad.ru/api/remap/1.2/entity/product"
-    params = [
-        ("limit", 1000)
-    ]
-    response = requests.get(url, headers=headers, params=params).json()
-    return response
+
 
 def get_all_price_ozon(headers):
     opt_price = get_moysklad_opt_price(headers['moysklad_headers'])
@@ -732,140 +548,6 @@ def get_postavka_ozon(headers: dict):
     result['code'] = 8 if response.get('code') == 8 else 0
     return result
 
-def get_finance_ozon(headers: dict, period: str):
-    opt_price = get_moysklad_opt_price(headers['moysklad_headers'])
-    opt_price_clear = {}
-    for item in opt_price['rows']:
-        #opt_price_clear['article'] = item['article']
-        #print(f"opt_price {item['buyPrice']['value']/100}")
-        opt_price_clear[item['article']] = {
-            'opt_price' : int(float(item['buyPrice']['value']) / 100),
-            }
-
-    url = "https://api-seller.ozon.ru/v2/finance/realization"
-    now = datetime.datetime.now()
-    lastmonth_date = now - datetime.timedelta(days=now.day)
-    data = {
-        "year": lastmonth_date.year,
-        "month": lastmonth_date.month
-    }
-
-    response = requests.post(url, headers=headers['ozon_headers'], json=data).json()
-    #print(f"utils.py | get_all_price_ozon | response: {response}")
-    #print(f"realization {response['result']['rows']}")
-    result = {}
-    summed_totals = {}
-    header_data = response.get('result', {}).get('header', [])
-    all_return_total = 0
-    for item in response.get('result', {}).get('rows', []):
-        offer_id = item['item'].get('offer_id')
-        if item.get('return_commission') is not None:
-            all_return_total += int(item['return_commission']['total'])
-
-        if item.get('delivery_commission') is not None:
-            # Получаем 'quantity' из каждого словаря с параметром по умолчанию равным 0, если ключ отсутствует
-            opt = opt_price_clear[offer_id]['opt_price']
-            if item.get('return_commission') is not None:
-                delivery_quantity = item.get('delivery_commission').get('quantity', 0)
-                return_quantity = item.get('return_commission').get('quantity', 0)
-                if delivery_quantity > return_quantity:
-                    new_entry = {
-                        'total_price': int(item['delivery_commission']['total']) - int(item['return_commission']['total']),
-                        'quantity': int(item['delivery_commission']['quantity']) - int(item['return_commission']['quantity']),
-                    }
-                else:
-                    continue
-
-            else:
-                new_entry = {
-                    'total_price': int(item['delivery_commission']['total']),
-                    'quantity': int(item['delivery_commission']['quantity'])
-                }
-            new_entry.update({
-                'name': item['item']['name'],
-                'product_id': int(item['item']['sku']),
-                'seller_price_per_instance': int(item['seller_price_per_instance']),
-                'opt': int(opt)
-            })
-            net_profit = new_entry['total_price'] - (opt * new_entry['quantity'])
-            net_profit_perc = (net_profit / (opt * new_entry['quantity'])) * 100 if opt * new_entry[
-                'quantity'] != 0 else 0
-            posttax_profit = net_profit - (new_entry['total_price'] * 0.06)
-            posttax_profit_perc = (posttax_profit / (opt * new_entry['quantity'])) * 100 if opt * new_entry[
-                'quantity'] != 0 else 0
-            new_entry.update({
-                'net_profit': net_profit,
-                'net_profit_perc': int(net_profit_perc),
-                'posttax_profit': posttax_profit,
-                'posttax_profit_perc': int(posttax_profit_perc),
-            })
-            if offer_id in result:
-                result[offer_id].append(new_entry)
-            else:
-                result[offer_id] = [new_entry]
-
-    #print(f'result ozon price {result}')
-    # seller_price_per_instance Цена продавца с учётом скидки.
-    # 'item': {'offer_id': 'cer_black_20', 'barcode': 'OZN1249002486', 'sku': 1249002486},
-    sorted_report = dict(sorted(result.items(), key=lambda item: (item[0][:3], item[0][3:])))
-
-    # Итерация по результатам и вычисление суммы total_price
-    for offer_id, entries in result.items():
-        total_price_sum = sum(entry['total_price'] for entry in entries)
-        net_profit_sum = sum(entry['net_profit'] for entry in entries)
-        posttax_profit_sum = sum(entry['posttax_profit'] for entry in entries)
-        total_quantity = sum(entry['quantity'] for entry in entries)
-
-        # Расчет средней цены продажи
-        average_sales_price = total_price_sum / total_quantity if total_quantity > 0 else 0
-
-        average_percent_posttax = sum(entry['posttax_profit_perc'] for entry in entries) / len(
-            entries) if entries else 0
-
-        # Сохраняем результаты в словарь
-        summed_totals[offer_id] = {
-            "total_price_sum": int(total_price_sum),
-            "net_profit_sum": int(net_profit_sum),
-            "posttax_profit_sum": int(posttax_profit_sum),
-            "average_sales_price": int(average_sales_price),
-            "average_percent_posttax": int(average_percent_posttax),
-            "total_quantity": int(total_quantity),
-        }
-    #print(f'summed_totals {summed_totals}')
-    all_total_price_sum = sum(value["total_price_sum"] for value in summed_totals.values())
-    all_totals = {
-        "all_total_price_sum": all_total_price_sum,
-        "all_net_profit_sum": sum(value["net_profit_sum"] for value in summed_totals.values()),
-        "all_posttax_profit_sum": sum(value["posttax_profit_sum"] for value in summed_totals.values()),
-        "all_quantity": sum(value["total_quantity"] for value in summed_totals.values()),
-        "all_return_total": all_return_total
-    }
-    all_totals = {
-        key: f"{value:,}" if isinstance(value, (int, float)) else value
-        for key, value in all_totals.items()
-    }
-
-
-
-    locale.setlocale(locale.LC_TIME, 'ru_RU.UTF-8')
-
-    start_date = datetime.datetime.strptime(header_data['start_date'], '%Y-%m-%d')
-    stop_date = datetime.datetime.strptime(header_data['stop_date'], '%Y-%m-%d')
-    month_name = start_date.strftime('%B')
-    morph = pymorphy2.MorphAnalyzer()
-    month_nominative = morph.parse(month_name)[0].inflect({'nomn'}).word
-    day_delta = stop_date - start_date
-    header_data['month'] = month_nominative.capitalize()
-    header_data['day_delta'] = day_delta.days
-
-    # Выводим отсортированный словарь
-    result = {}
-    result['sorted_report'] = sorted_report
-    result['all_totals'] = all_totals
-    result['summed_totals'] = summed_totals
-    result['header_data'] = header_data
-    return result
-
 def get_finance_wb(headers: dict, period: str):
     opt_price = get_moysklad_opt_price(headers['moysklad_headers'])
     opt_price_clear = {}
@@ -1117,174 +799,26 @@ def delete_files_with_prefix(directory_path, prefix):
 
 
 
-"""
-OZONOZONOZONOZONOZONOZON
-OZONOZONOZONOZONOZONOZON
-OZONOZONOZONOZONOZONOZON
-OZONOZONOZONOZONOZONOZON
-OZONOZONOZONOZONOZONOZON
-OZONOZONOZONOZONOZONOZON
-OZONOZONOZONOZONOZONOZON
-OZONOZONOZONOZONOZONOZON
-OZONOZONOZONOZONOZONOZON
-OZONOZONOZONOZONOZONOZON
-OZONOZONOZONOZONOZONOZON
-OZONOZONOZONOZONOZONOZON
-"""
-# получаем последние отгрузки (отправления)
-def get_otpravlenie_ozon(headers: dict):
-    result = {}
-
-    current_date = datetime.datetime.now()
-
-    # Вычисляем дату неделю назад
-    one_week_ago = current_date - datetime.timedelta(weeks=4)
-
-    # Форматируем даты в строковый формат (YYYY-MM-DD)
-    current_date_str = current_date.strftime('%Y-%m-%dT%H:%M:%SZ')
-    one_week_ago_str = one_week_ago.strftime('%Y-%m-%dT%H:%M:%SZ')
-
-    ozon_headers = headers.get('ozon_headers')
-    # оприходование
-    url_awaiting = 'https://api-seller.ozon.ru/v3/posting/fbs/unfulfilled/list'
-    params_awaiting = {
-        "filter": {
-            "delivering_date_from": one_week_ago_str,
-            "delivering_date_to": current_date_str,
-            "delivery_method_id": [],
-            "is_quantum": False,
-            "provider_id": [],
-            "status": "awaiting_packaging",
-            "warehouse_id": []
-        },
-        "dir": "ASC",
-        "limit": 1000,
-        "offset": 0,
-        "with": {
-            "analytics_data": False,
-            "barcodes": False,
-            "financial_data": False,
-            "translit": False
-        }
-        }
-    # awaiting_deliver - ожидает отгрузки
-    url_packag = 'https://api-seller.ozon.ru/v3/posting/fbs/list'
-    params_packag = {
-        "filter": {
-            "is_quantum": False,
-            "last_changed_status_date": {
-                "from": one_week_ago_str,
-                "to": current_date_str
-            },
-            #"order_id": 0,
-            "since": one_week_ago_str,
-            "status": "awaiting_deliver",
-            "to": current_date_str,
-        },
-        "dir": "ASC",
-        "limit": 1000,
-        "offset": 0,
-        "with": {
-            "analytics_data": False,
-            "barcodes": False,
-            "financial_data": False,
-            "translit": False
-        }
-        }
-
-    try:
-        response = requests.post(url_awaiting, headers=ozon_headers, json=params_awaiting)
-        if response.status_code == 200:
-            response_json = response.json()
-            result['awaiting'] = response_json
-            print(f"response_json (awaiting): {response_json}")
-        else:
-            result['error'] = response.text
-    except Exception as e:
-        result['error'] = f"Error in awaiting request: {e}"
-
-    try:
-        response = requests.post(url_packag, headers=ozon_headers, json=params_packag)
-        if response.status_code == 200:
-            response_json = response.json()
-            result['packag'] = response_json
-            print(f"response_json (packag): {response_json}")
-        else:
-            result['error'] = response.text
-    except Exception as e:
-        result['error'] = f"Error in packag request: {e}"
-    return result
-
-"""
-OWM
-OWM
-OWM
-OWM
-OWM
-OWM
-OWM
-OWM
-OWM
-OWM
-"""
 
 def update_awaiting_deliver_from_owm(headers: dict):
-
     """
     получаем данные о неотгруженных заказах с МП и добавляем их в заказы МС в резерв
     """
-    otpravlenie = get_otpravlenie_ozon(headers)
-    awaiting = otpravlenie.get('awaiting')
-    packag = otpravlenie.get('packag')
-    current_product = []
-    print(f'*' * 40)
-    print(f"packag {packag}")
-    print(f"awaiting {awaiting}")
-    print(f'*' * 40)
-    for pack in packag['result']['postings']:
-        product_list = []
-        #print(f'pack {pack}')
-        posting_number = pack['posting_number']
-        status = pack['status']
-        #print(f"Posting Number: {posting_number}")
-        for product in pack['products']:
-            price = product['price']
-            offer_id = product['offer_id']
-            quantity =  product['quantity']
-            # "sku": 1728663479,
-            print(f"  Offer ID: {offer_id}")
-            print(f"  Price: {price}")
-            print(f"  Quantity: {quantity}")
-            print("_" * 40)
-            product_list.append({
-                "offer_id": offer_id,
-                "price": price,
-                "quantity": quantity
-                })
+    ozon_awaiting_fbs_dict = ozon_get_awaiting_fbs(headers)
+    ozon_current_product = ozon_awaiting_fbs_dict['current_product']
 
-        current_product.append(
-            {'posting_number': posting_number,
-             'status': status,
-             'product_list': product_list
-             })
-
-
-    posting_numbers = [item['posting_number'] for item in current_product]
-    check_result_dict = db_check_awaiting_postingnumber(posting_numbers)
-    ms_create_customerorder(headers)
-    if check_result_dict['not_found']:
-       #print(f'current_product {current_product}')
+    # OZON
+    if ozon_awaiting_fbs_dict['not_found']:
        print(f'*' * 40)
-       #print(f"check_result_dict {check_result_dict['not_found']}")
-
-       not_found_product = {key: product for key in check_result_dict['not_found'] for product in current_product if key in product.get('posting_number', '')}
+       not_found_product = {key: product for key in ozon_awaiting_fbs_dict['not_found'] for product in ozon_current_product if key in product.get('posting_number', '')}
        print(f'not_found_product {not_found_product}')
        print(f'*' * 40)
        #print(f'*' * 40)
        #db_create_customerorder(not_found_product)
-       #ms_create_customerorder(not_found_product)
-    if check_result_dict['found']:
-       found_product = {key: current_product[key] for key in check_result_dict['found'] if key in current_product}
+       ms_create_customerorder(headers=headers, not_found_product=not_found_product)
+       #ms_update_allstock_to_mp(headers=headers)
+    if ozon_awaiting_fbs_dict['found']:
+       found_product = {key: ozon_current_product[key] for key in ozon_awaiting_fbs_dict['found'] if key in ozon_current_product}
        print(f'*' * 40)
        print(f'found_product {found_product}')
        print(f'*' * 40)

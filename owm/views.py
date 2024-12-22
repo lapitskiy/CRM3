@@ -5,17 +5,15 @@ from django.http import HttpResponseRedirect
 from django.shortcuts import render
 from django.views import View
 from .models import Parser, Crontab
-from .utils import *
+from owm.utils.base_utils import get_headers
 from django.core.exceptions import ObjectDoesNotExist
 
-
-from asgiref.sync import sync_to_async
-from django.template.loader import render_to_string
 from django.http import HttpResponse
 
 from datetime import datetime
 
-from .utils.base_utils import update_stock_mp_from_ms
+from .utils.ms_utils import ms_update_allstock_to_mp, ms_get_last_enterloss
+from .utils.oz_utils import ozon_get_finance
 
 
 def get_prod_meta(headers, offer_dict):
@@ -276,14 +274,14 @@ class AutoupdateSettings(View):
     def get(self, request, *args, **kwargs):
         context = {}
         try:
-            obj = sync_to_async(Crontab.objects.get)(parser__user=request.user, name='autoupdate')
+            obj = Crontab.objects.get(parser__user=request.user, name='autoupdate')
 
             context['active'] = obj.active
             context['active_yandex'] = obj.yandex
             context['active_ozon'] = obj.ozon
             context['active_wb'] = obj.wb
 
-            parser = obj.parser  # Асинхронный доступ к связанному объекту
+            parser = obj.parser
 
             parser_data = {
                 'moysklad_api': parser.moysklad_api,
@@ -306,17 +304,17 @@ class AutoupdateSettings(View):
             #await autoupdate_get_last_sync_acquisition_writeoff_ms(headers=headers)
 
         except Crontab.DoesNotExist:
-            user = sync_to_async(Parser.objects.get)(user=request.user)
-            sync_to_async(Crontab.objects.create)(parser=user, name='autoupdate', active=False)
+            user = Parser.objects.get(user=request.user)
+            Crontab.objects.create(parser=user, name='autoupdate', active=False)
 
             print(f"Created new Crontab")
-        return sync_to_async(render)(request, 'owm/autoupdate_settings.html', context)
+        return render(request, 'owm/autoupdate_settings.html', context)
 
-    async def post(self, request):
+    def post(self, request):
         context = {}
 
         form_type = request.POST.get("form_type")
-        crontab = sync_to_async(Crontab.objects.get)(parser__user=request.user, name='autoupdate')
+        crontab = Crontab.objects.get(parser__user=request.user, name='autoupdate')
 
         if form_type == "save_settings":
             sync_checkbox = request.POST.get('sync_checkbox', False)
@@ -359,34 +357,27 @@ class AutoupdateSettings(View):
             crontab.save()
 
         elif form_type == "sync_start":
-            mp_reserv = request.POST.get('mp_reserv', False)
-            if mp_reserv == 'on':
-                reserv_dict = get_reserv_from_mp(headers=headers)
-            else:
-                #print('tyt')
-                #parser = Parser.objects.get(user=request.user)
-                parser = crontab.parser  # Асинхронный доступ к связанному объекту
-
-                parser_data = {
-                    'moysklad_api': parser.moysklad_api,
-                    'yandex_api': parser.yandex_api,
-                    'wildberries_api': parser.wildberries_api,
-                    'ozon_api': parser.ozon_api,
-                    'ozon_id': parser.client_id,
-                }
-                try:
-                    headers = get_headers(parser_data)
-                except Exception as e:
-                    print("Error occurred:", e)
-                context['update_data'] = update_stock_mp_from_ms(headers=headers)
-
-                codes = [context['update_data']['wb']['code'], context['update_data']['wb']['code'], context['update_data']['yandex']['code']]
-                # Проверка, все ли значения равны 200 или 204
-                if all(code in (200, 204) for code in codes):
-                    context['sync_update'] = True
-                    result_dict = autoupdate_get_last_sync_acquisition_writeoff_ms(headers=headers)
-                    crontab.crontab_dict = result_dict
-                    crontab.save()
+            parser = crontab.parser  # Асинхронный доступ к связанному объекту
+            parser_data = {
+                'moysklad_api': parser.moysklad_api,
+                'yandex_api': parser.yandex_api,
+                'wildberries_api': parser.wildberries_api,
+                'ozon_api': parser.ozon_api,
+                'ozon_id': parser.client_id,
+            }
+            try:
+                headers = get_headers(parser_data)
+            except Exception as e:
+                print("Error occurred:", e)
+            context['update_data'] = ms_update_allstock_to_mp(headers=headers)
+            print(f"update_data", context['update_data'])
+            codes = [context['update_data']['wb']['code'], context['update_data']['wb']['code'], context['update_data']['yandex']['code']]
+            # Проверка, все ли значения равны 200 или 204
+            if all(code in (200, 204, 409) for code in codes):
+                result_dict = ms_get_last_enterloss(headers=headers)
+                crontab.crontab_dict = result_dict
+                crontab.save()
+        context['sync_update'] = True
         return render(request, 'owm/autoupdate_settings.html', context)
 
 class Create(View):
@@ -483,8 +474,15 @@ class FinanceOzon(View):
         context = {}
 
         parser = Parser.objects.get(user=request.user)
-        headers = get_headers(parser)
-        data = get_finance_ozon(headers, period='month')
+        parser_data = {
+            'moysklad_api': parser.moysklad_api,
+            'yandex_api': parser.yandex_api,
+            'wildberries_api': parser.wildberries_api,
+            'ozon_api': parser.ozon_api,
+            'ozon_id': parser.client_id,
+        }
+        headers = get_headers(parser_data)
+        data = ozon_get_finance(headers, period='month')
 
         context['report'] = data['sorted_report']  # dict(list(price.items())[:1]) # price
         context['summed_totals'] = data['summed_totals']  # dict(list(price.items())[:1]) # price
