@@ -10,7 +10,7 @@ from django.conf import settings
 
 import pandas as pd
 
-from owm.utils.db_utils import db_check_awaiting_postingnumber
+from owm.utils.db_utils import db_check_awaiting_postingnumber, db_get_contragent
 
 from owm.utils.ms_utils import ms_create_customerorder
 from owm.models import Crontab
@@ -90,8 +90,37 @@ def get_store_meta(headers):
     response = requests.get(url, headers=headers).json()
     return response['rows'][0]['meta']
 
+def base_get_contragent(headers, seller):
+    result = {}
+    contragents = db_get_contragent(seller=seller)
+
+    '''
+    OZON
+    '''
+    if 'ozon' in contragents:
+        result['ms_ozon_contragent'] = contragents['ozon']
+    else:
+        organization_meta = ms_get_organization_meta(headers['ozon_headers'])
+        agent_meta = ms_get_agent_meta(headers['ozon_headers'])
+        print(f'organization_meta {organization_meta}')
+        print(f'agent_meta {agent_meta}')
 
 
+    '''
+    WB
+    '''
+    if 'wb' in contragents:
+        result['ms_wb_contragent'] = contragents['wb']
+    else:
+        pass
+
+    '''
+    YANDEX
+    '''
+    if 'yandex' in contragents:
+        result['ms_yandex_contragent'] = contragents['yandex']
+    else:
+        pass
 
 
 

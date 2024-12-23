@@ -37,6 +37,25 @@ async def get_http_session():
             await session.close()
 '''
 
+
+def db_get_contragent(seller):
+    result = {}
+    contragent_name = {
+        'ozon': 'ms_ozon_contragent',
+        'yandex': 'ms_yandex_contragent',
+        'wb': 'ms_wb_contragent',
+    }
+    ozon_contragent = Metadata.objects.filter(seller=seller, name=contragent_name['ozon'])
+    if ozon_contragent:
+        result['ozon'] = ozon_contragent.metadata_dict
+    yandex_contragent = Metadata.objects.filter(seller=seller, name=contragent_name['yandex'])
+    if yandex_contragent:
+        result['yandex'] = yandex_contragent.metadata_dict
+    wb_contragent = Metadata.objects.filter(seller=seller, name=contragent_name[wb])
+    if wb_contragent:
+        result['wb'] = wb_contragent.metadata_dict
+    return result
+
 def db_check_awaiting_postingnumber(posting_numbers: list):
     found_records = Awaiting.objects.filter(posting_number__in=posting_numbers)
     found_posting_numbers = set(found_records.values_list('posting_number', flat=True))

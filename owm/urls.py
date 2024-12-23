@@ -3,7 +3,8 @@ from django.urls import path
 from .views import Create, Enter, Inventory, PriceOzon, PriceWb, PriceYandex, FinanceOzon, PostavkaOzon, FinanceWb, Autoupdate, AutoupdateSettings, OtpravlenieOzon
 
 urlpatterns = [
-    path('create/', Create.as_view(), name='create'),
+    path('settings_api/', SettingsApi.as_view(), name='settings_api'),
+    path('settings_contragent/', SettingsContragent.as_view(), name='settings_contragent'),
     path('inventory/', Inventory.as_view(), name='inventory'),
     path('autoupdate/', Autoupdate.as_view(), name='autoupdate'),
     path('', AutoupdateSettings.as_view(), name='autoupdate_settings'),

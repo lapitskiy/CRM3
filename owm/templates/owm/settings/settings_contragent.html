@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+{% block title %}{{ title }} - {{ block.super }}{% endblock %}
+{% block sidebar %}
+    {% include 'include/_sidebar_owm.html' %}
+{% endblock %}
+{% block content %}
+    <form action="#" method="POST">
+    {% csrf_token %}
+        <div class="input-group mb-5">
+            <span class="input-group-text" id="basic-addon3">Мой склад api</span>
+            <input type="text" class="form-control" name="moysklad_api" aria-describedby="basic-addon3" value="{{ api_list_current_user.moysklad_api }}"/>
+        </div>
+        <div class="input-group mb-5">
+            <span class="input-group-text" id="basic-addon3">Yandex market api</span>
+            <input type="text" class="form-control" name="yandex_api" aria-describedby="basic-addon3" value="{{ api_list_current_user.yandex_api }}"/>
+        </div>
+        <div class="input-group mb-5">
+            <span class="input-group-text" id="basic-addon3">Wildberries api</span>
+            <input type="text" class="form-control" name="wildberries_api" aria-describedby="basic-addon3" value="{{ api_list_current_user.wildberries_api }}"/>
+        </div>
+        <div class="input-group mb-5">
+            <span class="input-group-text" id="basic-addon3">Ozon client id</span>
+            <input type="text" class="form-control" name="client_id" aria-describedby="basic-addon3" value="{{ api_list_current_user.client_id }}"/>
+        </div>
+        <div class="input-group mb-5">
+            <span class="input-group-text" name="basic-addon3">Ozon api</span>
+            <input type="text" class="form-control" name="ozon_api" aria-describedby="basic-addon3" value="{{ api_list_current_user.ozon_api }}"/>
+        </div>
+    <button type="submit" class="btn btn-primary btn-block">Установить api</button>
+    </form>
+{% endblock %}

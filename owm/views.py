@@ -4,8 +4,8 @@ import requests
 from django.http import HttpResponseRedirect
 from django.shortcuts import render
 from django.views import View
-from .models import Parser, Crontab
-from owm.utils.base_utils import get_headers
+from .models import Seller, Crontab
+from owm.utils.base_utils import get_headers, base_get_contragent
 from django.core.exceptions import ObjectDoesNotExist
 
 from django.http import HttpResponse
@@ -206,7 +206,7 @@ class Enter(View):
     async def get(self, request, *args, **kwargs):
         context = {}
         try:
-            parser = Parser.objects.get(user=request.user)
+            parser = Seller.objects.get(user=request.user)
             headers = await get_headers(parser_data)
             stock = get_all_moysklad_stock(headers['moysklad_headers'])
             context['stock'] = stock
@@ -222,7 +222,7 @@ class Enter(View):
         #article = request.POST.get('article')
         #count = int(request.POST.get('count'))
         #price = int(request.POST.get('price'))
-        parser = Parser.objects.get(user=request.user)
+        parser = Seller.objects.get(user=request.user)
         parser.replenishment = True
         parser.save()
         enter_moysklad(parser, offer_dict)
@@ -234,7 +234,7 @@ class Enter(View):
 class Inventory(View):
     def get(self, request, *args, **kwargs):
         context = {}
-        parser = Parser.objects.get(user=request.user)
+        parser = Seller.objects.get(user=request.user)
         headers = get_headers(parser)
         stock = get_all_moysklad_stock(headers['moysklad_headers'])
         context['stock'] = stock
@@ -245,7 +245,7 @@ class Inventory(View):
         #print(f"post {request.POST.dict()}")
         context = {}
         invent_dict = inventory_POST_to_offer_dict(request.POST.dict())
-        user = Parser.objects.get(user=request.user)
+        user = Seller.objects.get(user=request.user)
         context['resp'] = inventory_update(user, invent_dict)
         print(f"context resp {context['resp']}")
         return render(request, 'owm/inventory.html', context)
@@ -253,7 +253,7 @@ class Inventory(View):
 class Autoupdate(View):
     def get(self, request, *args, **kwargs):
         context = {}
-        parser = Parser.objects.get(user=request.user)
+        parser = Seller.objects.get(user=request.user)
         headers = get_headers(parser)
         autoupdate_get_last_sync_acquisition_writeoff_ms(headers)
         #stock = auto_update_owm_moysklad(headers['moysklad_headers'])
@@ -265,7 +265,7 @@ class Autoupdate(View):
         #print(f"post {request.POST.dict()}")
         context = {}
         invent_dict = inventory_POST_to_offer_dict(request.POST.dict())
-        parser = Parser.objects.get(user=request.user)
+        parser = Seller.objects.get(user=request.user)
         context['resp'] = inventory_update(parser, invent_dict)
         print(f"responce {context['resp']}")
         return render(request, 'owm/autoupdate.html', context)
@@ -304,7 +304,7 @@ class AutoupdateSettings(View):
             #await autoupdate_get_last_sync_acquisition_writeoff_ms(headers=headers)
 
         except Crontab.DoesNotExist:
-            user = Parser.objects.get(user=request.user)
+            user = Seller.objects.get(user=request.user)
             Crontab.objects.create(parser=user, name='autoupdate', active=False)
 
             print(f"Created new Crontab")
@@ -380,10 +380,10 @@ class AutoupdateSettings(View):
         context['sync_update'] = True
         return render(request, 'owm/autoupdate_settings.html', context)
 
-class Create(View):
+class SettingsApi(View):
     def get(self, request, *args, **kwargs):
-        api_list_current_user = Parser.objects.filter(user=request.user).first()
-        return render(request, 'owm/create.html', {'api_list_current_user': api_list_current_user})
+        api_list_current_user = Seller.objects.filter(user=request.user).first()
+        return render(request, 'owm/settings/settings_api.html', {'api_list_current_user': api_list_current_user})
 
     def post(self, request, *args, **kwargs):
         try:
@@ -395,7 +395,7 @@ class Create(View):
             print('moysklad_api ', moysklad_api)
             print('ozon_api ', ozon_api)
             print('curr user ', request.user)
-            user_api_object = Parser.objects.filter(user=request.user)
+            user_api_object = Seller.objects.filter(user=request.user)
             if user_api_object:
                 user_api_object.update(
                     moysklad_api=moysklad_api,
@@ -405,7 +405,7 @@ class Create(View):
                     ozon_api=ozon_api,
                 )
             else:
-                Parser.objects.update_or_create(
+                Seller.objects.update_or_create(
                     user=request.user,
                     moysklad_api=moysklad_api,
                     yandex_api=yandex_api,
@@ -416,12 +416,25 @@ class Create(View):
             return HttpResponseRedirect('')
         except Exception as ex:
             print('exc ', str(ex))
-            return render(request, 'create.html')
+            return render(request, 'owm/settings/settings_api.html')
+
+class SettingsContragent(View):
+    def get(self, request, *args, **kwargs):
+        context = {}
+        seller = Seller.objects.get(user=request.user)
+        headers = get_headers(seller)
+        context['contragent'] = base_get_contragent(headers=headers, seller=seller.id)
+        return render(request, 'owm/settings/settings_contragent.html', context)
+
+    def post(self, request, *args, **kwargs):
+        context = {}
+        return render(request, 'owm/settings/settings_contragent.html', context)
+
 
 class PriceOzon(View):
     def get(self, request, *args, **kwargs):
         context = {}
-        parser = Parser.objects.get(user=request.user)
+        parser = Seller.objects.get(user=request.user)
         headers = get_headers(parser)
         price = get_all_price_ozon(headers)
         context['price'] = price #dict(list(price.items())[:1]) # price
@@ -430,7 +443,7 @@ class PriceOzon(View):
 
     def post(self, request, *args, **kwargs):
         context = {}
-        parser = Parser.objects.get(user=request.user)
+        parser = Seller.objects.get(user=request.user)
         offer_dict = price_POST_to_offer_dict(request.POST.dict())
         update_price_ozon(parser, offer_dict)
         return render(request, 'owm/price_ozon.html', context)
@@ -438,7 +451,7 @@ class PriceOzon(View):
 class PriceWb(View):
     def get(self, request, *args, **kwargs):
         context = {}
-        parser = Parser.objects.get(user=request.user)
+        parser = Seller.objects.get(user=request.user)
         headers = get_headers(parser)
         price = get_all_price_wb(headers)
         context['price'] = price
@@ -447,7 +460,7 @@ class PriceWb(View):
 
     def post(self, request, *args, **kwargs):
         context = {}
-        parser = Parser.objects.get(user=request.user)
+        parser = Seller.objects.get(user=request.user)
         offer_dict = price_POST_to_offer_dict(request.POST.dict())
         update_price_ozon(parser, offer_dict)
         return render(request, 'owm/price_wb.html', context)
@@ -455,7 +468,7 @@ class PriceWb(View):
 class PriceYandex(View):
     def get(self, request, *args, **kwargs):
         context = {}
-        parser = Parser.objects.get(user=request.user)
+        parser = Seller.objects.get(user=request.user)
         headers = get_headers(parser)
         price = get_all_price_yandex(headers)
         context['price'] = price
@@ -464,7 +477,7 @@ class PriceYandex(View):
 
     def post(self, request, *args, **kwargs):
         context = {}
-        parser = Parser.objects.get(user=request.user)
+        parser = Seller.objects.get(user=request.user)
         offer_dict = price_POST_to_offer_dict(request.POST.dict())
         update_price_ozon(parser, offer_dict)
         return render(request, 'owm/price_wb.html', context)
@@ -473,7 +486,7 @@ class FinanceOzon(View):
     def get(self, request, *args, **kwargs):
         context = {}
 
-        parser = Parser.objects.get(user=request.user)
+        parser = Seller.objects.get(user=request.user)
         parser_data = {
             'moysklad_api': parser.moysklad_api,
             'yandex_api': parser.yandex_api,
@@ -499,7 +512,7 @@ class FinanceOzon(View):
 
     def post(self, request, *args, **kwargs):
         context = {}
-        parser = Parser.objects.get(user=request.user)
+        parser = Seller.objects.get(user=request.user)
         offer_dict = price_POST_to_offer_dict(request.POST.dict())
         update_price_ozon(parser, offer_dict)
         return render(request, 'owm/finance_ozon.html', context)
@@ -507,7 +520,7 @@ class FinanceOzon(View):
 class PostavkaOzon(View):
     def get(self, request, *args, **kwargs):
         context = {}
-        parser = Parser.objects.get(user=request.user)
+        parser = Seller.objects.get(user=request.user)
         headers = get_headers(parser)
         data = get_postavka_ozon(headers)
         # print(f"headers {context['headers']}")
@@ -519,7 +532,7 @@ class PostavkaOzon(View):
 
     def post(self, request, *args, **kwargs):
         context = {}
-        parser = Parser.objects.get(user=request.user)
+        parser = Seller.objects.get(user=request.user)
         offer_dict = price_POST_to_offer_dict(request.POST.dict())
         update_price_ozon(parser, offer_dict)
         return render(request, 'owm/finance_ozon.html', context)
@@ -529,7 +542,7 @@ class OtpravlenieOzon(View):
         context = {}
         try:
             context = {}
-            parser = await sync_to_async(Parser.objects.get)(user=request.user)
+            parser = await sync_to_async(Seller.objects.get)(user=request.user)
             parser_data = {
                 'moysklad_api': parser.moysklad_api,
                 'yandex_api': parser.yandex_api,
@@ -631,7 +644,7 @@ class FinanceWb(View):
     def get(self, request, *args, **kwargs):
         context = {}
         try:
-            parser = Parser.objects.get(user=request.user)
+            parser = Seller.objects.get(user=request.user)
             # дальнейшая логика
         except TypeError:
             return HttpResponse('Пользователь не аутентифицирован', status=401)
@@ -652,7 +665,7 @@ class FinanceWb(View):
 
     def post(self, request, *args, **kwargs):
         context = {}
-        parser = Parser.objects.get(user=request.user)
+        parser = Seller.objects.get(user=request.user)
         offer_dict = price_POST_to_offer_dict(request.POST.dict())
         update_price_ozon(parser, offer_dict)
         return render(request, 'owm/finance_ozon.html', context)

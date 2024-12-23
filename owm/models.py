@@ -4,7 +4,7 @@ from django.contrib.auth.models import User
 # python manage.py makemigrations
 # python manage.py migrate
 
-class Parser(models.Model):
+class Seller(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE, null=True, blank=True)
     moysklad_api = models.CharField(max_length=512, unique=True, verbose_name='API мойсклад')
     yandex_api = models.CharField(max_length=512, unique=True, verbose_name='API Яндекс')
@@ -14,7 +14,7 @@ class Parser(models.Model):
     stock_update_at = models.DateTimeField(blank=True, null=True, verbose_name='Последняя инвентаризация')
 
 class Crontab(models.Model):
-    parser = models.ForeignKey(Parser, on_delete=models.CASCADE, verbose_name='Связанный парсер')
+    seller = models.ForeignKey(Seller, on_delete=models.CASCADE, verbose_name='Связанный парсер')
     active = models.BooleanField(default=False, verbose_name='Синхрон включен')
     name = models.CharField(max_length=150, null=True, blank=True)
     yandex = models.BooleanField(default=False, verbose_name='yandex')
@@ -24,7 +24,7 @@ class Crontab(models.Model):
 
     class Meta:
         constraints = [
-            models.UniqueConstraint(fields=['parser', 'name'], name='unique_parser_name')
+            models.UniqueConstraint(fields=['seller', 'name'], name='unique_crontab')
         ]
 
 class Awaiting(models.Model):
@@ -43,5 +43,18 @@ class Awaiting_product(models.Model):
     quantity = models.IntegerField(null=False, verbose_name='Количество')
 
 class Metadata(models.Model):
-    parser = models.ForeignKey(Parser, on_delete=models.CASCADE, verbose_name='Связанный парсер')
+    '''
+    name:
+    ms_ozon_contragent - метадата данные контрагент озон
+    ms_yandex_contragent - метадата данные контрагент яндекс
+    ms_wb_contragent - метадата данные контрагент wb
+    '''
+    seller = models.ForeignKey(Seller, on_delete=models.CASCADE, verbose_name='Связанный парсер')
+    name = models.CharField(max_length=50, null=False)
+    metadata_dict = models.JSONField(null=True, blank=True)
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(fields=['seller', 'name'], name='unique_metadata')
+        ]
 

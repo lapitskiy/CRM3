@@ -8,7 +8,7 @@ os.environ['DJANGO_SETTINGS_MODULE'] = 'crm3.settings'
 os.environ["DJANGO_ALLOW_ASYNC_UNSAFE"] = "true"
 django.setup()
 
-from owm.models import Parser
+from owm.models import Seller
 
 def update_all_stock(headers, stock_tuple, last_tuple):
     positions = []
@@ -67,7 +67,7 @@ def get_all_stock(headers):
 
 def run():
     while True:
-        for user in Parser.objects.all():
+        for user in Seller.objects.all():
             if not user.replenishment:
                 a = False
                 if user.moysklad_api:
