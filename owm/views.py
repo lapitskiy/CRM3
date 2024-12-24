@@ -2,10 +2,10 @@ import datetime
 
 import requests
 from django.http import HttpResponseRedirect
-from django.shortcuts import render
+from django.shortcuts import render, redirect
 from django.views import View
 from .models import Seller, Crontab
-from owm.utils.base_utils import get_headers, base_get_contragent
+from owm.utils.base_utils import get_headers, base_get_metadata
 from django.core.exceptions import ObjectDoesNotExist
 
 from django.http import HttpResponse
@@ -204,6 +204,8 @@ def price_POST_to_offer_dict(post):
 # оприходование
 class Enter(View):
     async def get(self, request, *args, **kwargs):
+        if not request.user.is_authenticated:
+            return redirect('login')  # или другая страница
         context = {}
         try:
             parser = Seller.objects.get(user=request.user)
@@ -233,6 +235,8 @@ class Enter(View):
 # инвентаризация c автоматическим оприходованием и списанием
 class Inventory(View):
     def get(self, request, *args, **kwargs):
+        if not request.user.is_authenticated:
+            return redirect('login')  # или другая страница
         context = {}
         parser = Seller.objects.get(user=request.user)
         headers = get_headers(parser)
@@ -252,6 +256,8 @@ class Inventory(View):
 
 class Autoupdate(View):
     def get(self, request, *args, **kwargs):
+        if not request.user.is_authenticated:
+            return redirect('login')  # или другая страница
         context = {}
         parser = Seller.objects.get(user=request.user)
         headers = get_headers(parser)
@@ -272,16 +278,17 @@ class Autoupdate(View):
 
 class AutoupdateSettings(View):
     def get(self, request, *args, **kwargs):
+        if not request.user.is_authenticated:
+            return redirect('login')  # или другая страница
         context = {}
         try:
-            obj = Crontab.objects.get(parser__user=request.user, name='autoupdate')
-
+            obj = Crontab.objects.get(seller__user=request.user, name='autoupdate')
             context['active'] = obj.active
             context['active_yandex'] = obj.yandex
             context['active_ozon'] = obj.ozon
             context['active_wb'] = obj.wb
 
-            parser = obj.parser
+            parser = obj.seller
 
             parser_data = {
                 'moysklad_api': parser.moysklad_api,
@@ -305,16 +312,16 @@ class AutoupdateSettings(View):
 
         except Crontab.DoesNotExist:
             user = Seller.objects.get(user=request.user)
-            Crontab.objects.create(parser=user, name='autoupdate', active=False)
+            Crontab.objects.create(seller=user, name='autoupdate', active=False)
 
             print(f"Created new Crontab")
-        return render(request, 'owm/autoupdate_settings.html', context)
+        return render(request, 'owm/autoupdate/autoupdate_settings.html', context)
 
     def post(self, request):
         context = {}
 
         form_type = request.POST.get("form_type")
-        crontab = Crontab.objects.get(parser__user=request.user, name='autoupdate')
+        crontab = Crontab.objects.get(seller__user=request.user, name='autoupdate')
 
         if form_type == "save_settings":
             sync_checkbox = request.POST.get('sync_checkbox', False)
@@ -357,7 +364,7 @@ class AutoupdateSettings(View):
             crontab.save()
 
         elif form_type == "sync_start":
-            parser = crontab.parser  # Асинхронный доступ к связанному объекту
+            parser = crontab.seller  # Асинхронный доступ к связанному объекту
             parser_data = {
                 'moysklad_api': parser.moysklad_api,
                 'yandex_api': parser.yandex_api,
@@ -382,6 +389,8 @@ class AutoupdateSettings(View):
 
 class SettingsApi(View):
     def get(self, request, *args, **kwargs):
+        if not request.user.is_authenticated:
+            return redirect('login')  # или другая страница
         api_list_current_user = Seller.objects.filter(user=request.user).first()
         return render(request, 'owm/settings/settings_api.html', {'api_list_current_user': api_list_current_user})
 
@@ -420,10 +429,24 @@ class SettingsApi(View):
 
 class SettingsContragent(View):
     def get(self, request, *args, **kwargs):
+        if not request.user.is_authenticated:
+            return redirect('login')  # или другая страница
         context = {}
+
         seller = Seller.objects.get(user=request.user)
-        headers = get_headers(seller)
-        context['contragent'] = base_get_contragent(headers=headers, seller=seller.id)
+
+        parser_data = {
+            'moysklad_api': seller.moysklad_api,
+            'yandex_api': seller.yandex_api,
+            'wildberries_api': seller.wildberries_api,
+            'ozon_api': seller.ozon_api,
+            'ozon_id': seller.client_id,
+        }
+
+        headers = get_headers(parser_data)
+
+        context['contragent'] = base_get_metadata(headers=headers, seller=seller.id)
+        print(f"context {context['contragent']}")
         return render(request, 'owm/settings/settings_contragent.html', context)
 
     def post(self, request, *args, **kwargs):
@@ -565,7 +588,7 @@ class OtpravlenieOzon(View):
         context = {}
 
         form_type = request.POST.get("form_type")
-        crontab = await sync_to_async(Crontab.objects.get)(parser__user=request.user, name='autoupdate')
+        crontab = await sync_to_async(Crontab.objects.get)(seller__user=request.user, name='autoupdate')
 
         if form_type == "save_settings":
             sync_checkbox = request.POST.get('sync_checkbox', False)
@@ -614,7 +637,7 @@ class OtpravlenieOzon(View):
             else:
                 #print('tyt')
                 #parser = Parser.objects.get(user=request.user)
-                parser = await sync_to_async(lambda: crontab.parser)()  # Асинхронный доступ к связанному объекту
+                parser = await sync_to_async(lambda: crontab.seller)()  # Асинхронный доступ к связанному объекту
 
                 parser_data = {
                     'moysklad_api': parser.moysklad_api,

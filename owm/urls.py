@@ -1,6 +1,7 @@
 from django.urls import path
 
-from .views import Create, Enter, Inventory, PriceOzon, PriceWb, PriceYandex, FinanceOzon, PostavkaOzon, FinanceWb, Autoupdate, AutoupdateSettings, OtpravlenieOzon
+from .views import Enter, Inventory, PriceOzon, PriceWb, PriceYandex, FinanceOzon, PostavkaOzon, FinanceWb, Autoupdate, AutoupdateSettings, OtpravlenieOzon, SettingsApi, \
+    SettingsContragent
 
 urlpatterns = [
     path('settings_api/', SettingsApi.as_view(), name='settings_api'),

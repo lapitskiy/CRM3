@@ -10,9 +10,8 @@ from django.conf import settings
 
 import pandas as pd
 
-from owm.utils.db_utils import db_check_awaiting_postingnumber, db_get_contragent
-
-from owm.utils.ms_utils import ms_create_customerorder
+from owm.utils.db_utils import db_get_metadata
+from owm.utils.ms_utils import ms_create_customerorder, ms_get_organization_meta, ms_get_agent_meta
 from owm.models import Crontab
 from owm.utils.oz_utils import ozon_get_awaiting_fbs
 
@@ -90,37 +89,34 @@ def get_store_meta(headers):
     response = requests.get(url, headers=headers).json()
     return response['rows'][0]['meta']
 
-def base_get_contragent(headers, seller):
+def base_get_metadata(headers, seller):
+    '''
+    получаем из базы контагентов, если их нет, получаем дланные с МС
+    '''
     result = {}
-    contragents = db_get_contragent(seller=seller)
+    meta_dict = db_get_metadata(seller=seller)
 
+    required_keys = {'ozon', 'wb', 'yandex', 'organization'}
+    # Если отсутствует хотя бы один из ключей, получаем метаданные
+    if not meta_dict or not required_keys.issubset(meta_dict):
+        organization_meta_list = ms_get_organization_meta(headers)
+        agent_meta_list = ms_get_agent_meta(headers)
     '''
     OZON
     '''
-    if 'ozon' in contragents:
-        result['ms_ozon_contragent'] = contragents['ozon']
-    else:
-        organization_meta = ms_get_organization_meta(headers['ozon_headers'])
-        agent_meta = ms_get_agent_meta(headers['ozon_headers'])
-        print(f'organization_meta {organization_meta}')
-        print(f'agent_meta {agent_meta}')
+    if meta_dict:
+        agent = {}
+        for key in required_keys:
+            if key in contragents:
+                agent[f'db'] = contragents[key]
+            else:
+                if key == 'organization':
+                    agent[f'not_db'] = organization_meta_list
+                else:
+                    agent[f'not_db'] = agent_meta_list
+            result[key] = agent
+    return result
 
-
-    '''
-    WB
-    '''
-    if 'wb' in contragents:
-        result['ms_wb_contragent'] = contragents['wb']
-    else:
-        pass
-
-    '''
-    YANDEX
-    '''
-    if 'yandex' in contragents:
-        result['ms_yandex_contragent'] = contragents['yandex']
-    else:
-        pass
 
 
 

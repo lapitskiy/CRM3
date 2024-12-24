@@ -45,6 +45,7 @@ class Awaiting_product(models.Model):
 class Metadata(models.Model):
     '''
     name:
+    ms_organization - юр.лицо или название компании
     ms_ozon_contragent - метадата данные контрагент озон
     ms_yandex_contragent - метадата данные контрагент яндекс
     ms_wb_contragent - метадата данные контрагент wb

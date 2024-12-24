@@ -1,5 +1,5 @@
 import contextlib
-from owm.models import Awaiting, Awaiting_product
+from owm.models import Awaiting, Awaiting_product, Metadata
 
 DATABASE_URL = "postgresql+asyncpg://crm3:Billkill13@postgres:5432/postgres"
 
@@ -38,20 +38,24 @@ async def get_http_session():
 '''
 
 
-def db_get_contragent(seller):
+def db_get_metadata(seller):
     result = {}
-    contragent_name = {
+    meta = {
+        'organization': 'ms_organization',
         'ozon': 'ms_ozon_contragent',
         'yandex': 'ms_yandex_contragent',
         'wb': 'ms_wb_contragent',
     }
-    ozon_contragent = Metadata.objects.filter(seller=seller, name=contragent_name['ozon'])
+    organization = Metadata.objects.filter(seller=seller, name=meta['organization'])
     if ozon_contragent:
         result['ozon'] = ozon_contragent.metadata_dict
-    yandex_contragent = Metadata.objects.filter(seller=seller, name=contragent_name['yandex'])
+    ozon_contragent = Metadata.objects.filter(seller=seller, name=meta['ozon'])
+    if ozon_contragent:
+        result['ozon'] = ozon_contragent.metadata_dict
+    yandex_contragent = Metadata.objects.filter(seller=seller, name=meta['yandex'])
     if yandex_contragent:
         result['yandex'] = yandex_contragent.metadata_dict
-    wb_contragent = Metadata.objects.filter(seller=seller, name=contragent_name[wb])
+    wb_contragent = Metadata.objects.filter(seller=seller, name=meta['wb'])
     if wb_contragent:
         result['wb'] = wb_contragent.metadata_dict
     return result
