@@ -101,20 +101,18 @@ def base_get_metadata(headers, seller):
     if not meta_dict or not required_keys.issubset(meta_dict):
         organization_meta_list = ms_get_organization_meta(headers)
         agent_meta_list = ms_get_agent_meta(headers)
-    '''
-    OZON
-    '''
-    if meta_dict:
-        agent = {}
-        for key in required_keys:
-            if key in contragents:
-                agent[f'db'] = contragents[key]
-            else:
-                if key == 'organization':
-                    agent[f'not_db'] = organization_meta_list
-                else:
-                    agent[f'not_db'] = agent_meta_list
-            result[key] = agent
+        print(f'organization_meta_list {organization_meta_list}')
+        print(f'agent_meta_list {agent_meta_list}')
+
+    for key in required_keys:
+        if key in meta_dict:
+            result[key] = {'db': meta_dict[key]}
+    result['agentlist'] = agent_meta_list
+    result['orglist'] = organization_meta_list
+
+    #else:
+        #result['organization']['not_db'] =
+    print(f'result {result}')
     return result
 
 

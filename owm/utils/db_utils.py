@@ -1,5 +1,6 @@
 import contextlib
 from owm.models import Awaiting, Awaiting_product, Metadata
+from typing import Any, Dict
 
 DATABASE_URL = "postgresql+asyncpg://crm3:Billkill13@postgres:5432/postgres"
 
@@ -38,26 +39,57 @@ async def get_http_session():
 '''
 
 
-def db_get_metadata(seller):
-    result = {}
-    meta = {
+def db_get_metadata(seller) -> Dict[str, Any]:
+    """
+    Извлекает метаданные для указанного продавца (seller) из модели Metadata.
+
+    Для каждой ключевой сущности (organization, ozon, yandex, wb) в meta_mapping
+    выполняется запрос Metadata.objects.filter(seller=seller, name=<значение>).
+    Если хотя бы одна запись найдена, берётся первый элемент, и его metadata_dict
+    сохраняется в результирующем словаре result по соответствующему ключу.
+
+    :param seller: Объект продавца (или идентификатор продавца),
+                   для которого необходимо получить метаданные.
+    :return: Словарь, где ключи — это названия сущностей
+             ('organization', 'ozon', 'yandex', 'wb'), а значения —
+             соответствующие метаданные (metadata_dict),
+             если запись в БД найдена.
+    """
+
+    meta_mapping = {
         'organization': 'ms_organization',
         'ozon': 'ms_ozon_contragent',
         'yandex': 'ms_yandex_contragent',
         'wb': 'ms_wb_contragent',
     }
-    organization = Metadata.objects.filter(seller=seller, name=meta['organization'])
-    if ozon_contragent:
-        result['ozon'] = ozon_contragent.metadata_dict
-    ozon_contragent = Metadata.objects.filter(seller=seller, name=meta['ozon'])
-    if ozon_contragent:
-        result['ozon'] = ozon_contragent.metadata_dict
-    yandex_contragent = Metadata.objects.filter(seller=seller, name=meta['yandex'])
-    if yandex_contragent:
-        result['yandex'] = yandex_contragent.metadata_dict
-    wb_contragent = Metadata.objects.filter(seller=seller, name=meta['wb'])
-    if wb_contragent:
-        result['wb'] = wb_contragent.metadata_dict
+
+    result = {}
+    for key, meta_name in meta_mapping.items():
+        metadata_record = Metadata.objects.filter(seller=seller, name=meta_name).first()
+        if metadata_record is not None:
+            result[key] = metadata_record.metadata_dict
+
+    return result
+
+def db_update_metadata(seller, metadata) -> Dict[str, Any]:
+    """
+    обновляем метаданные для указанного продавца (seller)
+    """
+
+    meta_mapping = {
+        'organization': 'ms_organization',
+        'ozon': 'ms_ozon_contragent',
+        'yandex': 'ms_yandex_contragent',
+        'wb': 'ms_wb_contragent',
+    }
+
+    result = {}
+    for key, meta_name in meta_mapping.items():
+        metadata_record = Metadata.objects.filter(seller=seller, name=meta_name).first()
+
+        if metadata_record is not None:
+            result[key] = metadata_record.metadata_dict
+
     return result
 
 def db_check_awaiting_postingnumber(posting_numbers: list):

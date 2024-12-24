@@ -12,6 +12,7 @@ from django.http import HttpResponse
 
 from datetime import datetime
 
+from .utils.db_utils import db_update_metadata
 from .utils.ms_utils import ms_update_allstock_to_mp, ms_get_last_enterloss
 from .utils.oz_utils import ozon_get_finance
 
@@ -445,13 +446,33 @@ class SettingsContragent(View):
 
         headers = get_headers(parser_data)
 
-        context['contragent'] = base_get_metadata(headers=headers, seller=seller.id)
-        print(f"context {context['contragent']}")
+        metadata = base_get_metadata(headers=headers, seller=seller.id)
+
+        for key in metadata.items():
+            print(f"key {key}")
+            if 'db' in key:
+                context[key] = metadata[key]['db']
+        context['agentlist'] = metadata['agentlist']
+        context['orglist'] = metadata['orglist']
+        #print(f"context {context['contragent']}")
         return render(request, 'owm/settings/settings_contragent.html', context)
 
     def post(self, request, *args, **kwargs):
+        if not request.user.is_authenticated:
+            return redirect('login')  # или другая страница
         context = {}
-        return render(request, 'owm/settings/settings_contragent.html', context)
+        metadata={}
+        metadata['organization'] = request.POST.get('organization_select')
+        metadata['wb'] = request.POST.get('wb_select')
+        metadata['ozon'] = request.POST.get('ozon_select')
+        metadata['yandex'] = request.POST.get('yandex_select')
+
+        seller = Seller.objects.get(user=request.user)
+
+        db_update_metadata(seller=seller, metadata=metadata)
+
+        return redirect('settings_contragent')  # или другая страница
+
 
 
 class PriceOzon(View):

@@ -1,6 +1,8 @@
 
 import requests
 
+from typing import Any, Dict, List
+
 from collections import OrderedDict
 
 # бывший get_moysklad_opt_price
@@ -22,11 +24,8 @@ def ms_get_organization_meta(headers) -> list:
         response = requests.get(url, headers=moysklad_headers)
         if response.status_code == 200:
             response_json = response.json()
-            for organization in response_json:
-                result.append({
-                    'id': organization['id'],
-                    'name': organization['name']
-                    })
+            result = [{'id': organization['id'], 'name': organization['name']} for organization in response_json['rows']]
+
                 #"href": "https://api.moysklad.ru/api/remap/1.2/entity/group/081922b2-d269-11e4-90a2-8ecb0004410f",
                 #"metadataHref": "https://api.moysklad.ru/api/remap/1.2/entity/group/metadata",
         else:
@@ -36,21 +35,35 @@ def ms_get_organization_meta(headers) -> list:
     return result
 
 
-def ms_get_agent_meta(headers):
-    result = {}
+def ms_get_agent_meta(headers: Dict[str, Any]) -> List[Dict[str, str]]:
+    """
+    Получает список контрагентов из МойСклад по API.
+
+    :param headers: Словарь с заголовками, включая ключ moysklad_headers.
+    :return: Список словарей с полями id и name для каждого контрагента.
+    """
+    result = []
     moysklad_headers = headers.get('moysklad_headers')
+
+    if not moysklad_headers:
+        print("ms_get_agent_meta: moysklad_headers не передан")
+        return result
+
     url = 'https://api.moysklad.ru/api/remap/1.2/entity/counterparty/'
     try:
         response = requests.get(url, headers=moysklad_headers)
         if response.status_code == 200:
             response_json = response.json()
-            print(f"ms_get_organization_meta (packag): {response_json}")
-            exit()
+            result = [
+                {'id': agent['id'], 'name': agent['name']}
+                for agent in response_json['rows']
+            ]
+            print(f"ms_get_agent_meta (packag): {response_json}")
         else:
-            result['error'] = response.text
+            print(f"error ms_get_agent_meta response.text: {response.text}")
     except Exception as e:
-        result['error'] = f"Error in packag request: {e}"
-    return response_json['rows'][0]['meta']
+        print(f"error ms_get_agent_meta: {e}")
+    return result
 
 async def ms_check_customerorder(headers: dict):
     result = {}
