@@ -448,12 +448,17 @@ class SettingsContragent(View):
 
         metadata = base_get_metadata(headers=headers, seller=seller.id)
 
-        for key in metadata.items():
-            print(f"key {key}")
-            if 'db' in key:
+        for key, value in metadata.items():
+            if 'db' in value:
                 context[key] = metadata[key]['db']
         context['agentlist'] = metadata['agentlist']
         context['orglist'] = metadata['orglist']
+        context['def_organization'] = metadata['organization']['db']
+        context['def_ozon'] = metadata['ozon']['db']
+        context['def_wb'] = metadata['wb']['db']
+        context['def_yandex'] = metadata['yandex']['db']
+        print(f"contextTYT {context}")
+        #print (f"contextTYT {context}")
         #print(f"context {context['contragent']}")
         return render(request, 'owm/settings/settings_contragent.html', context)
 
@@ -462,10 +467,10 @@ class SettingsContragent(View):
             return redirect('login')  # или другая страница
         context = {}
         metadata={}
-        metadata['organization'] = request.POST.get('organization_select')
-        metadata['wb'] = request.POST.get('wb_select')
-        metadata['ozon'] = request.POST.get('ozon_select')
-        metadata['yandex'] = request.POST.get('yandex_select')
+        metadata['organization'] = {'id': request.POST.get('organization_select'), 'name': request.POST.get('hidden-organization')}
+        metadata['wb'] = {'id': request.POST.get('wb_select'), 'name': request.POST.get('hidden-wb')}
+        metadata['ozon'] = {'id': request.POST.get('ozon_select'), 'name': request.POST.get('hidden-ozon')}
+        metadata['yandex'] = {'id': request.POST.get('yandex_select'), 'name': request.POST.get('hidden-yandex')}
 
         seller = Seller.objects.get(user=request.user)
 

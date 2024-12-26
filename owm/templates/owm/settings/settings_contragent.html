@@ -5,13 +5,12 @@
 {% endblock %}
 {% block content %}
 
-    {{ metadata }}
     <h1>Текущие данные</h1>
-    Организация: {{ meta.organization }}<br>
-    Ozon: {{ meta.ozon }}<br>
-    Wb: {{ meta.wb }}<br>
-    Yandex: {{ meta.yandex }}<br>
-
+    Организация: {{ organization.name }}<br>
+    Контрагент Ozon: {{ ozon.name }}<br>
+    Контрагент Wb: {{ wb.name }}<br>
+    Контрагент Yandex: {{ yandex.name }}<br>
+<br>
     <h1>Указать данные</h1>
     <form action="#" method="POST">
     {% csrf_token %}
@@ -27,7 +26,7 @@
                         <select id="organization-select" name="organization_select" class="form-select" data-placeholder="Организация" style="width: 100% !important;">
                             <option></option>
                             {% for item in orglist %}
-                                <option value="{{ item.id }}">{{ item.name }}</option>
+                                <option value="{{ item.id }}" data-name="{{ item.name }}" {% if item.id == def_organization.id %}selected{% endif %}>{{ item.name }}</option>
                             {% endfor %}
                         </select>
                     </div>
@@ -40,7 +39,7 @@
                         <select id="ozon-select" class="form-select" name="ozon_select" data-placeholder="Ozon" style="width: 100% !important;">
                             <option></option>
                             {% for item in agentlist %}
-                                <option value="{{ item.id }}">{{ item.name }}</option>
+                                <option value="{{ item.id }}" data-name="{{ item.name }}" {% if item.id == def_ozon.id %}selected{% endif %}>{{ item.name }}</option>
                             {% endfor %}
                         </select>
                     </div>
@@ -53,7 +52,7 @@
                         <select id="wb-select" class="form-select" name="wb_select" data-placeholder="WB" style="width: 100% !important;">
                             <option></option>
                             {% for item in agentlist %}
-                                <option value="{{ item.id }}">{{ item.name }}</option>
+                                <option value="{{ item.id }}" data-name="{{ item.name }}" {% if item.id == def_wb.id %}selected{% endif %}>{{ item.name }}</option>
                             {% endfor %}
                         </select>
                     </div>
@@ -63,10 +62,10 @@
                         <label for="yandex-select" class="form-label">Яндекс:</label>
                     </div>
                     <div class="col-6">
-                        <select id="yandex-select" class="form-select" data-placeholder="Yandex" style="width: 100% !important;">
+                        <select id="yandex-select" class="form-select" name="yandex_select" data-placeholder="Yandex" style="width: 100% !important;">
                             <option></option>
                             {% for item in agentlist %}
-                                <option value="{{ item.id }}">{{ item.name }}</option>
+                                <option value="{{ item.id }}" data-name="{{ item.name }}" {% if item.id == def_yandex.id %}selected{% endif %}>{{ item.name }}</option>
                             {% endfor %}
                         </select>
                     </div>
@@ -75,7 +74,39 @@
         </div>
     </div>
 </div>
+    <input type="hidden" id="hidden-ozon" name="hidden-ozon" value="">
+    <input type="hidden" id="hidden-wb" name="hidden-wb" value="">
+    <input type="hidden" id="hidden-yandex" name="hidden-yandex" value="">
+    <input type="hidden" id="hidden-organization" name="hidden-organization" value="">
 
     <button type="submit" class="btn btn-primary btn-block">Сохранить</button>
     </form>
+
+
+<script>
+    const mappings = {
+            'organization-select': 'hidden-organization',
+            'ozon-select': 'hidden-ozon',
+            'wb-select': 'hidden-wb',
+            'yandex-select': 'hidden-yandex'
+        };
+
+    // Перебираем каждый select и добавляем обработчик события change
+    Object.keys(mappings).forEach(selectId => {
+        let selectElement = document.getElementById(selectId);
+        if (selectElement) {
+            selectElement.addEventListener('change', function() {
+                // Получаем выбранную опцию
+                let selectedOption = this.options[this.selectedIndex];
+
+                // Берем значение data-name из выбранного option
+                let selectedName = selectedOption.getAttribute('data-name') || '';
+
+                // Заполняем соответствующее hidden поле
+                document.getElementById(mappings[selectId]).value = selectedName;
+            });
+        }
+    });
+</script>
+
 {% endblock %}

@@ -5,7 +5,12 @@ from typing import Any, Dict, List
 
 from collections import OrderedDict
 
+from django.db import models
+
 # бывший get_moysklad_opt_price
+from owm.utils.db_utils import db_get_metadata
+
+
 def ms_get_product(headers):
     stock_tuple = {}
     url = "https://api.moysklad.ru/api/remap/1.2/entity/product"
@@ -86,26 +91,45 @@ async def ms_check_customerorder(headers: dict):
                 result['response'] = error_message
     return result
 
-def ms_create_customerorder(headers: dict, not_found_product: dict):
+def ms_create_customerorder(headers: dict, not_found_product: dict, seller: models.Model, market: str):
     result = {}
-    organization_meta = ms_get_organization_meta(headers)
-    agent_meta = ms_get_agent_meta(headers)
     moysklad_headers = headers.get('moysklad_headers')
-    # оприходование
-    url = 'https://api.moysklad.ru/api/remap/1.2/entity/customerorder'
-    params = {
-         "organization": {'meta': organization_meta},
-         "agent": {'meta': agent_meta},
-        }
-    response = requests.get(url, headers=moysklad_headers, params=params)
-    if response.status_code == 200:
-        response_json = response.json()
-        print(f"response_json META AGENT: {response_json}")
-        exit()
-    else:
-        error_message = response.text
-        raise Exception(f"Error {response.status_code}: {error_message}")
+    metadata = db_get_metadata(seller)
+    if metadata:
+        #organization_meta = ms_get_organization_meta(headers)
+        #agent_meta = ms_get_agent_meta(headers)
+        print(f'metadata {metadata}')
 
+        url = 'https://api.moysklad.ru/api/remap/1.2/entity/customerorder'
+
+        organization_meta = {
+            "href": f"https://api.moysklad.ru/api/remap/1.2/entity/organization/{metadata['organization']['id']}",
+            "type": "organization",
+            "mediaType": "application/json"
+        }
+
+        agent_meta = {
+            "href": f"https://api.moysklad.ru/api/remap/1.2/entity/counterparty/{metadata[market]['id']}",
+            "type": "counterparty",
+            "mediaType": "application/json"
+        }
+
+        params = {
+            "organization": {'meta': organization_meta},
+            "agent": {'meta': agent_meta},
+            "vatEnabled": False,
+            }
+
+        response = requests.get(url, headers=moysklad_headers, params=params)
+        if response.status_code == 200:
+            response_json = response.json()
+            print(f"response_json META AGENT: {response_json}")
+            exit()
+        else:
+            error_message = response.text
+            raise Exception(f"Error {response.status_code}: {error_message}")
+    else:
+        raise Exception(f"Error: обновите метадату в настройках Контрагенты")
     return result
 
 # получаем последние название оприходвание и списания и пишем в базу

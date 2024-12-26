@@ -91,28 +91,27 @@ def get_store_meta(headers):
 
 def base_get_metadata(headers, seller):
     '''
-    получаем из базы контагентов, если их нет, получаем дланные с МС
+    получаем из базы контагентов, получаем дланные с МС
     '''
     result = {}
     meta_dict = db_get_metadata(seller=seller)
-
+    organization_meta_list = ms_get_organization_meta(headers)
+    agent_meta_list = ms_get_agent_meta(headers)
     required_keys = {'ozon', 'wb', 'yandex', 'organization'}
     # Если отсутствует хотя бы один из ключей, получаем метаданные
-    if not meta_dict or not required_keys.issubset(meta_dict):
-        organization_meta_list = ms_get_organization_meta(headers)
-        agent_meta_list = ms_get_agent_meta(headers)
-        print(f'organization_meta_list {organization_meta_list}')
-        print(f'agent_meta_list {agent_meta_list}')
+
+    #if not meta_dict or not required_keys.issubset(meta_dict):
+    #    organization_meta_list = ms_get_organization_meta(headers)
+    #    agent_meta_list = ms_get_agent_meta(headers)
+
+    #    print(f'organization_meta_list {organization_meta_list}')
+    #    print(f'agent_meta_list {agent_meta_list}')
 
     for key in required_keys:
         if key in meta_dict:
             result[key] = {'db': meta_dict[key]}
     result['agentlist'] = agent_meta_list
     result['orglist'] = organization_meta_list
-
-    #else:
-        #result['organization']['not_db'] =
-    print(f'result {result}')
     return result
 
 
@@ -823,7 +822,7 @@ def delete_files_with_prefix(directory_path, prefix):
 
 
 
-def update_awaiting_deliver_from_owm(headers: dict):
+def update_awaiting_deliver_from_owm(headers, seller):
     """
     получаем данные о неотгруженных заказах с МП и добавляем их в заказы МС в резерв
     """
@@ -836,9 +835,8 @@ def update_awaiting_deliver_from_owm(headers: dict):
        not_found_product = {key: product for key in ozon_awaiting_fbs_dict['not_found'] for product in ozon_current_product if key in product.get('posting_number', '')}
        print(f'not_found_product {not_found_product}')
        print(f'*' * 40)
-       #print(f'*' * 40)
-       #db_create_customerorder(not_found_product)
-       ms_create_customerorder(headers=headers, not_found_product=not_found_product)
+       ms_create_customerorder(headers=headers, not_found_product=not_found_product, seller=seller, market='ozon')
+       db_create_customerorder(not_found_product)
        #ms_update_allstock_to_mp(headers=headers)
     if ozon_awaiting_fbs_dict['found']:
        found_product = {key: ozon_current_product[key] for key in ozon_awaiting_fbs_dict['found'] if key in ozon_current_product}
@@ -869,27 +867,27 @@ Auto Update function
 
 def autoupdate_sync_inventory(cron_id):
     try:
-        row = Crontab.objects.select_related('parser').get(id=cron_id)
+        cron = Crontab.objects.select_related('seller').get(id=cron_id)
     except Crontab.DoesNotExist:
         print(f"Crontab с id {cron_id} не найден.")
 
     row_list = []
-    if row:
+    if cron:
         cron_active_mp = {
-            'yandex': row.yandex,
-            'ozon': row.ozon,
-            'wb': row.wb,
+            'yandex': cron.yandex,
+            'ozon': cron.ozon,
+            'wb': cron.wb,
         }
 
-        parser_data = {
-            'moysklad_api': row.parser.moysklad_api,
-            'yandex_api': row.parser.yandex_api,
-            'wildberries_api': row.parser.wildberries_api,
-            'ozon_api': row.parser.ozon_api,
-            'ozon_id': row.parser.client_id,
+        seller_data = {
+            'moysklad_api': cron.seller.moysklad_api,
+            'yandex_api': cron.seller.yandex_api,
+            'wildberries_api': cron.seller.wildberries_api,
+            'ozon_api': cron.seller.ozon_api,
+            'ozon_id': cron.seller.client_id,
         }
-        headers = get_headers(parser_data)
-        result_update_awaiting = update_awaiting_deliver_from_owm(headers=headers)
+        headers = get_headers(seller_data)
+        result_update_awaiting = update_awaiting_deliver_from_owm(headers=headers, seller=cron.seller)
     return result_update_awaiting
 
 '''
