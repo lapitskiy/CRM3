@@ -1,6 +1,8 @@
 
 import requests
 
+import copy
+
 from typing import Any, Dict, List
 
 from collections import OrderedDict
@@ -12,12 +14,12 @@ from owm.utils.db_utils import db_get_metadata
 
 
 def ms_get_product(headers):
-    stock_tuple = {}
+    moysklad_headers = headers.get('moysklad_headers')
     url = "https://api.moysklad.ru/api/remap/1.2/entity/product"
     params = [
         ("limit", 1000)
     ]
-    response = requests.get(url, headers=headers, params=params).json()
+    response = requests.get(url, headers=moysklad_headers, params=params).json()
     return response
 
 def ms_get_organization_meta(headers) -> list:
@@ -96,6 +98,28 @@ def ms_create_customerorder(headers: dict, not_found_product: dict, seller: mode
     moysklad_headers = headers.get('moysklad_headers')
     metadata = db_get_metadata(seller)
     if metadata:
+
+        products = ms_get_product(headers)
+
+        article_to_id = {}
+        for item in products['rows']:
+            article = item.get('article')
+            if article:
+                article_to_id[article] = item['id']
+
+        orders = copy.deepcopy(not_found_product)  # чтобы избежать изменения исходного
+
+        for key, value in orders.items():
+            product_list = value.get('product_list', [])
+            for product in product_list:
+                offer_id = product.get('offer_id')
+                if offer_id in article_to_id:
+                    # Добавим поле "id" в словарь конкретного товара
+                    product['id'] = article_to_id[offer_id]
+
+        print(f"result_dict {orders}")
+
+
         #organization_meta = ms_get_organization_meta(headers)
         #agent_meta = ms_get_agent_meta(headers)
         print(f'metadata {metadata}')
@@ -104,30 +128,78 @@ def ms_create_customerorder(headers: dict, not_found_product: dict, seller: mode
 
         organization_meta = {
             "href": f"https://api.moysklad.ru/api/remap/1.2/entity/organization/{metadata['organization']['id']}",
+            "metadataHref": "https://api.moysklad.ru/api/remap/1.2/entity/organization/metadata",
             "type": "organization",
             "mediaType": "application/json"
         }
 
         agent_meta = {
             "href": f"https://api.moysklad.ru/api/remap/1.2/entity/counterparty/{metadata[market]['id']}",
+            "metadataHref": "https://api.moysklad.ru/api/remap/1.2/entity/counterparty/metadata",
             "type": "counterparty",
             "mediaType": "application/json"
         }
 
-        params = {
-            "organization": {'meta': organization_meta},
-            "agent": {'meta': agent_meta},
-            "vatEnabled": False,
+        data = []
+        # Формирование списка заказов
+        for key, order in orders.items():
+            order_data = {
+                "name": order['posting_number'],
+                "vatEnabled": False,
+                "applicable": False,
+                "organization": {
+                    "meta": organization_meta
+                },
+                "agent": {
+                    "meta": agent_meta
+                },
+                "positions": []
             }
 
-        response = requests.get(url, headers=moysklad_headers, params=params)
-        if response.status_code == 200:
+            # Добавляем позиции для каждого продукта в заказе
+            for product in order['product_list']:
+                position = {
+                    "quantity": product['quantity'],
+                    "price": float(product['price']) * 100,  # переводим цену в копейки
+                    "discount": 0,
+                    "vat": 0,
+                    "assortment": {
+                        "meta": {
+                            "href": f"https://api.moysklad.ru/api/remap/1.2/entity/product/{product['id']}",
+                            "type": "product",
+                            "mediaType": "application/json"
+                        }
+                    },
+                    "reserve": product['quantity']
+                }
+                order_data["positions"].append(position)
+
+            # Добавляем сформированный заказ в общий список
+            data.append(order_data)
+
+        response = requests.post(url, headers=moysklad_headers, json=data)
+        print(f"response: {response}")
+        print(f"*" * 40)
+        print(f"*" * 40)
+        print(f"response TEXT: {response.text}")
+        print(f"*" * 40)
+        print(f"*" * 40)
+        print(f"response JSON: {response.json()}")
+        print(f"*" * 40)
+        print(f"*" * 40)
+        try:
             response_json = response.json()
             print(f"response_json META AGENT: {response_json}")
-            exit()
+        except requests.exceptions.JSONDecodeError:
+            print("Ошибка декодирования JSON: ответ от сервера не является корректным JSON.")
+            print(f"Raw response text: {response.text}")
+
+        # Дополнительные шаги для обработки результата
+        if response.status_code != 200:
+            print(f"Ошибка: сервер вернул код состояния {response.status_code}")
         else:
-            error_message = response.text
-            raise Exception(f"Error {response.status_code}: {error_message}")
+            # Продолжайте обработку response_json здесь
+            pass
     else:
         raise Exception(f"Error: обновите метадату в настройках Контрагенты")
     return result

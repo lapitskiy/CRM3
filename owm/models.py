@@ -59,3 +59,4 @@ class Metadata(models.Model):
             models.UniqueConstraint(fields=['seller', 'name'], name='unique_metadata')
         ]
 
+

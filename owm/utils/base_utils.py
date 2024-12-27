@@ -829,6 +829,8 @@ def update_awaiting_deliver_from_owm(headers, seller):
     ozon_awaiting_fbs_dict = ozon_get_awaiting_fbs(headers)
     ozon_current_product = ozon_awaiting_fbs_dict['current_product']
 
+    wb_awaiting_fbs_dict = wb_get_awaiting_fbs(headers)
+
     # OZON
     if ozon_awaiting_fbs_dict['not_found']:
        print(f'*' * 40)
@@ -836,7 +838,7 @@ def update_awaiting_deliver_from_owm(headers, seller):
        print(f'not_found_product {not_found_product}')
        print(f'*' * 40)
        ms_create_customerorder(headers=headers, not_found_product=not_found_product, seller=seller, market='ozon')
-       db_create_customerorder(not_found_product)
+       #db_create_customerorder(not_found_product)
        #ms_update_allstock_to_mp(headers=headers)
     if ozon_awaiting_fbs_dict['found']:
        found_product = {key: ozon_current_product[key] for key in ozon_awaiting_fbs_dict['found'] if key in ozon_current_product}
