@@ -14,6 +14,7 @@ from owm.utils.db_utils import db_get_metadata
 from owm.utils.ms_utils import ms_create_customerorder, ms_get_organization_meta, ms_get_agent_meta
 from owm.models import Crontab
 from owm.utils.oz_utils import ozon_get_awaiting_fbs
+from owm.utils.wb_utils import wb_get_awaiting_fbs
 
 
 def get_headers(parser_data):
@@ -76,7 +77,7 @@ def get_headers(parser_data):
 
     # Wildberries API
     if wildberries_api:
-        headers['wildberries_headers'] = {
+        headers['wb_headers'] = {
             'Authorization': wildberries_api
         }
     time.sleep(1)
@@ -88,34 +89,6 @@ def get_store_meta(headers):
     url = 'https://api.moysklad.ru/api/remap/1.2/entity/store'
     response = requests.get(url, headers=headers).json()
     return response['rows'][0]['meta']
-
-def base_get_metadata(headers, seller):
-    '''
-    получаем из базы контагентов, получаем дланные с МС
-    '''
-    result = {}
-    meta_dict = db_get_metadata(seller=seller)
-    organization_meta_list = ms_get_organization_meta(headers)
-    agent_meta_list = ms_get_agent_meta(headers)
-    required_keys = {'ozon', 'wb', 'yandex', 'organization'}
-    # Если отсутствует хотя бы один из ключей, получаем метаданные
-
-    #if not meta_dict or not required_keys.issubset(meta_dict):
-    #    organization_meta_list = ms_get_organization_meta(headers)
-    #    agent_meta_list = ms_get_agent_meta(headers)
-
-    #    print(f'organization_meta_list {organization_meta_list}')
-    #    print(f'agent_meta_list {agent_meta_list}')
-
-    for key in required_keys:
-        if key in meta_dict:
-            result[key] = {'db': meta_dict[key]}
-    result['agentlist'] = agent_meta_list
-    result['orglist'] = organization_meta_list
-    return result
-
-
-
 
 
 def sort_stock_and_invent(invent_dict, stock):
@@ -270,94 +243,6 @@ def inventory_POST_to_offer_dict(post_data):
     return offer_dict
 
 
-
-def get_all_price_ozon(headers):
-    opt_price = get_moysklad_opt_price(headers['moysklad_headers'])
-    #print(f"opt_price {opt_price['rows'][0]['buyPrice']['value']}")
-    #print(f"opt_price {opt_price['rows'][0]['article']}")
-    opt_price_clear = {}
-    for item in opt_price['rows']:
-        #opt_price_clear['article'] = item['article']
-        #print(f"opt_price {item['buyPrice']['value']/100}")
-        opt_price_clear[item['article']] = {
-            'opt_price' : int(float(item['buyPrice']['value']) / 100),
-            }
-
-    url = "https://api-seller.ozon.ru/v2/finance/realization"
-    now = datetime.datetime.now()
-    lastmonth_date = now - datetime.timedelta(days=now.day)
-    data = {
-        "year": lastmonth_date.year,
-        "month": lastmonth_date.month
-    }
-
-    print(f"ozon_headers: {headers['ozon_headers']}")
-    response = requests.post(url, headers=headers['ozon_headers'], json=data).json()
-    #print(f"utils.py | get_all_price_ozon | response: {response}")
-    realization = {}
-    for item in response.get('result', {}).get('rows', []):
-        offer_id = item['item'].get('offer_id')
-        quantity = item['delivery_commission']['quantity'] if item.get('delivery_commission') and 'quantity' in item['delivery_commission'] else 0
-
-        # Инициализируем, если offer_id нет в realization или оно равно None
-        if offer_id not in realization or realization[offer_id] is None:
-            realization[offer_id] = {'sale_qty': quantity}
-        else:
-            # Добавляем к sale_qty, если offer_id уже существует
-            realization[offer_id]['sale_qty'] = realization[offer_id].get('sale_qty', 0) + quantity
-
-    print(f"realization {realization}")
-
-    url = "https://api-seller.ozon.ru/v4/product/info/prices"
-    data = {
-        "filter": {
-            "visibility": "IN_SALE",
-        },
-            "last_id": "",
-            "limit": 1000
-        }
-    response = requests.post(url, headers=headers['ozon_headers'], json=data).json()
-    #print(f"response {response['result']['items'][0]}")
-    result = {}
-    for item in response['result']['items']:
-        #print(f'item {item}')
-        if item['offer_id'] not in opt_price_clear:
-            continue
-        if item['offer_id'] not in realization:
-            realization[item['offer_id']] = {'sale_qty': 0}
-        delivery_price = float(item['price']['marketing_seller_price'])/100 * float(item['commissions']['sales_percent_fbs'])
-        delivery_price = delivery_price + float(item['commissions']['fbs_direct_flow_trans_min_amount']) \
-                         + float(item['commissions']['fbs_deliv_to_customer_amount']) + \
-                         float(item['price']['marketing_seller_price'])/100*1 # эквайринг 1% и 10% для средней цены
-        delivery_price = delivery_price + 15 # средняя цена доставки товара
-        #print(f"opt_price {item['offer_id']}")
-        profit_price = int(float(item['price']['marketing_seller_price'])) - \
-                       int(delivery_price) - opt_price_clear[item['offer_id']]['opt_price']
-        profit_percent = profit_price / opt_price_clear[item['offer_id']]['opt_price'] * 100
-        min_price = float(item['price']['min_price'])
-        min_price_percent30 = int(delivery_price) + (opt_price_clear[item['offer_id']]['opt_price'] * 1.3)
-        min_price_percent50 = int(delivery_price) + (opt_price_clear[item['offer_id']]['opt_price'] * 1.5)
-        min_price_percent80 = int(delivery_price) + (opt_price_clear[item['offer_id']]['opt_price'] * 1.8)
-        min_price_percent100 = int(delivery_price) + (opt_price_clear[item['offer_id']]['opt_price'] * 2)
-        #print(f"offer_id {item}")
-        result[item['offer_id']] = {
-            'product_id': int(float(item['product_id'])),
-            'min_price': int(min_price),
-            'min_price_percent30': int(min_price_percent30),
-            'min_price_percent50': int(min_price_percent50),
-            'min_price_percent80': int(min_price_percent80),
-            'min_price_percent100': int(min_price_percent100),
-            'marketing_seller_price': int(float(item['price']['marketing_seller_price'])),
-            'delivery_price': int(delivery_price),
-            'opt_price': opt_price_clear[item['offer_id']]['opt_price'],
-            'profit_price': profit_price,
-            'profit_percent': int(profit_percent),
-            'sale_qty': realization[item['offer_id']]['sale_qty']
-        }
-
-
-    #print(f'result ozon price {result}')
-    return result
 
 def get_all_price_wb(headers):
     result = {}
@@ -824,24 +709,53 @@ def delete_files_with_prefix(directory_path, prefix):
 
 def update_awaiting_deliver_from_owm(headers, seller):
     """
-    получаем данные о неотгруженных заказах с МП и добавляем их в заказы МС в резерв
+        получаем данные о неотгруженных заказах с МП и добавляем их в заказы МС в резерв
     """
     ozon_awaiting_fbs_dict = ozon_get_awaiting_fbs(headers)
     ozon_current_product = ozon_awaiting_fbs_dict['current_product']
 
     wb_awaiting_fbs_dict = wb_get_awaiting_fbs(headers)
+    wb_filter_product = wb_awaiting_fbs_dict['filter_product']
 
-    # OZON
+    print(f'*' * 40)
+    print(f'*' * 40)
+    print(f'wb_awaiting_fbs_dict {wb_awaiting_fbs_dict}')
+    print(f'*' * 40)
+    print(f'*' * 40)
+    print(f'wb_filter_product {wb_filter_product}')
+    print(f'*' * 40)
+    print(f'*' * 40)
+
+    """
+        OZON
+    """
     if ozon_awaiting_fbs_dict['not_found']:
        print(f'*' * 40)
        not_found_product = {key: product for key in ozon_awaiting_fbs_dict['not_found'] for product in ozon_current_product if key in product.get('posting_number', '')}
        print(f'not_found_product {not_found_product}')
        print(f'*' * 40)
-       ms_create_customerorder(headers=headers, not_found_product=not_found_product, seller=seller, market='ozon')
+       #ms_create_customerorder(headers=headers, not_found_product=not_found_product, seller=seller, market='ozon')
        #db_create_customerorder(not_found_product)
        #ms_update_allstock_to_mp(headers=headers)
     if ozon_awaiting_fbs_dict['found']:
        found_product = {key: ozon_current_product[key] for key in ozon_awaiting_fbs_dict['found'] if key in ozon_current_product}
+       print(f'*' * 40)
+       print(f'found_product {found_product}')
+       print(f'*' * 40)
+
+    """
+    WB
+    """
+    if wb_awaiting_fbs_dict['not_found']:
+       print(f'*' * 40)
+       not_found_product = {key: product for key in wb_awaiting_fbs_dict['not_found'] for product in wb_filter_product if key == product.get('posting_number', '')}
+       print(f'not_found_product {not_found_product}')
+       print(f'*' * 40)
+       ms_create_customerorder(headers=headers, not_found_product=not_found_product, seller=seller, market='wb')
+       #db_create_customerorder(not_found_product)
+       #ms_update_allstock_to_mp(headers=headers)
+    if wb_awaiting_fbs_dict['found']:
+       found_product = {key: wb_current_product[key] for key in wb_awaiting_fbs_dict['found'] if key in wb_filter_product}
        print(f'*' * 40)
        print(f'found_product {found_product}')
        print(f'*' * 40)

@@ -17,7 +17,7 @@ def get_headers(user):
             'Api-Key': user.ozon_api
         }
     if user.wildberries_api:
-        headers['wildberries_headers'] = {
+        headers['wb_headers'] = {
             'Authorization': user.wildberries_api
         }
     return headers

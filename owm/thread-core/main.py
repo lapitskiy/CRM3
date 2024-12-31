@@ -10,60 +10,6 @@ django.setup()
 
 from owm.models import Seller
 
-def update_all_stock(headers, stock_tuple, last_tuple):
-    positions = []
-    url = 'https://api.moysklad.ru/api/remap/1.2/entity/loss'
-    for i in stock_tuple:
-        try:
-            if stock_tuple[i] < last_tuple[i]:
-                positions.append(
-                    {
-                        'quantity': last_tuple[i]['stock'] - stock_tuple[i],
-                        'assortment': {'meta': last_tuple[i]['meta']}
-                    }
-                )
-        except Exception as ex:
-            print(f'main update_all_stock {ex}')
-    data = {
-        'store': {"meta": get_store_meta(headers)},
-        'organization': {'meta': get_organization_meta(headers)},
-        'positions': positions
-    }
-    requests.post(url=url, headers=headers, json=data)
-
-
-def get_organization_meta(headers):
-    url = 'https://api.moysklad.ru/api/remap/1.2/entity/organization'
-    response = requests.get(url, headers=headers).json()
-    return response['rows'][0]['meta']
-
-
-def get_store_meta(headers):
-    url = 'https://api.moysklad.ru/api/remap/1.2/entity/store'
-    response = requests.get(url, headers=headers).json()
-    return response['rows'][0]['meta']
-
-
-def get_stock_meta(headers):
-    last_tuple = {}
-    url = "https://api.moysklad.ru/api/remap/1.2/report/stock/all"
-    response = requests.get(url, headers=headers).json()
-    for stock in response['rows']:
-        last_tuple[stock['article']] = {
-            'meta': stock['meta'],
-            'stock': stock['stock']
-        }
-    return last_tuple
-
-
-def get_all_stock(headers):
-    stock_tuple = {}
-    url = "https://api.moysklad.ru/api/remap/1.2/report/stock/all"
-    response = requests.get(url, headers=headers).json()
-    for stock in response['rows']:
-        stock_tuple[stock['article']] = stock['stock']
-    return stock_tuple
-
 
 def run():
     while True:
@@ -99,4 +45,4 @@ def run():
                     last_tuple = get_stock_meta(headers=moysklad_headers)
                     update_all_stock(headers=moysklad_headers, stock_tuple=stock_tuple, last_tuple=last_tuple)
 
-run()
+#run()

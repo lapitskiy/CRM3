@@ -1,4 +1,6 @@
 
+import logging
+
 import requests
 
 import copy
@@ -9,10 +11,13 @@ from collections import OrderedDict
 
 from django.db import models
 
-# бывший get_moysklad_opt_price
+
 from owm.utils.db_utils import db_get_metadata
 
+logger_info = logging.getLogger('crm3_info')
+logger_error = logging.getLogger('crm3_error')
 
+# бывший get_moysklad_opt_price
 def ms_get_product(headers):
     moysklad_headers = headers.get('moysklad_headers')
     url = "https://api.moysklad.ru/api/remap/1.2/entity/product"
@@ -65,12 +70,44 @@ def ms_get_agent_meta(headers: Dict[str, Any]) -> List[Dict[str, str]]:
                 {'id': agent['id'], 'name': agent['name']}
                 for agent in response_json['rows']
             ]
-            print(f"ms_get_agent_meta (packag): {response_json}")
+            #print(f"ms_get_agent_meta (packag): {response_json}")
         else:
             print(f"error ms_get_agent_meta response.text: {response.text}")
     except Exception as e:
         print(f"error ms_get_agent_meta: {e}")
     return result
+
+
+def ms_get_storage_meta(headers: Dict[str, Any]) -> List[Dict[str, str]]:
+    """
+    Получает список складов из МойСклад по API.
+
+    :param headers: Словарь с заголовками, включая ключ moysklad_headers.
+    :return: Список словарей с полями id и name для каждого контрагента.
+    """
+    result = []
+    moysklad_headers = headers.get('moysklad_headers')
+
+    if not moysklad_headers:
+        logger_error.error("ms_get_storage_meta: moysklad_headers не передан")
+        return result
+
+    url = 'https://api.moysklad.ru/api/remap/1.2/entity/store'
+    try:
+        response = requests.get(url, headers=moysklad_headers)
+        if response.status_code == 200:
+            response_json = response.json()
+            result = [
+                {'id': storage['id'], 'name': storage['name']}
+                for storage in response_json['rows']
+            ]
+            #print(f"ms_get_agent_meta (packag): {response_json}")
+        else:
+            logger_error.error(f"ms_get_storage_meta: ошибка ответа - {response.text}")
+    except Exception as e:
+        logger_error.error(f"ms_get_storage_meta: исключение - {str(e)}")
+    return result
+
 
 async def ms_check_customerorder(headers: dict):
     result = {}
@@ -95,6 +132,12 @@ async def ms_check_customerorder(headers: dict):
 
 def ms_create_customerorder(headers: dict, not_found_product: dict, seller: models.Model, market: str):
     result = {}
+
+    mapping = {
+            'ozon': {'storage': 'ms_storage_ozon', 'agent': 'ms_ozon_contragent'},
+            'wb': {'storage': 'ms_storage_wb', 'agent': 'ms_wb_contragent'},
+            'yandex': {'storage': 'ms_storage_yandex', 'agent': 'ms_yandex_contragent'}}
+
     moysklad_headers = headers.get('moysklad_headers')
     metadata = db_get_metadata(seller)
     if metadata:
@@ -117,7 +160,7 @@ def ms_create_customerorder(headers: dict, not_found_product: dict, seller: mode
                     # Добавим поле "id" в словарь конкретного товара
                     product['id'] = article_to_id[offer_id]
 
-        print(f"result_dict {orders}")
+        #print(f"result_dict {orders}")
 
 
         #organization_meta = ms_get_organization_meta(headers)
@@ -127,16 +170,23 @@ def ms_create_customerorder(headers: dict, not_found_product: dict, seller: mode
         url = 'https://api.moysklad.ru/api/remap/1.2/entity/customerorder'
 
         organization_meta = {
-            "href": f"https://api.moysklad.ru/api/remap/1.2/entity/organization/{metadata['organization']['id']}",
+            "href": f"https://api.moysklad.ru/api/remap/1.2/entity/organization/{metadata['ms_organization']['id']}",
             "metadataHref": "https://api.moysklad.ru/api/remap/1.2/entity/organization/metadata",
             "type": "organization",
             "mediaType": "application/json"
         }
 
         agent_meta = {
-            "href": f"https://api.moysklad.ru/api/remap/1.2/entity/counterparty/{metadata[market]['id']}",
+            "href": f"https://api.moysklad.ru/api/remap/1.2/entity/counterparty/{metadata[mapping[market]['agent']]['id']}",
             "metadataHref": "https://api.moysklad.ru/api/remap/1.2/entity/counterparty/metadata",
             "type": "counterparty",
+            "mediaType": "application/json"
+        }
+
+        storage_meta = {
+            "href": f"https://api.moysklad.ru/api/remap/1.2/entity/store/{metadata[mapping[market]['storage']]['id']}",
+            "metadataHref": "https://api.moysklad.ru/api/remap/1.2/entity/counterparty/metadata",
+            "type": "store",
             "mediaType": "application/json"
         }
 
@@ -144,7 +194,7 @@ def ms_create_customerorder(headers: dict, not_found_product: dict, seller: mode
         # Формирование списка заказов
         for key, order in orders.items():
             order_data = {
-                "name": order['posting_number'],
+                "name": str(order['posting_number']),
                 "vatEnabled": False,
                 "applicable": False,
                 "organization": {
@@ -152,6 +202,9 @@ def ms_create_customerorder(headers: dict, not_found_product: dict, seller: mode
                 },
                 "agent": {
                     "meta": agent_meta
+                },
+                "store": {
+                    "meta": storage_meta
                 },
                 "positions": []
             }

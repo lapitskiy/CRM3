@@ -45,6 +45,9 @@ class Awaiting_product(models.Model):
 class Metadata(models.Model):
     '''
     name:
+    ms_storage_ozon - склад для озон
+    ms_storage_wb - склад для wb
+    ms_storage_yandex - склад для yandex
     ms_organization - юр.лицо или название компании
     ms_ozon_contragent - метадата данные контрагент озон
     ms_yandex_contragent - метадата данные контрагент яндекс

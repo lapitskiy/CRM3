@@ -5,16 +5,16 @@ from django.http import HttpResponseRedirect
 from django.shortcuts import render, redirect
 from django.views import View
 from .models import Seller, Crontab
-from owm.utils.base_utils import get_headers, base_get_metadata
+from owm.utils.base_utils import get_headers
 from django.core.exceptions import ObjectDoesNotExist
 
 from django.http import HttpResponse
 
 from datetime import datetime
 
-from .utils.db_utils import db_update_metadata
-from .utils.ms_utils import ms_update_allstock_to_mp, ms_get_last_enterloss
-from .utils.oz_utils import ozon_get_finance
+from .utils.db_utils import db_update_metadata, db_get_metadata
+from .utils.ms_utils import ms_update_allstock_to_mp, ms_get_last_enterloss, ms_get_agent_meta, ms_get_organization_meta, ms_get_storage_meta
+from .utils.oz_utils import ozon_get_finance, ozon_get_all_price
 
 
 def get_prod_meta(headers, offer_dict):
@@ -446,17 +446,27 @@ class SettingsContragent(View):
 
         headers = get_headers(parser_data)
 
-        metadata = base_get_metadata(headers=headers, seller=seller.id)
+        meta_all = db_get_metadata(seller=seller)
 
-        for key, value in metadata.items():
+#        for key, value in meta_all.items():
+ #           metadata_record = Metadata.objects.filter(seller=seller, name=meta_name).first()
+  #          if metadata_record is not None:
+   #             result[key] = metadata_record.metadata_dict
+
+
+        required_keys = ['ms_ozon_contragent', 'ms_wb_contragent', 'ms_yandex_contragent', 'ms_organization']
+
+        meta_filter = {}
+        for key in required_keys:
+            if key in meta_all:
+                context[key] = meta_all[key]
+
+        for key, value in meta_filter.items():
             if 'db' in value:
-                context[key] = metadata[key]['db']
-        context['agentlist'] = metadata['agentlist']
-        context['orglist'] = metadata['orglist']
-        context['def_organization'] = metadata['organization']['db']
-        context['def_ozon'] = metadata['ozon']['db']
-        context['def_wb'] = metadata['wb']['db']
-        context['def_yandex'] = metadata['yandex']['db']
+                context[key] = meta_filter[key]['db']
+
+        context['agentlist'] = ms_get_agent_meta(headers)
+        context['orglist'] = ms_get_organization_meta(headers)
         print(f"contextTYT {context}")
         #print (f"contextTYT {context}")
         #print(f"context {context['contragent']}")
@@ -467,10 +477,10 @@ class SettingsContragent(View):
             return redirect('login')  # или другая страница
         context = {}
         metadata={}
-        metadata['organization'] = {'id': request.POST.get('organization_select'), 'name': request.POST.get('hidden-organization')}
-        metadata['wb'] = {'id': request.POST.get('wb_select'), 'name': request.POST.get('hidden-wb')}
-        metadata['ozon'] = {'id': request.POST.get('ozon_select'), 'name': request.POST.get('hidden-ozon')}
-        metadata['yandex'] = {'id': request.POST.get('yandex_select'), 'name': request.POST.get('hidden-yandex')}
+        metadata['ms_organization'] = {'id': request.POST.get('organization_select'), 'name': request.POST.get('hidden-organization')}
+        metadata['ms_wb_contragent'] = {'id': request.POST.get('wb_select'), 'name': request.POST.get('hidden-wb')}
+        metadata['ms_ozon_contragent'] = {'id': request.POST.get('ozon_select'), 'name': request.POST.get('hidden-ozon')}
+        metadata['ms_yandex_contragent'] = {'id': request.POST.get('yandex_select'), 'name': request.POST.get('hidden-yandex')}
 
         seller = Seller.objects.get(user=request.user)
 
@@ -478,14 +488,71 @@ class SettingsContragent(View):
 
         return redirect('settings_contragent')  # или другая страница
 
+class SettingsStorage(View):
+    def get(self, request, *args, **kwargs):
+        if not request.user.is_authenticated:
+            return redirect('login')  # или другая страница
+        context = {}
+
+        seller = Seller.objects.get(user=request.user)
+
+        parser_data = {
+            'moysklad_api': seller.moysklad_api,
+            'yandex_api': seller.yandex_api,
+            'wildberries_api': seller.wildberries_api,
+            'ozon_api': seller.ozon_api,
+            'ozon_id': seller.client_id,
+        }
+
+        headers = get_headers(parser_data)
+
+        metadata = db_get_metadata(seller=seller.id)
+
+        required_keys = ['ms_storage_ozon', 'ms_storage_wb', 'ms_storage_yandex']
+
+        meta_filter = {}
+
+        for key in required_keys:
+            if key in metadata:
+                context[key] = metadata[key]
+
+        context['storagelist'] = ms_get_storage_meta(headers)
+
+        print(f"contextTYT {context}")
+
+        return render(request, 'owm/settings/settings_storage.html', context)
+
+    def post(self, request, *args, **kwargs):
+        if not request.user.is_authenticated:
+            return redirect('login')  # или другая страница
+        context = {}
+        metadata={}
+        metadata['ms_storage_wb'] = {'id': request.POST.get('wb_select'), 'name': request.POST.get('hidden-wb')}
+        metadata['ms_storage_ozon'] = {'id': request.POST.get('ozon_select'), 'name': request.POST.get('hidden-ozon')}
+        metadata['ms_storage_yandex'] = {'id': request.POST.get('yandex_select'), 'name': request.POST.get('hidden-yandex')}
+
+        seller = Seller.objects.get(user=request.user)
+
+        db_update_metadata(seller=seller, metadata=metadata)
+
+        return redirect('settings_storage')  # или другая страница
+
 
 
 class PriceOzon(View):
     def get(self, request, *args, **kwargs):
         context = {}
-        parser = Seller.objects.get(user=request.user)
-        headers = get_headers(parser)
-        price = get_all_price_ozon(headers)
+        seller = Seller.objects.get(user=request.user)
+
+        parser_data = {
+            'moysklad_api': seller.moysklad_api,
+            'yandex_api': seller.yandex_api,
+            'wildberries_api': seller.wildberries_api,
+            'ozon_api': seller.ozon_api,
+            'ozon_id': seller.client_id,
+        }
+        headers = get_headers(parser_data)
+        price = ozon_get_all_price(headers)
         context['price'] = price #dict(list(price.items())[:1]) # price
         #print(f"stock {stock}")
         return render(request, 'owm/price_ozon.html', context)

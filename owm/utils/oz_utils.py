@@ -123,7 +123,7 @@ def ozon_get_awaiting_fbs(headers: dict):
         if response.status_code == 200:
             response_json = response.json()
             awaiting = response_json
-            print(f"response_json (awaiting): {response_json}")
+            #print(f"response_json (awaiting): {response_json}")
         else:
             result['error'] = response.text
     except Exception as e:
@@ -134,7 +134,7 @@ def ozon_get_awaiting_fbs(headers: dict):
         if response.status_code == 200:
             response_json = response.json()
             packag = response_json
-            print(f"response_json (packag): {response_json}")
+            #print(f"response_json (packag): {response_json}")
         else:
             result['error'] = response.text
     except Exception as e:
@@ -142,10 +142,10 @@ def ozon_get_awaiting_fbs(headers: dict):
 
 
     current_product = []
-    print(f'*' * 40)
-    print(f"packag {packag}")
-    print(f"awaiting {awaiting}")
-    print(f'*' * 40)
+    #print(f'*' * 40)
+    #print(f"packag {packag}")
+    #print(f"awaiting {awaiting}")
+    #print(f'*' * 40)
     for pack in packag['result']['postings']:
         product_list = []
         #print(f'pack {pack}')
@@ -308,5 +308,93 @@ def ozon_get_finance(headers: dict, period: str):
     result['all_totals'] = all_totals
     result['summed_totals'] = summed_totals
     result['header_data'] = header_data
+    return result
+
+def ozon_get_all_price(headers):
+    opt_price = ms_get_product(headers)
+    #print(f"opt_price {opt_price['rows'][0]['buyPrice']['value']}")
+    #print(f"opt_price {opt_price['rows'][0]['article']}")
+    opt_price_clear = {}
+    for item in opt_price['rows']:
+        #opt_price_clear['article'] = item['article']
+        #print(f"opt_price {item['buyPrice']['value']/100}")
+        opt_price_clear[item['article']] = {
+            'opt_price' : int(float(item['buyPrice']['value']) / 100),
+            }
+
+    url = "https://api-seller.ozon.ru/v2/finance/realization"
+    now = datetime.datetime.now()
+    lastmonth_date = now - datetime.timedelta(days=now.day)
+    data = {
+        "year": lastmonth_date.year,
+        "month": lastmonth_date.month
+    }
+
+    print(f"ozon_headers: {headers['ozon_headers']}")
+    response = requests.post(url, headers=headers['ozon_headers'], json=data).json()
+    #print(f"utils.py | get_all_price_ozon | response: {response}")
+    realization = {}
+    for item in response.get('result', {}).get('rows', []):
+        offer_id = item['item'].get('offer_id')
+        quantity = item['delivery_commission']['quantity'] if item.get('delivery_commission') and 'quantity' in item['delivery_commission'] else 0
+
+        # Инициализируем, если offer_id нет в realization или оно равно None
+        if offer_id not in realization or realization[offer_id] is None:
+            realization[offer_id] = {'sale_qty': quantity}
+        else:
+            # Добавляем к sale_qty, если offer_id уже существует
+            realization[offer_id]['sale_qty'] = realization[offer_id].get('sale_qty', 0) + quantity
+
+    print(f"realization {realization}")
+
+    url = "https://api-seller.ozon.ru/v4/product/info/prices"
+    data = {
+        "filter": {
+            "visibility": "IN_SALE",
+        },
+            "last_id": "",
+            "limit": 1000
+        }
+    response = requests.post(url, headers=headers['ozon_headers'], json=data).json()
+    #print(f"response {response['result']['items'][0]}")
+    result = {}
+    for item in response['result']['items']:
+        #print(f'item {item}')
+        if item['offer_id'] not in opt_price_clear:
+            continue
+        if item['offer_id'] not in realization:
+            realization[item['offer_id']] = {'sale_qty': 0}
+        delivery_price = float(item['price']['marketing_seller_price'])/100 * float(item['commissions']['sales_percent_fbs'])
+        delivery_price = delivery_price + float(item['commissions']['fbs_direct_flow_trans_min_amount']) \
+                         + float(item['commissions']['fbs_deliv_to_customer_amount']) + \
+                         float(item['price']['marketing_seller_price'])/100*1 # эквайринг 1% и 10% для средней цены
+        delivery_price = delivery_price + 15 # средняя цена доставки товара
+        #print(f"opt_price {item['offer_id']}")
+        profit_price = int(float(item['price']['marketing_seller_price'])) - \
+                       int(delivery_price) - opt_price_clear[item['offer_id']]['opt_price']
+        profit_percent = profit_price / opt_price_clear[item['offer_id']]['opt_price'] * 100
+        min_price = float(item['price']['min_price'])
+        min_price_percent30 = int(delivery_price) + (opt_price_clear[item['offer_id']]['opt_price'] * 1.3)
+        min_price_percent50 = int(delivery_price) + (opt_price_clear[item['offer_id']]['opt_price'] * 1.5)
+        min_price_percent80 = int(delivery_price) + (opt_price_clear[item['offer_id']]['opt_price'] * 1.8)
+        min_price_percent100 = int(delivery_price) + (opt_price_clear[item['offer_id']]['opt_price'] * 2)
+        #print(f"offer_id {item}")
+        result[item['offer_id']] = {
+            'product_id': int(float(item['product_id'])),
+            'min_price': int(min_price),
+            'min_price_percent30': int(min_price_percent30),
+            'min_price_percent50': int(min_price_percent50),
+            'min_price_percent80': int(min_price_percent80),
+            'min_price_percent100': int(min_price_percent100),
+            'marketing_seller_price': int(float(item['price']['marketing_seller_price'])),
+            'delivery_price': int(delivery_price),
+            'opt_price': opt_price_clear[item['offer_id']]['opt_price'],
+            'profit_price': profit_price,
+            'profit_percent': int(profit_percent),
+            'sale_qty': realization[item['offer_id']]['sale_qty']
+        }
+
+
+    #print(f'result ozon price {result}')
     return result
 

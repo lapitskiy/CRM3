@@ -1,6 +1,13 @@
 import requests
 import logging
 
+import datetime
+
+from owm.utils.db_utils import db_check_awaiting_postingnumber
+
+logger_info = logging.getLogger('crm3_info')
+logger_error = logging.getLogger('crm3_error')
+
 def wb_update_inventory(headers, stock):
     """
     Обновляет инвентарь на Wildberries.
@@ -30,7 +37,7 @@ def wb_update_inventory(headers, stock):
 
         while True:  # Внешний цикл обработки страниц
             try:
-                response = requests.post(url_cards, json=data_cards, headers=headers['wildberries_headers'])
+                response = requests.post(url_cards, json=data_cards, headers=headers['wb_headers'])
                 response.raise_for_status()  # Проверка статуса ответа
                 response_json = response.json()
 
@@ -130,19 +137,32 @@ def wb_get_awaiting_fbs(headers: dict):
 
 
     try:
-        response = requests.get(url_all_orders, headers=wb_headers, json=params_all_orders)
+        all_orders = {}
+        response = requests.get(url_all_orders, headers=wb_headers, params=params_all_orders)
         if response.status_code == 200:
             all_orders = response.json()
+            print(f'Z' * 40)
+            print(f'Z' * 40)
             print(f"response_json all_orders: {all_orders}")
+            print(f'Z' * 40)
+            print(f'Z' * 40)
         else:
+            print(f'#' * 40)
+            print(f'#' * 40)
+            logger_error.error(f"wb_get_awaiting_fbs: ошибка ответа - {response.text}")
+            print(f"response_json response.text: {response.text}")
             result['error'] = response.text
     except Exception as e:
         result['error'] = f"Error in awaiting request: {e}"
+
+
 
     all_status = {
         "orders": [order["id"] for order in all_orders["orders"]]
     }
 
+    # article string Артикул продавца
+    #nmId	integer Артикул wB
 
     url_status_awaiting = 'https://marketplace-api.wildberries.ru/api/v3/orders/status'
 
@@ -160,12 +180,26 @@ def wb_get_awaiting_fbs(headers: dict):
 
     filtered_orders = {"orders": [order for order in all_orders['orders'] if order['id'] in waiting_ids]}
 
-    current_product = []
-    print(f'*' * 40)
+    filtered_result = []
+    print(f'%' * 40)
     print(f"filtered_orders {filtered_orders}")
-    print(f"awaiting {awaiting}")
-    print(f'*' * 40)
+    print(f"awaiting {waiting_ids}")
+    print(f'%' * 40)
+    for order in filtered_orders['orders']:
+        product_list = []
+        #print(f"Posting Number: {posting_number}")
+        # "sku": 1728663479,
+        product_list.append({
+            "offer_id": order['article'],
+            "price": order['price']/100,
+            "quantity": 1
+            })
+        filtered_result.append(
+            {'posting_number': order['id'],
+             'status': 'waiting',
+             'product_list': product_list
+             })
 
-    check_result_dict = db_check_awaiting_postingnumber(posting_numbers)
-    check_result_dict['current_product'] = current_product
+    check_result_dict = db_check_awaiting_postingnumber(waiting_ids)
+    check_result_dict['filter_product'] = filtered_result
     return check_result_dict

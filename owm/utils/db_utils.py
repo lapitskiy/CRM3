@@ -42,32 +42,14 @@ async def get_http_session():
 def db_get_metadata(seller) -> Dict[str, Any]:
     """
     Извлекает метаданные для указанного продавца (seller) из модели Metadata.
-
-    Для каждой ключевой сущности (organization, ozon, yandex, wb) в meta_mapping
-    выполняется запрос Metadata.objects.filter(seller=seller, name=<значение>).
-    Если хотя бы одна запись найдена, берётся первый элемент, и его metadata_dict
-    сохраняется в результирующем словаре result по соответствующему ключу.
-
-    :param seller: Объект продавца (или идентификатор продавца),
-                   для которого необходимо получить метаданные.
-    :return: Словарь, где ключи — это названия сущностей
-             ('organization', 'ozon', 'yandex', 'wb'), а значения —
-             соответствующие метаданные (metadata_dict),
-             если запись в БД найдена.
     """
 
-    meta_mapping = {
-        'organization': 'ms_organization',
-        'ozon': 'ms_ozon_contragent',
-        'yandex': 'ms_yandex_contragent',
-        'wb': 'ms_wb_contragent',
-    }
-
     result = {}
-    for key, meta_name in meta_mapping.items():
-        metadata_record = Metadata.objects.filter(seller=seller, name=meta_name).first()
-        if metadata_record is not None:
-            result[key] = metadata_record.metadata_dict
+
+    metadata_record = Metadata.objects.filter(seller=seller).all()
+    if metadata_record:
+        for meta in metadata_record:
+            result[meta.name] = meta.metadata_dict
 
     return result
 
@@ -76,34 +58,18 @@ def db_update_metadata(seller, metadata) -> Dict[str, Any]:
     обновляем метаданные для указанного продавца (seller)
     """
 
-    meta_mapping = {
-        'organization': 'ms_organization',
-        'ozon': 'ms_ozon_contragent',
-        'yandex': 'ms_yandex_contragent',
-        'wb': 'ms_wb_contragent',
-        }
-
-    result = {}
     print(f'metadata 2: {metadata}')
-    for key, meta_name in meta_mapping.items():
-
-        metadata_record = Metadata.objects.filter(seller=seller, name=meta_name).first()
+    for key, meta_dict in metadata.items():
+        metadata_record = Metadata.objects.filter(seller=seller, name=key).first()
 
         if metadata_record:
-            metadata_record.metadata_dict = metadata[key]
+            metadata_record.metadata_dict = meta_dict
             metadata_record.save()
         else:
             Metadata.objects.create(
                 seller=seller,
-                name=meta_name,
-                metadata_dict = {
-                'name': key,
-                'id': metadata[key]
-                })
-
-
-
-    return result
+                name=key,
+                metadata_dict=meta_dict)
 
 def db_check_awaiting_postingnumber(posting_numbers: list):
     found_records = Awaiting.objects.filter(posting_number__in=posting_numbers)
