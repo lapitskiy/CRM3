@@ -15,6 +15,7 @@ from owm.utils.ms_utils import ms_create_customerorder, ms_get_organization_meta
 from owm.models import Crontab
 from owm.utils.oz_utils import ozon_get_awaiting_fbs
 from owm.utils.wb_utils import wb_get_awaiting_fbs
+from owm.utils.ya_utils import yandex_get_awaiting_fbs
 
 
 def get_headers(parser_data):
@@ -707,59 +708,94 @@ def delete_files_with_prefix(directory_path, prefix):
 
 
 
-def update_awaiting_deliver_from_owm(headers, seller):
+def update_awaiting_deliver_from_owm(headers, seller, cron_active_mp):
     """
         получаем данные о неотгруженных заказах с МП и добавляем их в заказы МС в резерв
     """
-    ozon_awaiting_fbs_dict = ozon_get_awaiting_fbs(headers)
-    ozon_current_product = ozon_awaiting_fbs_dict['current_product']
 
-    wb_awaiting_fbs_dict = wb_get_awaiting_fbs(headers)
-    wb_filter_product = wb_awaiting_fbs_dict['filter_product']
-
-    print(f'*' * 40)
-    print(f'*' * 40)
-    print(f'wb_awaiting_fbs_dict {wb_awaiting_fbs_dict}')
-    print(f'*' * 40)
-    print(f'*' * 40)
-    print(f'wb_filter_product {wb_filter_product}')
-    print(f'*' * 40)
-    print(f'*' * 40)
 
     """
         OZON
     """
-    if ozon_awaiting_fbs_dict['not_found']:
-       print(f'*' * 40)
-       not_found_product = {key: product for key in ozon_awaiting_fbs_dict['not_found'] for product in ozon_current_product if key in product.get('posting_number', '')}
-       print(f'not_found_product {not_found_product}')
-       print(f'*' * 40)
-       #ms_create_customerorder(headers=headers, not_found_product=not_found_product, seller=seller, market='ozon')
-       #db_create_customerorder(not_found_product)
-       #ms_update_allstock_to_mp(headers=headers)
-    if ozon_awaiting_fbs_dict['found']:
-       found_product = {key: ozon_current_product[key] for key in ozon_awaiting_fbs_dict['found'] if key in ozon_current_product}
-       print(f'*' * 40)
-       print(f'found_product {found_product}')
-       print(f'*' * 40)
+    cron_active_mp['ozon'] = False
+    cron_active_mp['wb'] = False
+
+    if cron_active_mp['ozon']:
+
+        ozon_awaiting_fbs_dict = ozon_get_awaiting_fbs(headers)
+        ozon_current_product = ozon_awaiting_fbs_dict['current_product']
+
+        if ozon_awaiting_fbs_dict['not_found']:
+           print(f'*' * 40)
+           not_found_product = {key: product for key in ozon_awaiting_fbs_dict['not_found'] for product in ozon_current_product if key in product.get('posting_number', '')}
+           print(f'not_found_product {not_found_product}')
+           print(f'*' * 40)
+           #ms_create_customerorder(headers=headers, not_found_product=not_found_product, seller=seller, market='ozon')
+           #db_create_customerorder(not_found_product)
+           #ms_update_allstock_to_mp(headers=headers)
+        if ozon_awaiting_fbs_dict['found']:
+           found_product = {key: ozon_current_product[key] for key in ozon_awaiting_fbs_dict['found'] if key in ozon_current_product}
+           print(f'*' * 40)
+           print(f'found_product {found_product}')
+           print(f'*' * 40)
 
     """
     WB
     """
-    if wb_awaiting_fbs_dict['not_found']:
-       print(f'*' * 40)
-       not_found_product = {key: product for key in wb_awaiting_fbs_dict['not_found'] for product in wb_filter_product if key == product.get('posting_number', '')}
-       print(f'not_found_product {not_found_product}')
-       print(f'*' * 40)
-       ms_create_customerorder(headers=headers, not_found_product=not_found_product, seller=seller, market='wb')
-       #db_create_customerorder(not_found_product)
-       #ms_update_allstock_to_mp(headers=headers)
-    if wb_awaiting_fbs_dict['found']:
-       found_product = {key: wb_current_product[key] for key in wb_awaiting_fbs_dict['found'] if key in wb_filter_product}
-       print(f'*' * 40)
-       print(f'found_product {found_product}')
-       print(f'*' * 40)
-    return ''
+    if cron_active_mp['wb']:
+
+        wb_awaiting_fbs_dict = wb_get_awaiting_fbs(headers)
+        wb_filter_product = wb_awaiting_fbs_dict['filter_product']
+
+        print(f'*' * 40)
+        print(f'wb_awaiting_fbs_dict {wb_awaiting_fbs_dict}')
+        print(f'*' * 40)
+        print(f'wb_filter_product {wb_filter_product}')
+        print(f'*' * 40)
+
+        if wb_awaiting_fbs_dict['not_found']:
+           print(f'*' * 40)
+           not_found_product = {key: product for key in wb_awaiting_fbs_dict['not_found'] for product in wb_filter_product if key == product.get('posting_number', '')}
+           print(f'not_found_product {not_found_product}')
+           print(f'*' * 40)
+           ms_create_customerorder(headers=headers, not_found_product=not_found_product, seller=seller, market='wb')
+           #db_create_customerorder(not_found_product)
+           #ms_update_allstock_to_mp(headers=headers)
+        if wb_awaiting_fbs_dict['found']:
+           found_product = {key: wb_current_product[key] for key in wb_awaiting_fbs_dict['found'] if key in wb_filter_product}
+           print(f'*' * 40)
+           print(f'found_product {found_product}')
+           print(f'*' * 40)
+
+    """
+    WB
+    """
+    if cron_active_mp['yandex']:
+
+        yandex_awaiting_fbs_dict = yandex_get_awaiting_fbs(headers)
+        yandex_filter_product = yandex_awaiting_fbs_dict['filter_product']
+
+        print(f'*' * 40)
+        print(f'wb_awaiting_fbs_dict {yandex_awaiting_fbs_dict}')
+        print(f'*' * 40)
+        print(f'wb_filter_product {yandex_filter_product}')
+        print(f'*' * 40)
+
+        if yandex_awaiting_fbs_dict['not_found']:
+            print(f'*' * 40)
+            not_found_product = {key: product for key in yandex_awaiting_fbs_dict['not_found'] for product in yandex_filter_product if
+                                 key == product.get('posting_number', '')}
+            print(f'not_found_product {not_found_product}')
+            print(f'*' * 40)
+            ms_create_customerorder(headers=headers, not_found_product=not_found_product, seller=seller, market='wb')
+            # db_create_customerorder(not_found_product)
+            # ms_update_allstock_to_mp(headers=headers)
+        if yandex_awaiting_fbs_dict['found']:
+            found_product = {key: yandex_current_product[key] for key in yandex_awaiting_fbs_dict['found'] if key in yandex_filter_product}
+            print(f'*' * 40)
+            print(f'found_product {found_product}')
+            print(f'*' * 40)
+        return ''
 
 
     #customerorder_dict = await ms_check_customerorder(headers)
@@ -803,7 +839,7 @@ def autoupdate_sync_inventory(cron_id):
             'ozon_id': cron.seller.client_id,
         }
         headers = get_headers(seller_data)
-        result_update_awaiting = update_awaiting_deliver_from_owm(headers=headers, seller=cron.seller)
+        result_update_awaiting = update_awaiting_deliver_from_owm(headers=headers, seller=cron.seller, cron_active_mp=cron_active_mp)
     return result_update_awaiting
 
 '''
