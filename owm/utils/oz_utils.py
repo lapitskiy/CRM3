@@ -7,6 +7,10 @@ from owm.utils.ms_utils import ms_get_product
 import locale
 import pymorphy2
 
+import logging
+
+logger_info = logging.getLogger('crm3_info')
+logger_error = logging.getLogger('crm3_error')
 
 def ozon_update_inventory(headers,stock):
     warehouseID = ozon_get_warehouse(headers)

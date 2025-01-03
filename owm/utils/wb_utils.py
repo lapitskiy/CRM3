@@ -20,8 +20,6 @@ def wb_update_inventory(headers, stock):
         Словарь с результатом: {'code': код ответа, 'json': ответ API (JSON или сообщение об успехе/ошибке)}.
         Возвращает ошибку, если произошла ошибка.
     """
-    logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
-
     try:
         url_cards = 'https://content-api.wildberries.ru/content/v2/get/cards/list'
         url_warehouses = 'https://marketplace-api.wildberries.ru/api/v3/warehouses'
@@ -91,10 +89,10 @@ def wb_update_inventory(headers, stock):
           return {"code": 400, "json": "Список sku_data пуст. Обновление не выполнено."}
 
         # Отправка данных на обновление
-        print(f"*" * 100)
+        #print(f"*" * 100)
         sttt = {'stocks': sku_data}
-        print(f"sttt {sttt}")
-        print(f"*" * 100)
+        #print(f"sttt {sttt}")
+        #print(f"*" * 100)
         try:
             put_response = requests.put(url_stock.format(warehouseId=warehouse_id), json={'stocks': sku_data}, headers=headers['wildberries_headers'])
             print(f'put_response {put_response.text}')

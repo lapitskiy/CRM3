@@ -15,7 +15,6 @@ class Seller(models.Model):
 
 class Crontab(models.Model):
     seller = models.ForeignKey(Seller, on_delete=models.CASCADE, verbose_name='Связанный парсер')
-    active = models.BooleanField(default=False, verbose_name='Синхрон включен')
     name = models.CharField(max_length=150, null=True, blank=True)
     yandex = models.BooleanField(default=False, verbose_name='yandex')
     ozon = models.BooleanField(default=False, verbose_name='ozon')

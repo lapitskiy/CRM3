@@ -165,7 +165,7 @@ def ms_create_customerorder(headers: dict, not_found_product: dict, seller: mode
 
         #organization_meta = ms_get_organization_meta(headers)
         #agent_meta = ms_get_agent_meta(headers)
-        print(f'metadata {metadata}')
+        #print(f'metadata {metadata}')
 
         url = 'https://api.moysklad.ru/api/remap/1.2/entity/customerorder'
 
@@ -196,7 +196,7 @@ def ms_create_customerorder(headers: dict, not_found_product: dict, seller: mode
             order_data = {
                 "name": str(order['posting_number']),
                 "vatEnabled": False,
-                "applicable": False,
+                "applicable": True,
                 "organization": {
                     "meta": organization_meta
                 },
@@ -230,22 +230,18 @@ def ms_create_customerorder(headers: dict, not_found_product: dict, seller: mode
             # Добавляем сформированный заказ в общий список
             data.append(order_data)
 
-        response = requests.post(url, headers=moysklad_headers, json=data)
-        print(f"response: {response}")
-        print(f"*" * 40)
-        print(f"*" * 40)
-        print(f"response TEXT: {response.text}")
-        print(f"*" * 40)
-        print(f"*" * 40)
-        print(f"response JSON: {response.json()}")
-        print(f"*" * 40)
-        print(f"*" * 40)
+
+
         try:
-            response_json = response.json()
-            print(f"response_json META AGENT: {response_json}")
+            response = requests.post(url, headers=moysklad_headers, json=data)
+            logging.info(f"[seller {seller.id}][ms_create_customerorder][response json]: {response_json}")
+            #print(f"*" * 40)
+            #print(f"*" * 40)
+            #print(f"response_json MS: {response_json}")
+            #print(f"*" * 40)
+            #print(f"*" * 40)
         except requests.exceptions.JSONDecodeError:
-            print("Ошибка декодирования JSON: ответ от сервера не является корректным JSON.")
-            print(f"Raw response text: {response.text}")
+            logging.error(f"[seller {seller.id}][ms_create_customerorder][response text]: {response.text}")
 
         # Дополнительные шаги для обработки результата
         if response.status_code != 200:

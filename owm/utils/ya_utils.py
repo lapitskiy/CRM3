@@ -3,6 +3,8 @@ import datetime
 
 from owm.utils.db_utils import db_check_awaiting_postingnumber
 
+import logging
+
 
 def yandex_update_inventory(headers, stock):
     #print(f"head {headers}")
@@ -66,11 +68,11 @@ def yandex_get_awaiting_fbs(headers: dict):
         response = requests.get(url, headers=yandex_headers, params=params)
         if response.status_code == 200:
             all_orders = response.json()
-            print(f'Z' * 40)
-            print(f'Z' * 40)
-            print(f"response_json all_orders: {all_orders}")
-            print(f'Z' * 40)
-            print(f'Z' * 40)
+            #print(f'Z' * 40)
+            #print(f'Z' * 40)
+            #print(f"response_json all_orders: {all_orders}")
+            #print(f'Z' * 40)
+            #print(f'Z' * 40)
         else:
             logger_error.error(f"yandex_get_awaiting_fbs: ошибка ответа - {response.text}")
             print(f"response_json response.text: {response.text}")
@@ -79,7 +81,11 @@ def yandex_get_awaiting_fbs(headers: dict):
         result['error'] = f"Error in awaiting request: {e}"
 
     orders = all_orders.get('orders', [])
-
+    print(f'Z' * 40)
+    print(f'Z' * 40)
+    print(f" orders { orders }")
+    print(f'Z' * 40)
+    print(f'Z' * 40)
     filtered_result = []
     id_list = []
     for order in orders:
@@ -87,8 +93,8 @@ def yandex_get_awaiting_fbs(headers: dict):
         for product in order['items']:
             id_list.append(order['id'])
             product_list.append({
-                "offer_id": product['id'],
-                "price": int(product['buyerPrice']*product['count']),
+                "offer_id": product['offerId'],
+                "price": int(product['buyerPrice']+product['subsidy']),
                 "quantity": product['count']
                 })
         filtered_result.append(
@@ -99,4 +105,5 @@ def yandex_get_awaiting_fbs(headers: dict):
 
     check_result_dict = db_check_awaiting_postingnumber(id_list)
     check_result_dict['filter_product'] = filtered_result
+
     return check_result_dict

@@ -717,8 +717,9 @@ def update_awaiting_deliver_from_owm(headers, seller, cron_active_mp):
     """
         OZON
     """
-    cron_active_mp['ozon'] = False
-    cron_active_mp['wb'] = False
+    cron_active_mp['ozon'] = True
+    cron_active_mp['wb'] = True
+    cron_active_mp['yandex'] = True
 
     if cron_active_mp['ozon']:
 
@@ -730,15 +731,14 @@ def update_awaiting_deliver_from_owm(headers, seller, cron_active_mp):
            not_found_product = {key: product for key in ozon_awaiting_fbs_dict['not_found'] for product in ozon_current_product if key in product.get('posting_number', '')}
            print(f'not_found_product {not_found_product}')
            print(f'*' * 40)
-           #ms_create_customerorder(headers=headers, not_found_product=not_found_product, seller=seller, market='ozon')
-           #db_create_customerorder(not_found_product)
-           #ms_update_allstock_to_mp(headers=headers)
+           ms_create_customerorder(headers=headers, not_found_product=not_found_product, seller=seller, market='ozon')
+           db_create_customerorder(not_found_product)
+           ms_update_allstock_to_mp(headers=headers)
         if ozon_awaiting_fbs_dict['found']:
            found_product = {key: ozon_current_product[key] for key in ozon_awaiting_fbs_dict['found'] if key in ozon_current_product}
            print(f'*' * 40)
            print(f'found_product {found_product}')
            print(f'*' * 40)
-
     """
     WB
     """
@@ -747,11 +747,11 @@ def update_awaiting_deliver_from_owm(headers, seller, cron_active_mp):
         wb_awaiting_fbs_dict = wb_get_awaiting_fbs(headers)
         wb_filter_product = wb_awaiting_fbs_dict['filter_product']
 
-        print(f'*' * 40)
-        print(f'wb_awaiting_fbs_dict {wb_awaiting_fbs_dict}')
-        print(f'*' * 40)
-        print(f'wb_filter_product {wb_filter_product}')
-        print(f'*' * 40)
+        #print(f'*' * 40)
+        #print(f'wb_awaiting_fbs_dict {wb_awaiting_fbs_dict}')
+        #print(f'*' * 40)
+        #print(f'wb_filter_product {wb_filter_product}')
+        #print(f'*' * 40)
 
         if wb_awaiting_fbs_dict['not_found']:
            print(f'*' * 40)
@@ -759,27 +759,28 @@ def update_awaiting_deliver_from_owm(headers, seller, cron_active_mp):
            print(f'not_found_product {not_found_product}')
            print(f'*' * 40)
            ms_create_customerorder(headers=headers, not_found_product=not_found_product, seller=seller, market='wb')
-           #db_create_customerorder(not_found_product)
-           #ms_update_allstock_to_mp(headers=headers)
+           db_create_customerorder(not_found_product)
+           ms_update_allstock_to_mp(headers=headers)
         if wb_awaiting_fbs_dict['found']:
            found_product = {key: wb_current_product[key] for key in wb_awaiting_fbs_dict['found'] if key in wb_filter_product}
            print(f'*' * 40)
            print(f'found_product {found_product}')
            print(f'*' * 40)
+        exit()
 
     """
-    WB
+    YANDEX
     """
     if cron_active_mp['yandex']:
 
         yandex_awaiting_fbs_dict = yandex_get_awaiting_fbs(headers)
         yandex_filter_product = yandex_awaiting_fbs_dict['filter_product']
 
-        print(f'*' * 40)
-        print(f'wb_awaiting_fbs_dict {yandex_awaiting_fbs_dict}')
-        print(f'*' * 40)
-        print(f'wb_filter_product {yandex_filter_product}')
-        print(f'*' * 40)
+        #print(f'*' * 40)
+        #print(f'wb_awaiting_fbs_dict {yandex_awaiting_fbs_dict}')
+        #print(f'*' * 40)
+        #print(f'wb_filter_product {yandex_filter_product}')
+        #print(f'*' * 40)
 
         if yandex_awaiting_fbs_dict['not_found']:
             print(f'*' * 40)
@@ -787,7 +788,7 @@ def update_awaiting_deliver_from_owm(headers, seller, cron_active_mp):
                                  key == product.get('posting_number', '')}
             print(f'not_found_product {not_found_product}')
             print(f'*' * 40)
-            ms_create_customerorder(headers=headers, not_found_product=not_found_product, seller=seller, market='wb')
+            ms_create_customerorder(headers=headers, not_found_product=not_found_product, seller=seller, market='yandex')
             # db_create_customerorder(not_found_product)
             # ms_update_allstock_to_mp(headers=headers)
         if yandex_awaiting_fbs_dict['found']:

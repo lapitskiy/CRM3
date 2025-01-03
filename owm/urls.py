@@ -4,12 +4,12 @@ from .views import Enter, Inventory, PriceOzon, PriceWb, PriceYandex, FinanceOzo
     SettingsContragent, SettingsStorage
 
 urlpatterns = [
-    path('settings_api/', SettingsApi.as_view(), name='settings_api'),
+    path('', SettingsApi.as_view(), name='settings_api'),
     path('settings_contragent/', SettingsContragent.as_view(), name='settings_contragent'),
     path('settings_storage/', SettingsStorage.as_view(), name='settings_storage'),
     path('inventory/', Inventory.as_view(), name='inventory'),
     path('autoupdate/', Autoupdate.as_view(), name='autoupdate'),
-    path('', AutoupdateSettings.as_view(), name='autoupdate_settings'),
+    path('autoupdatesettings/', AutoupdateSettings.as_view(), name='autoupdate_settings'),
     path('price_ozon/', PriceOzon.as_view(), name='price_ozon'),
     path('finance_ozon/', FinanceOzon.as_view(), name='finance_ozon'),
     path('postavka_ozon/', PostavkaOzon.as_view(), name='postavka_ozon'),

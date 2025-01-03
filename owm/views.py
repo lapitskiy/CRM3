@@ -255,36 +255,13 @@ class Inventory(View):
         print(f"context resp {context['resp']}")
         return render(request, 'owm/inventory.html', context)
 
-class Autoupdate(View):
-    def get(self, request, *args, **kwargs):
-        if not request.user.is_authenticated:
-            return redirect('login')  # или другая страница
-        context = {}
-        parser = Seller.objects.get(user=request.user)
-        headers = get_headers(parser)
-        autoupdate_get_last_sync_acquisition_writeoff_ms(headers)
-        #stock = auto_update_owm_moysklad(headers['moysklad_headers'])
-        context['stock'] = stock
-        #print(f"stock {stock}")
-        return render(request, 'owm/autoupdate.html', context)
-
-    def post(self, request):
-        #print(f"post {request.POST.dict()}")
-        context = {}
-        invent_dict = inventory_POST_to_offer_dict(request.POST.dict())
-        parser = Seller.objects.get(user=request.user)
-        context['resp'] = inventory_update(parser, invent_dict)
-        print(f"responce {context['resp']}")
-        return render(request, 'owm/autoupdate.html', context)
-
 class AutoupdateSettings(View):
     def get(self, request, *args, **kwargs):
         if not request.user.is_authenticated:
             return redirect('login')  # или другая страница
         context = {}
-        try:
-            obj = Crontab.objects.get(seller__user=request.user, name='autoupdate')
-            context['active'] = obj.active
+        obj = Crontab.objects.filter(seller__user=request.user, name='autoupdate').first()
+        if obj:
             context['active_yandex'] = obj.yandex
             context['active_ozon'] = obj.ozon
             context['active_wb'] = obj.wb
@@ -304,16 +281,13 @@ class AutoupdateSettings(View):
             except Exception as e:
                 print("Error occurred:", e)
 
-
             cron_data = {
                 'cron_dict': obj.crontab_dict,
             }
-
-            #await autoupdate_get_last_sync_acquisition_writeoff_ms(headers=headers)
-
-        except Crontab.DoesNotExist:
+        else:
             user = Seller.objects.get(user=request.user)
             Crontab.objects.create(seller=user, name='autoupdate', active=False)
+            context['settings'] = False
 
             print(f"Created new Crontab")
         return render(request, 'owm/autoupdate/autoupdate_settings.html', context)
@@ -434,42 +408,38 @@ class SettingsContragent(View):
             return redirect('login')  # или другая страница
         context = {}
 
-        seller = Seller.objects.get(user=request.user)
+        seller = Seller.objects.filter(user=request.user).first()
+        if seller:
+            parser_data = {
+                'moysklad_api': seller.moysklad_api,
+                'yandex_api': seller.yandex_api,
+                'wildberries_api': seller.wildberries_api,
+                'ozon_api': seller.ozon_api,
+                'ozon_id': seller.client_id,
+            }
 
-        parser_data = {
-            'moysklad_api': seller.moysklad_api,
-            'yandex_api': seller.yandex_api,
-            'wildberries_api': seller.wildberries_api,
-            'ozon_api': seller.ozon_api,
-            'ozon_id': seller.client_id,
-        }
+            headers = get_headers(parser_data)
 
-        headers = get_headers(parser_data)
+            meta_all = db_get_metadata(seller=seller)
 
-        meta_all = db_get_metadata(seller=seller)
+            required_keys = ['ms_ozon_contragent', 'ms_wb_contragent', 'ms_yandex_contragent', 'ms_organization']
 
-#        for key, value in meta_all.items():
- #           metadata_record = Metadata.objects.filter(seller=seller, name=meta_name).first()
-  #          if metadata_record is not None:
-   #             result[key] = metadata_record.metadata_dict
+            meta_filter = {}
+            for key in required_keys:
+                if key in meta_all:
+                    context[key] = meta_all[key]
 
+            for key, value in meta_filter.items():
+                if 'db' in value:
+                    context[key] = meta_filter[key]['db']
 
-        required_keys = ['ms_ozon_contragent', 'ms_wb_contragent', 'ms_yandex_contragent', 'ms_organization']
-
-        meta_filter = {}
-        for key in required_keys:
-            if key in meta_all:
-                context[key] = meta_all[key]
-
-        for key, value in meta_filter.items():
-            if 'db' in value:
-                context[key] = meta_filter[key]['db']
-
-        context['agentlist'] = ms_get_agent_meta(headers)
-        context['orglist'] = ms_get_organization_meta(headers)
-        print(f"contextTYT {context}")
-        #print (f"contextTYT {context}")
-        #print(f"context {context['contragent']}")
+            context['agentlist'] = ms_get_agent_meta(headers)
+            context['orglist'] = ms_get_organization_meta(headers)
+            print(f"contextTYT {context}")
+            #print (f"contextTYT {context}")
+            #print(f"context {context['contragent']}")
+        else:
+            context['DoesNotExist'] = True
         return render(request, 'owm/settings/settings_contragent.html', context)
 
     def post(self, request, *args, **kwargs):

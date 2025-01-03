@@ -5,7 +5,12 @@
 {% endblock %}
 {% block content %}
 
+     {% if DoesNotExist %}
+        <h1> Укажите api настройки для продолжения работы</h1>
+{% else %}
     <h1>Текущие данные</h1>
+
+
 
 
 
@@ -85,6 +90,7 @@
     <button type="submit" class="btn btn-primary btn-block">Сохранить</button>
     </form>
 
+{% endif %}
 
 <script>
     const mappings = {

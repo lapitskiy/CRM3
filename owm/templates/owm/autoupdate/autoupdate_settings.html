@@ -4,17 +4,14 @@
     {% include 'include/_sidebar_owm.html' %}
 {% endblock %}
 {% block content %}
-    <h1>Настройки автообнолвение остатков O W M</h1>
-<br><br>
+    {% if settings == False %}
+        <h1> Укажите api настройки для продолжения работы или обновите страницу, если api уже указаны</h1>
+{% else %}
+    <h1>Настройки автообнолвение остатков O W M</h1><br><br>
+
+
 <form action="#" method="POST" class="update-form">
         {% csrf_token %}
-<div class="form-check form-switch">
-  <input class="form-check-input" type="checkbox" id="flexSwitchCheckDefault"
-         {% if active %}checked="checked"{% endif %} name="sync_checkbox">
-  <label class="form-check-label" for="flexSwitchCheckDefault">
-    <b>Синхронизация остатков между маркетплейсами по артиклю</b>
-  </label>
-</div>
     <br><br>
 <div class="form-check form-switch">
   <input class="form-check-input" type="checkbox" id="flexSwitchCheckDefault"
@@ -115,6 +112,7 @@
 </div>
 
     </form>
+{% endif %}
 {% endblock %}
 
 <script>
@@ -132,4 +130,6 @@
         });
     }
 </script>
+
+
 
