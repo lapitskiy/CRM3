@@ -26,7 +26,7 @@ def sync_inventory_owm():
 
 
 def run_sync_inventory():
-        crontabs = Crontab.objects.filter(name="autoupdate", active=True)
+        crontabs = Crontab.objects.filter(name="autoupdate")
         #logger_info.info(f"Found {crontabs.count()} active crontabs for autoupdate.")
         task_group = group([run_autoupdate.s(cron.id) for cron in crontabs])
         result = task_group.apply_async()

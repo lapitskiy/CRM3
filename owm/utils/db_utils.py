@@ -58,7 +58,7 @@ def db_update_metadata(seller, metadata) -> Dict[str, Any]:
     обновляем метаданные для указанного продавца (seller)
     """
 
-    print(f'metadata 2: {metadata}')
+    #print(f'metadata 2: {metadata}')
     for key, meta_dict in metadata.items():
         metadata_record = Metadata.objects.filter(seller=seller, name=key).first()
 
@@ -74,7 +74,13 @@ def db_update_metadata(seller, metadata) -> Dict[str, Any]:
 def db_check_awaiting_postingnumber(posting_numbers: list):
     found_records = Awaiting.objects.filter(posting_number__in=posting_numbers)
     found_posting_numbers = set(found_records.values_list('posting_number', flat=True))
-    not_found_records = [pn for pn in posting_numbers if pn not in found_posting_numbers]
+
+    #print(f'P' * 40)
+    #print(f'posting_numbers {posting_numbers}')
+    #print(f'found_posting_numbers {found_posting_numbers}')
+    #print(f'P' * 40)
+
+    not_found_records = [pn for pn in posting_numbers if str(pn) not in found_posting_numbers]
     result = {'found': found_posting_numbers, 'not_found': not_found_records}
     return result
 
@@ -88,9 +94,9 @@ def db_create_customerorder(not_found_product: dict):
                 )
 
             for product in products['product_list']:
-                print(f'#' * 40)
-                print(f"product {product}")
-                print(f'#' * 40)
+                #print(f'#' * 40)
+                #print(f"product {product}")
+                #print(f'#' * 40)
                 # Создаем запись в таблице OwmAwaitingProduct
                 Awaiting_product.objects.create(
                     awaiting=awaiting_record,

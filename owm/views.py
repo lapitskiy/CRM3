@@ -13,7 +13,8 @@ from django.http import HttpResponse
 from datetime import datetime
 
 from .utils.db_utils import db_update_metadata, db_get_metadata
-from .utils.ms_utils import ms_update_allstock_to_mp, ms_get_last_enterloss, ms_get_agent_meta, ms_get_organization_meta, ms_get_storage_meta
+from .utils.ms_utils import ms_update_allstock_to_mp, ms_get_last_enterloss, ms_get_agent_meta, ms_get_organization_meta, ms_get_storage_meta, \
+    ms_get_orderstatus_meta
 from .utils.oz_utils import ozon_get_finance, ozon_get_all_price
 
 
@@ -173,7 +174,7 @@ def enter_moysklad(user, offer_dict):
     except Exception as ex:
         print(f'update_stock_ozon {ex}')
     try:
-        update_enter_wb(headers['wildberries_headers'], offer_dict)
+        update_enter_wb(headers['wb_headers'], offer_dict)
     except Exception as ex:
         print(f'update_stock_wb {ex}')
     user.replenishment = False
@@ -360,7 +361,7 @@ class AutoupdateSettings(View):
                 crontab.crontab_dict = result_dict
                 crontab.save()
         context['sync_update'] = True
-        return render(request, 'owm/autoupdate_settings.html', context)
+        return render(request, 'owm/owm/autoupdate/autoupdate_settings.html', context)
 
 class SettingsApi(View):
     def get(self, request, *args, **kwargs):
@@ -435,7 +436,7 @@ class SettingsContragent(View):
 
             context['agentlist'] = ms_get_agent_meta(headers)
             context['orglist'] = ms_get_organization_meta(headers)
-            print(f"contextTYT {context}")
+            #print(f"contextTYT {context}")
             #print (f"contextTYT {context}")
             #print(f"context {context['contragent']}")
         else:
@@ -488,7 +489,7 @@ class SettingsStorage(View):
 
         context['storagelist'] = ms_get_storage_meta(headers)
 
-        print(f"contextTYT {context}")
+        #print(f"contextTYT {context}")
 
         return render(request, 'owm/settings/settings_storage.html', context)
 
@@ -507,7 +508,56 @@ class SettingsStorage(View):
 
         return redirect('settings_storage')  # или другая страница
 
+class SettingsStatus(View):
+    def get(self, request, *args, **kwargs):
+        if not request.user.is_authenticated:
+            return redirect('login')  # или другая страница
+        context = {}
 
+        seller = Seller.objects.get(user=request.user)
+
+        parser_data = {
+            'moysklad_api': seller.moysklad_api,
+            'yandex_api': seller.yandex_api,
+            'wildberries_api': seller.wildberries_api,
+            'ozon_api': seller.ozon_api,
+            'ozon_id': seller.client_id,
+        }
+
+        headers = get_headers(parser_data)
+
+        metadata = db_get_metadata(seller=seller.id)
+
+        required_keys = ['ms_status_awaiting',
+                         'ms_status_shipped',
+                         'ms_status_completed',
+                         'ms_status_cancelled']
+
+        for key in required_keys:
+            if key in metadata:
+                context[key] = metadata[key]
+
+        context['statuslist'] = ms_get_orderstatus_meta(headers)
+
+        print(f"contextTYT {context}")
+
+        return render(request, 'owm/settings/settings_status.html', context)
+
+    def post(self, request, *args, **kwargs):
+        if not request.user.is_authenticated:
+            return redirect('login')  # или другая страница
+        context = {}
+        metadata={}
+        metadata['ms_status_awaiting'] = {'id': request.POST.get('awaiting_select'), 'name': request.POST.get('hidden-awaiting')}
+        metadata['ms_status_shipped'] = {'id': request.POST.get('shipped_select'), 'name': request.POST.get('hidden-shipped')}
+        metadata['ms_status_completed'] = {'id': request.POST.get('completed_select'), 'name': request.POST.get('hidden-completed')}
+        metadata['ms_status_cancelled'] = {'id': request.POST.get('cancelled_select'), 'name': request.POST.get('hidden-cancelled')}
+
+        seller = Seller.objects.get(user=request.user)
+
+        db_update_metadata(seller=seller, metadata=metadata)
+
+        return redirect('settings_status')  # или другая страница
 
 class PriceOzon(View):
     def get(self, request, *args, **kwargs):

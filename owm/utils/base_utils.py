@@ -10,13 +10,16 @@ from django.conf import settings
 
 import pandas as pd
 
-from owm.utils.db_utils import db_get_metadata
-from owm.utils.ms_utils import ms_create_customerorder, ms_get_organization_meta, ms_get_agent_meta
+from owm.utils.db_utils import db_get_metadata, db_create_customerorder
+from owm.utils.ms_utils import ms_create_customerorder, ms_get_organization_meta, ms_get_agent_meta, ms_update_allstock_to_mp
 from owm.models import Crontab
 from owm.utils.oz_utils import ozon_get_awaiting_fbs
 from owm.utils.wb_utils import wb_get_awaiting_fbs
 from owm.utils.ya_utils import yandex_get_awaiting_fbs
 
+import logging
+logger_info = logging.getLogger('crm3_info')
+logger_error = logging.getLogger('crm3_error')
 
 def get_headers(parser_data):
     headers = {}
@@ -149,7 +152,7 @@ def inventory_update(user: object, invent_dict: dict):
         context['ozon'] = update_inventory_ozon(headers, stock)
         #print(f'OZON UPDATE?')
         context['yandex'] = update_inventory_yandex(headers, stock)
-        context['wb'] = update_inventory_wb(headers['wildberries_headers'], stock)
+        context['wb'] = update_inventory_wb(headers['wb_headers'], stock)
     return context
 
 
@@ -272,7 +275,7 @@ def get_all_price_wb(headers):
         'limit': 100
         }
     print(f"data wb {data}")
-    response = requests.get(url, headers=headers['wildberries_headers'], json=data).json()
+    response = requests.get(url, headers=headers['wb_headers'], json=data).json()
     print(f"date resp wb json {response}")
     realization = {}
     if response:
@@ -293,7 +296,7 @@ def get_all_price_wb(headers):
             'limit': 10,
             'offset': 0
             }
-    response = requests.get(url, headers=headers['wildberries_headers'], json=data).json()
+    response = requests.get(url, headers=headers['wb_headers'], json=data).json()
     print(f"response wb {response}")
     result = {}
     for item in response['result']['items']:
@@ -489,7 +492,7 @@ def get_finance_wb(headers: dict, period: str):
 
     print(f'date {date}')
 
-    response = requests.get(url, headers=headers['wildberries_headers'], params=date).json()
+    response = requests.get(url, headers=headers['wb_headers'], params=date).json()
 
     count_dicts = len(response)
     print(f"Количество словарей: {count_dicts}")
@@ -713,7 +716,6 @@ def update_awaiting_deliver_from_owm(headers, seller, cron_active_mp):
         получаем данные о неотгруженных заказах с МП и добавляем их в заказы МС в резерв
     """
 
-
     """
         OZON
     """
@@ -727,18 +729,18 @@ def update_awaiting_deliver_from_owm(headers, seller, cron_active_mp):
         ozon_current_product = ozon_awaiting_fbs_dict['current_product']
 
         if ozon_awaiting_fbs_dict['not_found']:
-           print(f'*' * 40)
+           #print(f'*' * 40)
            not_found_product = {key: product for key in ozon_awaiting_fbs_dict['not_found'] for product in ozon_current_product if key in product.get('posting_number', '')}
-           print(f'not_found_product {not_found_product}')
-           print(f'*' * 40)
+           #print(f'not_found_product {not_found_product}')
+           #print(f'*' * 40)
            ms_create_customerorder(headers=headers, not_found_product=not_found_product, seller=seller, market='ozon')
            db_create_customerorder(not_found_product)
            ms_update_allstock_to_mp(headers=headers)
         if ozon_awaiting_fbs_dict['found']:
            found_product = {key: ozon_current_product[key] for key in ozon_awaiting_fbs_dict['found'] if key in ozon_current_product}
-           print(f'*' * 40)
-           print(f'found_product {found_product}')
-           print(f'*' * 40)
+           #print(f'*' * 40)
+           #print(f'found_product {found_product}')
+           #print(f'*' * 40)
     """
     WB
     """
@@ -754,19 +756,19 @@ def update_awaiting_deliver_from_owm(headers, seller, cron_active_mp):
         #print(f'*' * 40)
 
         if wb_awaiting_fbs_dict['not_found']:
-           print(f'*' * 40)
+           #print(f'*' * 40)
            not_found_product = {key: product for key in wb_awaiting_fbs_dict['not_found'] for product in wb_filter_product if key == product.get('posting_number', '')}
-           print(f'not_found_product {not_found_product}')
-           print(f'*' * 40)
+           #print(f'not_found_product {not_found_product}')
+           #print(f'*' * 40)
            ms_create_customerorder(headers=headers, not_found_product=not_found_product, seller=seller, market='wb')
            db_create_customerorder(not_found_product)
            ms_update_allstock_to_mp(headers=headers)
         if wb_awaiting_fbs_dict['found']:
            found_product = {key: wb_current_product[key] for key in wb_awaiting_fbs_dict['found'] if key in wb_filter_product}
-           print(f'*' * 40)
-           print(f'found_product {found_product}')
-           print(f'*' * 40)
-        exit()
+           #print(f'*' * 40)
+           #print(f'found_product {found_product}')
+           #print(f'*' * 40)
+        #exit()
 
     """
     YANDEX
@@ -776,26 +778,26 @@ def update_awaiting_deliver_from_owm(headers, seller, cron_active_mp):
         yandex_awaiting_fbs_dict = yandex_get_awaiting_fbs(headers)
         yandex_filter_product = yandex_awaiting_fbs_dict['filter_product']
 
-        #print(f'*' * 40)
+        #print(f'Y' * 40)
         #print(f'wb_awaiting_fbs_dict {yandex_awaiting_fbs_dict}')
-        #print(f'*' * 40)
+        #print(f'Y' * 40)
         #print(f'wb_filter_product {yandex_filter_product}')
         #print(f'*' * 40)
 
         if yandex_awaiting_fbs_dict['not_found']:
-            print(f'*' * 40)
+            #print(f'*' * 40)
             not_found_product = {key: product for key in yandex_awaiting_fbs_dict['not_found'] for product in yandex_filter_product if
                                  key == product.get('posting_number', '')}
-            print(f'not_found_product {not_found_product}')
-            print(f'*' * 40)
+            #print(f'not_found_product {not_found_product}')
+            #print(f'*' * 40)
             ms_create_customerorder(headers=headers, not_found_product=not_found_product, seller=seller, market='yandex')
-            # db_create_customerorder(not_found_product)
-            # ms_update_allstock_to_mp(headers=headers)
+            db_create_customerorder(not_found_product)
+            ms_update_allstock_to_mp(headers=headers)
         if yandex_awaiting_fbs_dict['found']:
             found_product = {key: yandex_current_product[key] for key in yandex_awaiting_fbs_dict['found'] if key in yandex_filter_product}
-            print(f'*' * 40)
-            print(f'found_product {found_product}')
-            print(f'*' * 40)
+            #print(f'*' * 40)
+            #print(f'found_product {found_product}')
+            #print(f'*' * 40)
         return ''
 
 
@@ -822,26 +824,27 @@ def autoupdate_sync_inventory(cron_id):
     try:
         cron = Crontab.objects.select_related('seller').get(id=cron_id)
     except Crontab.DoesNotExist:
-        print(f"Crontab с id {cron_id} не найден.")
+        logger_error.error(f"autoupdate_sync_inventory: Crontab с id {cron_id} не найден.")
 
-    row_list = []
     if cron:
         cron_active_mp = {
             'yandex': cron.yandex,
             'ozon': cron.ozon,
             'wb': cron.wb,
         }
-
-        seller_data = {
-            'moysklad_api': cron.seller.moysklad_api,
-            'yandex_api': cron.seller.yandex_api,
-            'wildberries_api': cron.seller.wildberries_api,
-            'ozon_api': cron.seller.ozon_api,
-            'ozon_id': cron.seller.client_id,
-        }
-        headers = get_headers(seller_data)
-        result_update_awaiting = update_awaiting_deliver_from_owm(headers=headers, seller=cron.seller, cron_active_mp=cron_active_mp)
-    return result_update_awaiting
+        if any(cron_active_mp.values()):
+            seller_data = {
+                'moysklad_api': cron.seller.moysklad_api,
+                'yandex_api': cron.seller.yandex_api,
+                'wildberries_api': cron.seller.wildberries_api,
+                'ozon_api': cron.seller.ozon_api,
+                'ozon_id': cron.seller.client_id,
+            }
+            headers = get_headers(seller_data)
+            result_update_awaiting = update_awaiting_deliver_from_owm(headers=headers, seller=cron.seller, cron_active_mp=cron_active_mp)
+            return result_update_awaiting
+        else:
+            return 'No active'
 
 '''
 context['update_data'] = update_stock_mp_from_ms(headers=headers)

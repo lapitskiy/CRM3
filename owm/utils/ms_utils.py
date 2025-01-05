@@ -1,5 +1,5 @@
 
-import logging
+
 
 import requests
 
@@ -14,6 +14,7 @@ from django.db import models
 
 from owm.utils.db_utils import db_get_metadata
 
+import logging
 logger_info = logging.getLogger('crm3_info')
 logger_error = logging.getLogger('crm3_error')
 
@@ -66,9 +67,41 @@ def ms_get_agent_meta(headers: Dict[str, Any]) -> List[Dict[str, str]]:
         response = requests.get(url, headers=moysklad_headers)
         if response.status_code == 200:
             response_json = response.json()
+            #print(f"response_json agent: {response_json}")
             result = [
                 {'id': agent['id'], 'name': agent['name']}
                 for agent in response_json['rows']
+            ]
+            #print(f"ms_get_agent_meta (packag): {response_json}")
+        else:
+            print(f"error ms_get_agent_meta response.text: {response.text}")
+    except Exception as e:
+        print(f"error ms_get_agent_meta: {e}")
+    return result
+
+def ms_get_orderstatus_meta(headers: Dict[str, Any]) -> List[Dict[str, str]]:
+    """
+    Получает список state из МойСклад по API.
+
+    :param headers: Словарь с заголовками, включая ключ moysklad_headers.
+    :return: Список словарей с полями id и name для каждого контрагента.
+    """
+    result = []
+    moysklad_headers = headers.get('moysklad_headers')
+
+    if not moysklad_headers:
+        print("ms_get_agent_meta: moysklad_headers не передан")
+        return result
+    #url = 'https://api.moysklad.ru/api/remap/1.2/entity/customerorder/'
+    url = 'https://api.moysklad.ru/api/remap/1.2/entity/customerorder/metadata'
+    try:
+        response = requests.get(url, headers=moysklad_headers)
+        if response.status_code == 200:
+            response_json = response.json()
+            #print(f"response_json agent: {response_json}")
+            result = [
+                {'id': state['id'], 'name': state['name']}
+                for state in response_json['states']
             ]
             #print(f"ms_get_agent_meta (packag): {response_json}")
         else:
@@ -124,7 +157,7 @@ async def ms_check_customerorder(headers: dict):
         async with session.get(url, headers=moysklad_headers, params=params) as response:
             if response.status == 200:
                 response_json = await response.json()
-                print(f"customerorder response_json: {response_json}")
+                #print(f"customerorder response_json: {response_json}")
             else:
                 error_message = await response.text()
                 result['response'] = error_message
@@ -134,9 +167,9 @@ def ms_create_customerorder(headers: dict, not_found_product: dict, seller: mode
     result = {}
 
     mapping = {
-            'ozon': {'storage': 'ms_storage_ozon', 'agent': 'ms_ozon_contragent'},
-            'wb': {'storage': 'ms_storage_wb', 'agent': 'ms_wb_contragent'},
-            'yandex': {'storage': 'ms_storage_yandex', 'agent': 'ms_yandex_contragent'}}
+            'ozon': {'storage': 'ms_storage_ozon', 'agent': 'ms_ozon_contragent', 'status': 'ms_status_awaiting'},
+            'wb': {'storage': 'ms_storage_wb', 'agent': 'ms_wb_contragent', 'status': 'ms_status_awaiting'},
+            'yandex': {'storage': 'ms_storage_yandex', 'agent': 'ms_yandex_contragent', 'status': 'ms_status_awaiting'}}
 
     moysklad_headers = headers.get('moysklad_headers')
     metadata = db_get_metadata(seller)
@@ -190,6 +223,12 @@ def ms_create_customerorder(headers: dict, not_found_product: dict, seller: mode
             "mediaType": "application/json"
         }
 
+        status_meta = {
+            "href": f"https://api.moysklad.ru/api/remap/1.2/entity/customerorder/metadata/states/{metadata[mapping[market]['status']]['id']}",
+            "type": "state",
+            "mediaType": "application/json"
+        }
+
         data = []
         # Формирование списка заказов
         for key, order in orders.items():
@@ -205,6 +244,9 @@ def ms_create_customerorder(headers: dict, not_found_product: dict, seller: mode
                 },
                 "store": {
                     "meta": storage_meta
+                },
+                "state": {
+                    "meta": status_meta
                 },
                 "positions": []
             }
@@ -234,7 +276,7 @@ def ms_create_customerorder(headers: dict, not_found_product: dict, seller: mode
 
         try:
             response = requests.post(url, headers=moysklad_headers, json=data)
-            logging.info(f"[seller {seller.id}][ms_create_customerorder][response json]: {response_json}")
+            #logging.info(f"[seller {seller.id}][ms_create_customerorder][response json]: {response.json()}")
             #print(f"*" * 40)
             #print(f"*" * 40)
             #print(f"response_json MS: {response_json}")

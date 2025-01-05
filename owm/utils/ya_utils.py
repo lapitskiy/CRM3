@@ -59,7 +59,8 @@ def yandex_get_awaiting_fbs(headers: dict):
 
     url = f'https://api.partner.market.yandex.ru/campaigns/{campaignId}/orders'
     params = {
-        "status": "PROCESSING"
+        "status": "PROCESSING",
+        "substatus": ['STARTED', 'READY_TO_SHIP'],
         }
 
 
@@ -68,11 +69,11 @@ def yandex_get_awaiting_fbs(headers: dict):
         response = requests.get(url, headers=yandex_headers, params=params)
         if response.status_code == 200:
             all_orders = response.json()
-            #print(f'Z' * 40)
-            #print(f'Z' * 40)
-            #print(f"response_json all_orders: {all_orders}")
-            #print(f'Z' * 40)
-            #print(f'Z' * 40)
+            print(f'Z' * 40)
+            print(f'Z' * 40)
+            print(f"yandex_get_awaiting_fbs response_json all_orders: {all_orders}")
+            print(f'Z' * 40)
+            print(f'Z' * 40)
         else:
             logger_error.error(f"yandex_get_awaiting_fbs: ошибка ответа - {response.text}")
             print(f"response_json response.text: {response.text}")
@@ -81,11 +82,11 @@ def yandex_get_awaiting_fbs(headers: dict):
         result['error'] = f"Error in awaiting request: {e}"
 
     orders = all_orders.get('orders', [])
-    print(f'Z' * 40)
-    print(f'Z' * 40)
-    print(f" orders { orders }")
-    print(f'Z' * 40)
-    print(f'Z' * 40)
+    #print(f'Z' * 40)
+    #print(f'Z' * 40)
+    #print(f" orders { orders }")
+    #print(f'Z' * 40)
+    #print(f'Z' * 40)
     filtered_result = []
     id_list = []
     for order in orders:
@@ -97,9 +98,12 @@ def yandex_get_awaiting_fbs(headers: dict):
                 "price": int(product['buyerPrice']+product['subsidy']),
                 "quantity": product['count']
                 })
+
+        order['substatus'] = 'awaiting_delivery' if order['substatus'] in ['STARTED', 'READY_TO_SHIP'] else order['substatus']
+
         filtered_result.append(
             {'posting_number': order['id'],
-             'status': order['status'],
+             'status': order['substatus'],
              'product_list': product_list
              })
 

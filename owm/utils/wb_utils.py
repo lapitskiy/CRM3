@@ -63,7 +63,7 @@ def wb_update_inventory(headers, stock):
 
         # Получение ID склада
         try:
-            warehouse_response = requests.get(url_warehouses, headers=headers['wildberries_headers'])
+            warehouse_response = requests.get(url_warehouses, headers=headers['wb_headers'])
             warehouse_response.raise_for_status()
             warehouse_data = warehouse_response.json()
             warehouse_id = warehouse_data[0]['id']  # Используем первый элемент списка.
@@ -94,8 +94,8 @@ def wb_update_inventory(headers, stock):
         #print(f"sttt {sttt}")
         #print(f"*" * 100)
         try:
-            put_response = requests.put(url_stock.format(warehouseId=warehouse_id), json={'stocks': sku_data}, headers=headers['wildberries_headers'])
-            print(f'put_response {put_response.text}')
+            put_response = requests.put(url_stock.format(warehouseId=warehouse_id), json={'stocks': sku_data}, headers=headers['wb_headers'])
+            #print(f'put_response {put_response.text}')
             put_response.raise_for_status()  # проверка
         except requests.exceptions.HTTPError as e:
             if e.response.status_code == 409:
@@ -139,16 +139,16 @@ def wb_get_awaiting_fbs(headers: dict):
         response = requests.get(url_all_orders, headers=wb_headers, params=params_all_orders)
         if response.status_code == 200:
             all_orders = response.json()
-            print(f'Z' * 40)
-            print(f'Z' * 40)
-            print(f"response_json all_orders: {all_orders}")
-            print(f'Z' * 40)
-            print(f'Z' * 40)
+            #print(f'Z' * 40)
+            #print(f'Z' * 40)
+            #print(f"response_json all_orders: {all_orders}")
+            #print(f'Z' * 40)
+            #print(f'Z' * 40)
         else:
-            print(f'#' * 40)
-            print(f'#' * 40)
+            #print(f'#' * 40)
+            #print(f'#' * 40)
             logger_error.error(f"wb_get_awaiting_fbs: ошибка ответа - {response.text}")
-            print(f"response_json response.text: {response.text}")
+            #print(f"response_json response.text: {response.text}")
             result['error'] = response.text
     except Exception as e:
         result['error'] = f"Error in awaiting request: {e}"
@@ -168,7 +168,7 @@ def wb_get_awaiting_fbs(headers: dict):
         response = requests.post(url_status_awaiting, headers=wb_headers, json=all_status)
         if response.status_code == 200:
             status_awaiting = response.json()
-            print(f"response_json status: {status_awaiting}")
+            #print(f"response_json status: {status_awaiting}")
         else:
             result['error'] = response.text
     except Exception as e:
@@ -179,10 +179,10 @@ def wb_get_awaiting_fbs(headers: dict):
     filtered_orders = {"orders": [order for order in all_orders['orders'] if order['id'] in waiting_ids]}
 
     filtered_result = []
-    print(f'%' * 40)
-    print(f"filtered_orders {filtered_orders}")
-    print(f"awaiting {waiting_ids}")
-    print(f'%' * 40)
+    #print(f'%' * 40)
+    #print(f"filtered_orders {filtered_orders}")
+    #print(f"awaiting {waiting_ids}")
+    #print(f'%' * 40)
     for order in filtered_orders['orders']:
         product_list = []
         #print(f"Posting Number: {posting_number}")

@@ -1,0 +1,124 @@
+{% extends "base.html" %}
+{% block title %}{{ title }} - {{ block.super }}{% endblock %}
+{% block sidebar %}
+    {% include 'include/_sidebar_owm.html' %}
+{% endblock %}
+{% block content %}
+
+    <h1>Доступные статусы</h1>
+
+    {% for item in statuslist %}
+         Статуc: {{ item.name }}<br>
+    {% endfor %}
+
+    <br>
+<br>
+    <h1>Указать данные</h1>
+    <form action="#" method="POST">
+    {% csrf_token %}
+<div class="row g-0 gx-xl-10 mb-5 mb-xl-10">
+    <div class="col-md-9 col-lg-9 col-xl-9 col-xxl-9 mb-md-5 mb-xl-10">
+        <div class="card-body d-flex flex-column justify-content-end">
+            <div class="container-fluid px-0">
+                <div class="row align-items-center gx-0 mb-2">
+                    <div class="col-3 text-start px-0">
+                        <label for="awaiting-select" class="form-label">Статус "Ожидает отгрузки":</label>
+                    </div>
+                    <div class="col-6 text-start">
+                        <select id="awaiting-select" class="form-select" name="awaiting_select" data-placeholder="awaiting" style="width: 40% !important;">
+                            <option></option>
+                            {% for item in statuslist %}
+                                <option value="{{ item.id }}" data-name="{{ item.name }}" {% if item.id == ms_status_awaiting.id %}selected{% endif %}>{{ item.name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </div>
+
+                <div class="row align-items-center mb-2">
+                    <div class="col-3 text-start px-0">
+                        <label for="shipped-select" class="form-label">Статус "Доставляется":</label>
+                    </div>
+                    <div class="col-6">
+                        <select id="shipped-select" class="form-select" name="shipped_select" data-placeholder="shipped" style="width: 40% !important;">
+                            <option></option>
+                            {% for item in statuslist %}
+                                <option value="{{ item.id }}" data-name="{{ item.name }}" {% if item.id == ms_status_shipped.id %}selected{% endif %}>{{ item.name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </div>
+                <div class="row align-items-center mb-2">
+                    <div class="col-3 text-start px-0">
+                        <label for="completed-select" class="form-label">Статус "Доставлен":</label>
+                    </div>
+                    <div class="col-6">
+                        <select id="completed-select" class="form-select" name="completed_select" data-placeholder="completed" style="width: 40% !important;">
+                            <option></option>
+                            {% for item in statuslist %}
+                                <option value="{{ item.id }}" data-name="{{ item.name }}" {% if item.id == ms_status_completed.id %}selected{% endif %}>{{ item.name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </div>
+                <div class="row align-items-center mb-2">
+                    <div class="col-3 text-start px-0">
+                        <label for="cancelled-select" class="form-label">Статус "Отменен":</label>
+                    </div>
+                    <div class="col-6">
+                        <select id="cancelled-select" class="form-select" name="cancelled_select" data-placeholder="cancelled" style="width: 40% !important;">
+                            <option></option>
+                            {% for item in statuslist %}
+                                <option value="{{ item.id }}" data-name="{{ item.name }}" {% if item.id == ms_status_cancelled.id %}selected{% endif %}>{{ item.name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </div>
+</div>
+        </div>
+    </div>
+</div>
+
+    <input type="hidden" id="hidden-awaiting" name="hidden-awaiting" value="">
+    <input type="hidden" id="hidden-shipped" name="hidden-shipped" value="">
+    <input type="hidden" id="hidden-completed" name="hidden-completed" value="">
+    <input type="hidden" id="hidden-cancelled" name="hidden-cancelled" value="">
+
+    <button type="submit" class="btn btn-primary btn-block">Сохранить</button>
+    </form>
+
+
+<script>
+    const mappings = {
+            'awaiting-select': 'hidden-awaiting',
+            'shipped-select': 'hidden-shipped',
+            'completed-select': 'hidden-completed',
+            'cancelled-select': 'hidden-cancelled'
+        };
+  // Функция, которая берёт 'data-name' из выбранного option и записывает в hidden-поле
+    function updateHiddenField(selectElement, hiddenFieldId) {
+        let selectedOption = selectElement.options[selectElement.selectedIndex];
+        if (selectedOption) {
+            let selectedName = selectedOption.getAttribute('data-name') || '';
+            document.getElementById(hiddenFieldId).value = selectedName;
+        }
+    }
+
+    // Выполняем код после полной загрузки DOM
+    document.addEventListener('DOMContentLoaded', function() {
+        // Для каждого <select> из mappings:
+        Object.keys(mappings).forEach(selectId => {
+            let selectElement = document.getElementById(selectId);
+            if (selectElement) {
+                // 1) Инициализация: сразу заполнить hidden, если уже есть selected
+                updateHiddenField(selectElement, mappings[selectId]);
+
+                // 2) При изменении <select> обновлять hidden
+                selectElement.addEventListener('change', function() {
+                    updateHiddenField(this, mappings[selectId]);
+                });
+            }
+        });
+    });
+</script>
+
+{% endblock %}

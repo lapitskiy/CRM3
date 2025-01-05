@@ -51,6 +51,10 @@ class Metadata(models.Model):
     ms_ozon_contragent - метадата данные контрагент озон
     ms_yandex_contragent - метадата данные контрагент яндекс
     ms_wb_contragent - метадата данные контрагент wb
+    ms_status_awaiting - мета статус заказа покупателя
+    ms_status_shipped - мета статус заказа покупателя
+    ms_status_completed - мета статус заказа покупателя
+    ms_status_cancelled - мета статус заказа покупателя
     '''
     seller = models.ForeignKey(Seller, on_delete=models.CASCADE, verbose_name='Связанный парсер')
     name = models.CharField(max_length=50, null=False)

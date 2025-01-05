@@ -16,7 +16,7 @@ def ozon_update_inventory(headers,stock):
     warehouseID = ozon_get_warehouse(headers)
     url = 'https://api-seller.ozon.ru/v2/products/stocks'
     ozon_stocks = []
-    print(f'update_inventory_ozon stock {stock}')
+    #print(f'update_inventory_ozon stock {stock}')
     invalid_offer_ids = []
 
 
@@ -37,10 +37,10 @@ def ozon_update_inventory(headers,stock):
         data = {
             'stocks': ozon_stocks[i:i+99],
         }
-    print('#####')
-    print('#####')
-    print('#####')
-    print(f'ozon_data #### {data}')
+    #print('#####')
+    #print('#####')
+    #print('#####')
+    #print(f'ozon_data #### {data}')
     #print(f'data stock {data}')
     response = requests.post(url, headers=headers['ozon_headers'], json=data)
     context = {
@@ -81,13 +81,11 @@ def ozon_get_awaiting_fbs(headers: dict):
         "filter": {
             "delivering_date_from": one_week_ago_str,
             "delivering_date_to": current_date_str,
-            "delivery_method_id": [],
             "is_quantum": False,
-            "provider_id": [],
-            "status": "awaiting_packaging",
+            #"status": 'awaiting_approve',
             "warehouse_id": []
         },
-        "dir": "ASC",
+        "dir": "DESC",
         "limit": 1000,
         "offset": 0,
         "with": {
@@ -106,12 +104,35 @@ def ozon_get_awaiting_fbs(headers: dict):
                 "from": one_week_ago_str,
                 "to": current_date_str
             },
-            #"order_id": 0,
+            # "order_id": 0,
             "since": one_week_ago_str,
-            "status": "awaiting_deliver",
+            "status": 'awaiting_packaging',  # awaiting_deliver
             "to": current_date_str,
         },
-        "dir": "ASC",
+        "dir": "DESC",
+        "limit": 1000,
+        "offset": 0,
+        "with": {
+            "analytics_data": False,
+            "barcodes": False,
+            "financial_data": False,
+            "translit": False
+        }
+    }
+
+    params_deliver = {
+        "filter": {
+            "is_quantum": False,
+            "last_changed_status_date": {
+                "from": one_week_ago_str,
+                "to": current_date_str
+            },
+            #"order_id": 0,
+            "since": one_week_ago_str,
+            "status": 'awaiting_deliver', #awaiting_deliver
+            "to": current_date_str,
+        },
+        "dir": "DESC",
         "limit": 1000,
         "offset": 0,
         "with": {
@@ -123,22 +144,21 @@ def ozon_get_awaiting_fbs(headers: dict):
         }
 
     try:
-        response = requests.post(url_awaiting, headers=ozon_headers, json=params_awaiting)
+        response = requests.post(url_packag, headers=ozon_headers, json=params_packag)
         if response.status_code == 200:
-            response_json = response.json()
-            awaiting = response_json
-            #print(f"response_json (awaiting): {response_json}")
+            packag = response.json()
+            #print(f"response_json (awaiting): {awaiting}")
         else:
             result['error'] = response.text
+            print(f"response.text (awaiting): {response.text}")
     except Exception as e:
         result['error'] = f"Error in awaiting request: {e}"
 
     try:
-        response = requests.post(url_packag, headers=ozon_headers, json=params_packag)
+        response = requests.post(url_packag, headers=ozon_headers, json=params_deliver)
         if response.status_code == 200:
-            response_json = response.json()
-            packag = response_json
-            #print(f"response_json (packag): {response_json}")
+            deliver = response.json()
+            #print(f"response_json (packag): {deliver}")
         else:
             result['error'] = response.text
     except Exception as e:
@@ -150,7 +170,11 @@ def ozon_get_awaiting_fbs(headers: dict):
     #print(f"packag {packag}")
     #print(f"awaiting {awaiting}")
     #print(f'*' * 40)
-    for pack in packag['result']['postings']:
+
+    awaiting_packag = deliver['result']['postings']
+    awaiting_packag.extend(packag['result']['postings'])
+
+    for pack in awaiting_packag:
         product_list = []
         #print(f'pack {pack}')
         posting_number = pack['posting_number']
@@ -334,7 +358,7 @@ def ozon_get_all_price(headers):
         "month": lastmonth_date.month
     }
 
-    print(f"ozon_headers: {headers['ozon_headers']}")
+    #print(f"ozon_headers: {headers['ozon_headers']}")
     response = requests.post(url, headers=headers['ozon_headers'], json=data).json()
     #print(f"utils.py | get_all_price_ozon | response: {response}")
     realization = {}
@@ -349,7 +373,7 @@ def ozon_get_all_price(headers):
             # Добавляем к sale_qty, если offer_id уже существует
             realization[offer_id]['sale_qty'] = realization[offer_id].get('sale_qty', 0) + quantity
 
-    print(f"realization {realization}")
+    #print(f"realization {realization}")
 
     url = "https://api-seller.ozon.ru/v4/product/info/prices"
     data = {
@@ -397,7 +421,6 @@ def ozon_get_all_price(headers):
             'profit_percent': int(profit_percent),
             'sale_qty': realization[item['offer_id']]['sale_qty']
         }
-
 
     #print(f'result ozon price {result}')
     return result
