@@ -10,7 +10,7 @@ from django.conf import settings
 
 import pandas as pd
 
-from owm.utils.db_utils import db_get_metadata, db_create_customerorder
+from owm.utils.db_utils import db_get_metadata, db_create_customerorder, db_get_awaiting
 from owm.utils.ms_utils import ms_create_customerorder, ms_get_organization_meta, ms_get_agent_meta, ms_update_allstock_to_mp
 from owm.models import Crontab
 from owm.utils.oz_utils import ozon_get_awaiting_fbs
@@ -722,6 +722,8 @@ def update_awaiting_deliver_from_owm(headers, seller, cron_active_mp):
     cron_active_mp['ozon'] = True
     cron_active_mp['wb'] = True
     cron_active_mp['yandex'] = True
+
+    all_order_db = db_get_awaiting()
 
     if cron_active_mp['ozon']:
 

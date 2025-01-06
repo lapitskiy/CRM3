@@ -25,8 +25,17 @@ def ms_get_product(headers):
     params = [
         ("limit", 1000)
     ]
-    response = requests.get(url, headers=moysklad_headers, params=params).json()
-    return response
+    result = {}
+    response = requests.get(url, headers=moysklad_headers, params=params)
+
+    if response.status_code == 200:
+        result['status_code'] = response.status_code
+        result['response'] = response.json()
+    else:
+        result['status_code'] = response.status_code
+        result['response'] = response.text
+        logger_error.error(f"error ms_get_product: {response.text}")
+    return result
 
 def ms_get_organization_meta(headers) -> list:
     result = []

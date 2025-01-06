@@ -203,10 +203,13 @@ def ozon_get_awaiting_fbs(headers: dict):
     return check_result_dict
 
 def ozon_get_finance(headers: dict, period: str):
-    products = ms_get_product(headers['moysklad_headers'])
+    products = ms_get_product(headers)
     opt_price_clear = {}
-    #print(f"products {products}")
-    for item in products['rows']:
+    print(f"products {products}")
+    if products['status_code'] != 200:
+        return {'error': products}
+
+    for item in products['response']['rows']:
         #opt_price_clear['article'] = item['article']
         #print(f"opt_price {item['buyPrice']['value']/100}")
         opt_price_clear[item['article']] = {

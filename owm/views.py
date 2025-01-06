@@ -539,7 +539,7 @@ class SettingsStatus(View):
 
         context['statuslist'] = ms_get_orderstatus_meta(headers)
 
-        print(f"contextTYT {context}")
+        #print(f"contextTYT {context}")
 
         return render(request, 'owm/settings/settings_status.html', context)
 
@@ -632,18 +632,19 @@ class FinanceOzon(View):
         }
         headers = get_headers(parser_data)
         data = ozon_get_finance(headers, period='month')
+        if 'error' not in data:
+            context['report'] = data['sorted_report']  # dict(list(price.items())[:1]) # price
+            context['summed_totals'] = data['summed_totals']  # dict(list(price.items())[:1]) # price
+            context['all_totals'] = data['all_totals']
+            context['header_data'] = data['header_data']
 
-        context['report'] = data['sorted_report']  # dict(list(price.items())[:1]) # price
-        context['summed_totals'] = data['summed_totals']  # dict(list(price.items())[:1]) # price
-        context['all_totals'] = data['all_totals']
-        context['header_data'] = data['header_data']
-
-        #print(f"headers {context['headers']}")
-        print(f"$$$$$$$$$$$$$$$$$")
-        print(f"$$$$$$$$$$$$$$$$$")
-        print(f"$$$$$$$$$$$$$$$$$")
-        #print(f"all_total {all_totals}")
-
+            #print(f"headers {context['headers']}")
+            #print(f"$$$$$$$$$$$$$$$$$")
+            #print(f"$$$$$$$$$$$$$$$$$")
+            #print(f"$$$$$$$$$$$$$$$$$")
+            #print(f"all_total {all_totals}")
+        else:
+            context['error'] = data
         return render(request, 'owm/finance_ozon.html', context)
 
     def post(self, request, *args, **kwargs):

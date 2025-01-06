@@ -108,3 +108,12 @@ def db_create_customerorder(not_found_product: dict):
         # Логируем ошибку или поднимаем исключение, если нужно
         print(f"Error occurred: {e}")
         raise
+
+def db_get_awaiting() -> list[str, Any]:
+    """
+    Извлекает все отпралвения для указанного продавца (seller)
+    """
+    records = Awaiting.objects.all()
+    posting_numbers = list(records.values_list('posting_number', flat=True))
+    return posting_numbers
+

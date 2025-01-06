@@ -43,6 +43,8 @@ function input() {
   });
 </script>
 
+{% if not error %}
+
 header_data {{ header_data }}
     <br><br>
     all_totals {{ all_totals }}
@@ -84,7 +86,7 @@ header_data {{ header_data }}
                 <!--begin::Section-->
                 <div class="d-flex flex-column my-7">
                     <div class="fw-semibold fs-3x text-gray-800 lh-1 ls-n2" data-kt-countup="true" data-kt-countup-value="{{ all_totals.all_total_price_sum }}" data-kt-countup-prefix="₽">0</div>
-                    <div class="m-0"><span class="fw-semibold fs-6 text-gray-500">Переведено денег</span></div>
+                    <div class="m-0"><span class="fw-semibold fs-6 text-gray-500">Денег к выплате</span></div>
 
                 </div>
                 <!--end::Section-->
@@ -416,5 +418,8 @@ header_data {{ header_data }}
   {% endfor %}
 </div>
 
+{% else%}
+    {{ error }}
+{% endif %}
 <!--end::Accordion-->
 {% endblock %}
