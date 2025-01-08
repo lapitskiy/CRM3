@@ -33,6 +33,7 @@ class Awaiting(models.Model):
     '''
     posting_number = models.CharField(max_length=30, null=False, unique=True)
     status = models.CharField(max_length=30, null=False)
+    market = models.CharField(max_length=30, null=False) #ozon, wb, yandex
 
 
 class Awaiting_product(models.Model):

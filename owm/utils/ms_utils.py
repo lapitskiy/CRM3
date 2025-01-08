@@ -187,7 +187,9 @@ def ms_create_customerorder(headers: dict, not_found_product: dict, seller: mode
         products = ms_get_product(headers)
 
         article_to_id = {}
-        for item in products['rows']:
+
+        #print(f"products {products}")
+        for item in products['response']['rows']:
             article = item.get('article')
             if article:
                 article_to_id[article] = item['id']
@@ -336,7 +338,7 @@ def ms_get_last_enterloss(headers: dict):
     return result
 
 # остатки на МС отравляем на все MP
-def ms_update_allstock_to_mp(headers):
+def ms_update_allstock_to_mp(headers, seller):
     '''
     Получаем остатки с МойСклад и выставляем такие же на Озон, Вб, Яндекс
     '''
@@ -345,23 +347,138 @@ def ms_update_allstock_to_mp(headers):
     from owm.utils.ya_utils import yandex_update_inventory
 
     context = {}
-    stock = ms_get_all_stock(headers['moysklad_headers'])
+
+    moysklad_headers = headers.get('moysklad_headers')
+    metadata = db_get_metadata(seller)
+
+    stock = ms_get_all_stock(moysklad_headers, metadata)
     context['ozon'] = ozon_update_inventory(headers, stock)
     context['yandex'] = yandex_update_inventory(headers, stock)
     context['wb'] = wb_update_inventory(headers, stock)
     return context
 
-def ms_get_all_stock(headers):
+def ms_cancel_order(headers: Dict[str, Any], posting_number: str):
+    '''
+    Обновляем статус и отменяем заказ на МойСклад
+    '''
+    pass
+
+def ms_delivering_order(headers: Dict[str, Any], seller: models.Model, market: str, orders: list):
+    '''
+    Обновляем статус и отгружаем заказ на МойСклад
+    '''
+    result = {}
+
+    mapping = {
+        'ozon': {'storage': 'ms_storage_ozon', 'agent': 'ms_ozon_contragent', 'status': 'ms_status_shipped'},
+        'wb': {'storage': 'ms_storage_wb', 'agent': 'ms_wb_contragent', 'status': 'ms_status_shipped'},
+        'yandex': {'storage': 'ms_storage_yandex', 'agent': 'ms_yandex_contragent', 'status': 'ms_status_shipped'}}
+
+    moysklad_headers = headers.get('moysklad_headers')
+    metadata = db_get_metadata(seller)
+
+
+    url = 'https://api.moysklad.ru/api/remap/1.2/entity/customerorder'
+
+
+    organization_meta = {
+        "href": f"https://api.moysklad.ru/api/remap/1.2/entity/organization/{metadata['ms_organization']['id']}",
+        "metadataHref": "https://api.moysklad.ru/api/remap/1.2/entity/organization/metadata",
+        "type": "organization",
+        "mediaType": "application/json"
+    }
+
+    agent_meta = {
+        "href": f"https://api.moysklad.ru/api/remap/1.2/entity/counterparty/{metadata[mapping[market]['agent']]['id']}",
+        "metadataHref": "https://api.moysklad.ru/api/remap/1.2/entity/counterparty/metadata",
+        "type": "counterparty",
+        "mediaType": "application/json"
+    }
+
+    storage_meta = {
+        "href": f"https://api.moysklad.ru/api/remap/1.2/entity/store/{metadata[mapping[market]['storage']]['id']}",
+        "metadataHref": "https://api.moysklad.ru/api/remap/1.2/entity/counterparty/metadata",
+        "type": "store",
+        "mediaType": "application/json"
+    }
+
+    status_meta = {
+        "href": f"https://api.moysklad.ru/api/remap/1.2/entity/customerorder/metadata/states/{metadata[mapping[market]['status']]['id']}",
+        "type": "state",
+        "mediaType": "application/json"
+    }
+
+    data = []
+
+    for order in orders:
+        order_data = {
+            "name": str(order['posting_number']),
+            "vatEnabled": False,
+            "applicable": True,
+            "state": {
+                "meta": status_meta
+            }
+        }
+        # Добавляем сформированный заказ в общий список
+        data.append(order_data)
+
+        try:
+            response = requests.post(url, headers=moysklad_headers, json=data)
+            #logging.info(f"[seller {seller.id}][ms_create_customerorder][response json]: {response.json()}")
+            #print(f"*" * 40)
+            #print(f"*" * 40)
+            #print(f"response_json MS: {response_json}")
+            #print(f"*" * 40)
+            #print(f"*" * 40)
+        except requests.exceptions.JSONDecodeError:
+            logging.error(f"[seller {seller.id}][ms_create_customerorder][response text]: {response.text}")
+
+        # Дополнительные шаги для обработки результата
+        if response.status_code != 200:
+            print(f"Ошибка: сервер вернул код состояния {response.status_code}")
+        else:
+            # Продолжайте обработку response_json здесь
+            pass
+    else:
+        raise Exception(f"Error: обновите метадату в настройках Контрагенты")
+    return result
+
+
+def ms_received_order(headers: Dict[str, Any], posting_number: str):
+    '''
+    Обновляем статус, что заказ доставлен на МС
+    '''
+    pass
+
+
+
+
+
+
+
+
+def ms_get_all_stock(headers, metadata):
     '''
     получаем с МойСклад список всех ОСТАТКОВ
     '''
+    mapping = {
+            'ozon': {'storage': 'ms_storage_ozon'},
+            'wb': {'storage': 'ms_storage_wb'},
+            'yandex': {'storage': 'ms_storage_yandex'}
+    }
+
     stock_tuple = {}
+
     url = "https://api.moysklad.ru/api/remap/1.2/report/stock/all"
+    store_id = f"https://api.moysklad.ru/api/remap/1.2/entity/store/{metadata[mapping['ozon']['storage']]['id']}"
+
     params = [
-        ("filter", "quantityMode=all")
+        ("filter", "quantityMode=all"),
+        ("filter", f"store={store_id}")
     ]
+    print('TYT')
     response = requests.get(url, headers=headers, params=params).json()
-    #print(f'response {response}')
+    #print(f'ms_get_all_stock response {response}')
     for stock in response['rows']:
         stock_tuple[stock['article']] = {'stock': int(stock['stock']), 'price' : stock['salePrice']/100 }
     sorted_stock_tuple = OrderedDict(sorted(stock_tuple.items()))

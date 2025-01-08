@@ -84,13 +84,14 @@ def db_check_awaiting_postingnumber(posting_numbers: list):
     result = {'found': found_posting_numbers, 'not_found': not_found_records}
     return result
 
-def db_create_customerorder(not_found_product: dict):
+def db_create_customerorder(not_found_product: dict, market: str):
     try:
         for posting_number, products in not_found_product.items():
             # Создаем запись в таблице OwmAwaiting
             awaiting_record = Awaiting.objects.create(
                 posting_number=posting_number,
-                status=products['status']
+                status=products['status'],
+                market=market
                 )
 
             for product in products['product_list']:
@@ -109,11 +110,18 @@ def db_create_customerorder(not_found_product: dict):
         print(f"Error occurred: {e}")
         raise
 
-def db_get_awaiting() -> list[str, Any]:
+def db_get_awaiting(market: str) -> Dict[str, Any]:
     """
     Извлекает все отпралвения для указанного продавца (seller)
     """
-    records = Awaiting.objects.all()
-    posting_numbers = list(records.values_list('posting_number', flat=True))
-    return posting_numbers
+    records = Awaiting.objects.filter(market=market)
+    result = {}
+    orders_list = []
+    for record in records:
+            orders_list.append({
+            'posting_number': record.posting_number,
+            'status': record.status
+        })
+    result[market] = orders_list
+    return result
 

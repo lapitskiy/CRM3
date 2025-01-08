@@ -1,13 +1,14 @@
 import requests
 import datetime
 
-from owm.utils.db_utils import db_check_awaiting_postingnumber
+from owm.utils.db_utils import db_check_awaiting_postingnumber, db_get_awaiting
 from owm.utils.ms_utils import ms_get_product
 
 import locale
 import pymorphy2
 
 import logging
+from typing import Dict, Any
 
 logger_info = logging.getLogger('crm3_info')
 logger_error = logging.getLogger('crm3_error')
@@ -82,7 +83,7 @@ def ozon_get_awaiting_fbs(headers: dict):
             "delivering_date_from": one_week_ago_str,
             "delivering_date_to": current_date_str,
             "is_quantum": False,
-            #"status": 'awaiting_approve',
+            "status": 'awaiting_approve',
             "warehouse_id": []
         },
         "dir": "DESC",
@@ -150,7 +151,7 @@ def ozon_get_awaiting_fbs(headers: dict):
             #print(f"response_json (awaiting): {awaiting}")
         else:
             result['error'] = response.text
-            print(f"response.text (awaiting): {response.text}")
+            print(f"ozon_get_awaiting_fbs response.text (awaiting): {response.text}")
     except Exception as e:
         result['error'] = f"Error in awaiting request: {e}"
 
@@ -201,6 +202,99 @@ def ozon_get_awaiting_fbs(headers: dict):
     check_result_dict = db_check_awaiting_postingnumber(posting_numbers)
     check_result_dict['current_product'] = current_product
     return check_result_dict
+
+def ozon_get_status_fbs(headers: Dict[str, Any]):
+    '''
+    получаем последние статусы заказов FBS
+    '''
+    result = {}
+    current_date = datetime.datetime.now()
+    one_week_ago = current_date - datetime.timedelta(weeks=4)
+    current_date_str = current_date.strftime('%Y-%m-%dT%H:%M:%SZ')
+    one_week_ago_str = one_week_ago.strftime('%Y-%m-%dT%H:%M:%SZ')
+
+    orders_db = db_get_awaiting(market='ozon')
+    # Получаем список заказов для 'ozon'
+    orders_list = orders_db.get('ozon', [])
+    existing_orders = {order['posting_number'] for order in orders_list}
+
+
+
+
+    ozon_headers = headers.get('ozon_headers')
+    url_orders = 'https://api-seller.ozon.ru/v3/posting/fbs/list'
+
+    params = {
+        "filter": {
+            "is_quantum": False,
+            "last_changed_status_date": {
+                "from": one_week_ago_str,
+                "to": current_date_str
+            },
+            # "order_id": 0,
+            "since": one_week_ago_str,
+            #"status": 'awaiting_packaging',  # awaiting_deliver
+            "to": current_date_str,
+        },
+        "dir": "DESC",
+        "limit": 1000,
+        "offset": 0,
+        "with": {
+            "analytics_data": False,
+            "barcodes": False,
+            "financial_data": False,
+            "translit": False
+        }
+    }
+
+    matching_orders = {}
+    try:
+        response = requests.post(url_orders, headers=ozon_headers, json=params)
+        if response.status_code == 200:
+            json_orders = response.json()
+            #print(f"response_json (awaiting): {awaiting}")
+            json_orders = json_orders['result']['postings']
+            matching_orders['delivering'] = []
+            matching_orders['received'] = []
+            matching_orders['cancelled'] = []
+            delivering = []
+            received = []
+            cancelled = []
+            for order in json_orders:
+                posting_number = order['posting_number']
+                status = order['status']
+                substatus = order['substatus']
+                if posting_number in existing_orders and existing_orders[posting_number] != status:
+                    if 'delivering' in status and substatus != 'posting_received':
+                        delivering.append({
+                            'posting_number': posting_number,
+                            'status': status,
+                            'substatus': substatus
+                        })
+                    if 'posting_received' in substatus:
+                        received.append({
+                            'posting_number': posting_number,
+                            'status': status,
+                            'substatus': substatus
+                        })
+                    if 'cancelled' in status:
+                        cancelled.append({
+                            'posting_number': posting_number,
+                            'status': status,
+                            'substatus': substatus
+                        })
+
+            matching_orders['delivering'] = delivering
+            matching_orders['received'] = received
+            matching_orders['cancelled'] = cancelled
+        else:
+            result['error'] = response.text
+            print(f"ozon_get_status_fbs response.text (awaiting): {response.text}")
+    except Exception as e:
+        result['error'] = f"Error in awaiting request: {e}"
+
+    return matching_orders
+
 
 def ozon_get_finance(headers: dict, period: str):
     products = ms_get_product(headers)
