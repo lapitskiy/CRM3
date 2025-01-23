@@ -409,57 +409,6 @@ def update_price_ozon(obj, offer_dict):
     #print(f'ozon price response {response.status_code}')
     print(f'ozon price json {response.json()}')
 
-def get_postavka_ozon(headers: dict):
-    uuid_suffix = str(uuid.uuid4())[:6]
-
-    path = os.path.join(settings.MEDIA_ROOT, 'owm/report/')
-    url_path = os.path.join(settings.MEDIA_URL, 'owm/report/', f'stock_data_ozn_{uuid_suffix}.xlsx')
-    file_path = os.path.join(settings.MEDIA_ROOT, 'owm/report/', f'stock_data_ozn_{uuid_suffix}.xlsx')
-    os.makedirs(os.path.dirname(file_path), exist_ok=True)
-
-    url = "https://api-seller.ozon.ru/v1/analytics/turnover/stocks"
-    data = {
-        "limit": 1000,
-    }
-
-    response = requests.post(url, headers=headers['ozon_headers'], json=data).json()
-
-    rows = []
-    for item in response.get('items', []):
-        offer_id = item.get('offer_id')
-        # Шаг 1: Считаем, сколько товара нужно на 90 дней
-        total_stock_needed = 90 * item.get('ads')
-        rows.append({
-            'offer_id': item['offer_id'],
-            'name': '',  # Имя оставляем пустым
-            'stock_needed': int(round(max(0, total_stock_needed - item.get('current_stock')))) # Округляем до целого
-            })
-
-    # Создание XLSX файла
-
-    prefix = 'stock_data'
-    delete_files_with_prefix(path, prefix)
-
-    workbook = xlsxwriter.Workbook(file_path)
-    worksheet = workbook.add_worksheet()
-    headers = ['Артикул', 'Имя', 'Количество']
-
-    rows_sorted = sorted(rows, key=lambda x: x['offer_id'])  # Сортировка по 'offer_id'
-
-    for col_num, header in enumerate(headers):
-        worksheet.write(0, col_num, header)
-    for row_num, row in enumerate(rows_sorted, start=1):
-        worksheet.write(row_num, 0, row['offer_id'])  # Артикул
-        worksheet.write(row_num, 1, row['name'])  # Имя (пустое)
-        worksheet.write(row_num, 2, row['stock_needed'])  # Количество
-    workbook.close()
-
-    result = {}
-    result['row'] = rows_sorted
-    result['path'] = url_path
-    result['code'] = 8 if response.get('code') == 8 else 0
-    return result
-
 def get_finance_wb(headers: dict, period: str):
     opt_price = get_moysklad_opt_price(headers['moysklad_headers'])
     opt_price_clear = {}
@@ -693,7 +642,7 @@ def get_finance_wb(headers: dict, period: str):
     result['summed_totals'] = summed_totals
     return result
 
-def delete_files_with_prefix(directory_path, prefix):
+def base_delete_files_with_prefix(directory_path, prefix):
     """
     Удаляет все файлы в указанной папке, начинающиеся с заданного префикса.
     """
@@ -730,15 +679,13 @@ def update_awaiting_deliver_from_owm(headers, seller, cron_active_mp):
 
         ozon_status_fbs_dict = ozon_get_status_fbs(headers=headers) # получаем статусы с озона и сравниваем в базе, если отличаются меняем на МС
 
+        print(f'ozon_status_fbs_dict {ozon_status_fbs_dict}')
+        exit()
         if ozon_awaiting_fbs_dict['not_found']:
            not_found_product = {key: product for key in ozon_awaiting_fbs_dict['not_found'] for product in ozon_current_product if key in product.get('posting_number', '')}
            ms_create_customerorder(headers=headers, not_found_product=not_found_product, seller=seller, market='ozon')
            db_create_customerorder(not_found_product, market='ozon')
-           ms_update_allstock_to_mp(headers=headers, seller=seller, market='ozon')
-
-           if ozon_status_fbs_dict:
-               if ozon_status_fbs_dict['delivering']:
-                   ms_delivering_order(headers=headers, seller=seller, market='ozon', orders=ozon_status_fbs_dict['delivering'])
+           ms_update_allstock_to_mp(headers=headers, seller=seller)
                #if ozon_status_fbs_dict['received']:
                #    ms_received_order(headers=headers, seller=seller, market='ozon', orders=ozon_status_fbs_dict['received'])
                #if ozon_status_fbs_dict['cancelled']:
@@ -746,6 +693,9 @@ def update_awaiting_deliver_from_owm(headers, seller, cron_active_mp):
 
         if ozon_awaiting_fbs_dict['found']:
            found_product = {key: ozon_current_product[key] for key in ozon_awaiting_fbs_dict['found'] if key in ozon_current_product}
+           if ozon_status_fbs_dict:
+               if ozon_status_fbs_dict['delivering']:
+                   ms_delivering_order(headers=headers, seller=seller, market='ozon', orders=ozon_status_fbs_dict['delivering'])
            #print(f'*' * 40)
            #print(f'found_product {found_product}')
            #print(f'*' * 40)

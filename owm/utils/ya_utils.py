@@ -111,3 +111,44 @@ def yandex_get_awaiting_fbs(headers: dict):
     check_result_dict['filter_product'] = filtered_result
 
     return check_result_dict
+
+def yandex_get_products(headers):
+
+    headers_ya = headers['yandex_headers']
+    company_id = headers['yandex_id']['company_id']
+    businessId = headers['yandex_id']['businessId']
+    warehouseId = headers['yandex_id']['warehouseId']
+
+    current_time = datetime.datetime.now()
+    offset = datetime.timezone(datetime.timedelta(hours=3))  # Указываем смещение +03:00
+    formatted_time = current_time.replace(tzinfo=offset).isoformat()
+    url = f"https://api.partner.market.yandex.ru/businesses/{businessId}/offer-mappings"
+
+    all_items = []
+    page_token = None
+
+    while True:
+        params = {"limit": 200}
+        if page_token:
+            params["page_token"] = page_token
+
+        response = requests.post(url=url, headers=headers_ya, json={}, params=params).json()
+        #print(f"response: {response}")
+        if response.get("status") == "ERROR":
+            print(f"Ошибка: {response}")
+            break
+
+        # Сохраняем товары
+        offers = response.get("result", {}).get("offerMappings", [])
+        all_items.extend(offers)
+        # Переходим на следующую страницу
+        page_token = response.get("result", {}).get("paging", {}).get("nextPageToken")
+
+        # Если страницы закончились, выходим из цикла
+        if not page_token:
+            break
+
+        # Задержка между запросами для соблюдения лимита
+        #time.sleep(1)
+    #print(f"all_items {all_items}")
+    return all_items

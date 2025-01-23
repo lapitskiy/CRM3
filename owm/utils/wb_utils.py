@@ -201,3 +201,41 @@ def wb_get_awaiting_fbs(headers: dict):
     check_result_dict = db_check_awaiting_postingnumber(waiting_ids)
     check_result_dict['filter_product'] = filtered_result
     return check_result_dict
+
+def wb_get_products(headers):
+    url_list = "https://content-api.wildberries.ru/content/v2/get/cards/list"
+
+    data_cards = {
+        'settings': {
+            'cursor': {'limit': 100, 'nmID': None, 'updatedAt': None},
+            'filter': {'withPhoto': -1}
+        }
+    }
+
+    all_item = []
+    while True:  # Внешний цикл обработки страниц
+        try:
+            response = requests.post(url_list, json=data_cards, headers=headers['wb_headers'])
+            response.raise_for_status()  # Проверка статуса ответа
+            response_json = response.json()
+
+            # Обработка результата
+            all_item.extend(['cards'])
+
+            # Обновление данных для следующей страницы
+            if 'cursor' in response_json and response_json['cursor']:
+                data_cards['settings']['cursor']['nmID'] = response_json['cursor']['nmID']
+                data_cards['settings']['cursor']['updatedAt'] = response_json['cursor']['updatedAt']
+            else:
+                break  # Выход из цикла, если нет следующей страницы
+
+        except requests.exceptions.RequestException as e:
+            logging.error(f"Ошибка при запросе к API: {e}")
+            return {'code': 500, 'json': f"Ошибка при запросе к API: {e}"}
+        except (KeyError, IndexError) as e:
+            logging.error(f"Ошибка при обработке ответа: {e}, данные:{response_json}")
+            return {'code': 500, 'json': f"Ошибка при обработке ответа: {e}, данные:{response_json}"}
+
+        if response_json.get('cursor', {}).get('total', 0) < 100:
+            break  # Выходим из цикла, если total < 100
+    return all_item

@@ -1,0 +1,49 @@
+{% extends "base.html" %}
+{% block title %}{{ title }} - {{ block.super }}{% endblock %}
+{% block sidebar %}
+    {% include 'include/_sidebar_owm.html' %}
+{% endblock %}
+{% block content %}
+
+    <h1>Сопоставление артиклей и баркодов</h1>
+    <br>
+<table>
+    <thead>
+        <tr>
+            <th>Ozon</th>
+            <th>MS</th>
+            <th>WB</th>
+            <th>Yandex</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for i in range(ozon|length) %}
+        <tr>
+            <!-- Ozon: Артикул и Баркоды -->
+            <td>
+                <strong>{{ ozon.i.offer_id }}</strong><br>
+                {% for barcode in ozon.i.barcodes %}
+                    {{ barcode }}<br>
+                {% endfor %}
+            </td>
+            <!-- MS: Артикул и Баркоды -->
+            <td>
+                <strong>{{ ms.i.article }}</strong><br>
+                {% for barcode in ms.i.barcodes %}
+                    {{ barcode.ean13 }}<br>
+                {% endfor %}
+            </td>
+            <!-- Цена -->
+            <td>
+
+            </td>
+            <!-- Ссылка -->
+            <td>
+
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+{% endblock %}

@@ -8,7 +8,13 @@ import locale
 import pymorphy2
 
 import logging
+
+import uuid
+import xlsxwriter
+
 from typing import Dict, Any
+from django.conf import settings
+import os
 
 logger_info = logging.getLogger('crm3_info')
 logger_error = logging.getLogger('crm3_error')
@@ -218,9 +224,6 @@ def ozon_get_status_fbs(headers: Dict[str, Any]):
     orders_list = orders_db.get('ozon', [])
     existing_orders = {order['posting_number'] for order in orders_list}
 
-
-
-
     ozon_headers = headers.get('ozon_headers')
     url_orders = 'https://api-seller.ozon.ru/v3/posting/fbs/list'
 
@@ -252,38 +255,50 @@ def ozon_get_status_fbs(headers: Dict[str, Any]):
         response = requests.post(url_orders, headers=ozon_headers, json=params)
         if response.status_code == 200:
             json_orders = response.json()
-            #print(f"response_json (awaiting): {awaiting}")
-            json_orders = json_orders['result']['postings']
+            #print(f"json_orders: {json_orders}")
+            #json_orders =
             matching_orders['delivering'] = []
             matching_orders['received'] = []
             matching_orders['cancelled'] = []
             delivering = []
             received = []
             cancelled = []
-            for order in json_orders:
-                posting_number = order['posting_number']
-                status = order['status']
-                substatus = order['substatus']
-                if posting_number in existing_orders and existing_orders[posting_number] != status:
-                    if 'delivering' in status and substatus != 'posting_received':
-                        delivering.append({
-                            'posting_number': posting_number,
-                            'status': status,
-                            'substatus': substatus
-                        })
-                    if 'posting_received' in substatus:
-                        received.append({
-                            'posting_number': posting_number,
-                            'status': status,
-                            'substatus': substatus
-                        })
-                    if 'cancelled' in status:
-                        cancelled.append({
-                            'posting_number': posting_number,
-                            'status': status,
-                            'substatus': substatus
-                        })
+            try:
+                print(f"ZZZZZZZZZZZZZ")
+                #print(type(json_orders))
+                print(f"ZZZZZZZZZZZZZ")
+                for order in json_orders['result']['postings']:
 
+                    print(type(order))
+                    print(f"posting number: {order}")
+
+                    posting_number = order['posting_number']
+                    status = order['status']
+                    substatus = order['substatus']
+                    #if posting_number == '70611105-0207-1':
+                    #    print(f"TYT")
+                    #    print(f"TYT: {order}")
+                    if posting_number in existing_orders and existing_orders[posting_number] != status:
+                        if 'delivering' in status and substatus != 'posting_received':
+                            delivering.append({
+                                'posting_number': posting_number,
+                                'status': status,
+                                'substatus': substatus
+                            })
+                        if 'posting_received' in substatus:
+                            received.append({
+                                'posting_number': posting_number,
+                                'status': status,
+                                'substatus': substatus
+                            })
+                        if 'cancelled' in status:
+                            cancelled.append({
+                                'posting_number': posting_number,
+                                'status': status,
+                                'substatus': substatus
+                            })
+            except Exception as e:
+                print(f"Error during processing: {e}")
             matching_orders['delivering'] = delivering
             matching_orders['received'] = received
             matching_orders['cancelled'] = cancelled
@@ -292,9 +307,8 @@ def ozon_get_status_fbs(headers: Dict[str, Any]):
             print(f"ozon_get_status_fbs response.text (awaiting): {response.text}")
     except Exception as e:
         result['error'] = f"Error in awaiting request: {e}"
-
+    exit()
     return matching_orders
-
 
 def ozon_get_finance(headers: dict, period: str):
     products = ms_get_product(headers)
@@ -520,5 +534,92 @@ def ozon_get_all_price(headers):
         }
 
     #print(f'result ozon price {result}')
+    return result
+
+def ozon_get_products(headers):
+
+    url_list = "https://api-seller.ozon.ru/v3/product/list"
+    url_barcode = "https://api-seller.ozon.ru/v3/product/info/list"
+    data = {
+        "filter": {
+            "visibility": "ALL",
+        },
+            "last_id": "",
+            "limit": 1000
+        }
+    response = requests.post(url_list, headers=headers['ozon_headers'], json=data).json()
+
+    result = {}
+    offer_list = []
+    for item in response['result']['items']:
+        offer_list.append(item['offer_id'])
+    #print(f'result ozon price {result}')
+
+    url_barcode = "https://api-seller.ozon.ru/v3/product/info/list"
+
+    data = {
+        "offer_id": offer_list,
+        }
+
+    response = requests.post(url_barcode, headers=headers['ozon_headers'], json=data).json()
+    extracted_data = [
+        {"offer_id": item["offer_id"], "barcodes": item["barcodes"]}
+        for item in response["items"]
+    ]
+    #print(f"extracted_data {extracted_data}")
+
+    return extracted_data
+
+def ozon_get_postavka(headers: dict):
+    from owm.utils.base_utils import base_delete_files_with_prefix
+
+    uuid_suffix = str(uuid.uuid4())[:6]
+
+    path = os.path.join(settings.MEDIA_ROOT, 'owm/report/')
+    url_path = os.path.join(settings.MEDIA_URL, 'owm/report/', f'stock_data_ozn_{uuid_suffix}.xlsx')
+    file_path = os.path.join(settings.MEDIA_ROOT, 'owm/report/', f'stock_data_ozn_{uuid_suffix}.xlsx')
+    os.makedirs(os.path.dirname(file_path), exist_ok=True)
+
+    url = "https://api-seller.ozon.ru/v1/analytics/turnover/stocks"
+    data = {
+        "limit": 1000,
+    }
+
+    response = requests.post(url, headers=headers['ozon_headers'], json=data).json()
+
+    rows = []
+    for item in response.get('items', []):
+        offer_id = item.get('offer_id')
+        # Шаг 1: Считаем, сколько товара нужно на 90 дней
+        total_stock_needed = 90 * item.get('ads')
+        rows.append({
+            'offer_id': item['offer_id'],
+            'name': '',  # Имя оставляем пустым
+            'stock_needed': int(round(max(0, total_stock_needed - item.get('current_stock')))) # Округляем до целого
+            })
+
+    # Создание XLSX файла
+
+    prefix = 'stock_data'
+    base_delete_files_with_prefix(path, prefix)
+
+    workbook = xlsxwriter.Workbook(file_path)
+    worksheet = workbook.add_worksheet()
+    headers = ['Артикул', 'Имя', 'Количество']
+
+    rows_sorted = sorted(rows, key=lambda x: x['offer_id'])  # Сортировка по 'offer_id'
+
+    for col_num, header in enumerate(headers):
+        worksheet.write(0, col_num, header)
+    for row_num, row in enumerate(rows_sorted, start=1):
+        worksheet.write(row_num, 0, row['offer_id'])  # Артикул
+        worksheet.write(row_num, 1, row['name'])  # Имя (пустое)
+        worksheet.write(row_num, 2, row['stock_needed'])  # Количество
+    workbook.close()
+
+    result = {}
+    result['row'] = rows_sorted
+    result['path'] = url_path
+    result['code'] = 8 if response.get('code') == 8 else 0
     return result
 

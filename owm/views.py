@@ -14,8 +14,10 @@ from datetime import datetime
 
 from .utils.db_utils import db_update_metadata, db_get_metadata
 from .utils.ms_utils import ms_update_allstock_to_mp, ms_get_last_enterloss, ms_get_agent_meta, ms_get_organization_meta, ms_get_storage_meta, \
-    ms_get_orderstatus_meta
-from .utils.oz_utils import ozon_get_finance, ozon_get_all_price
+    ms_get_orderstatus_meta, ms_get_product
+from .utils.oz_utils import ozon_get_finance, ozon_get_all_price, ozon_get_postavka, ozon_get_products
+from .utils.wb_utils import wb_get_products
+from .utils.ya_utils import yandex_get_products
 
 
 def get_prod_meta(headers, offer_dict):
@@ -255,6 +257,59 @@ class Inventory(View):
         context['resp'] = inventory_update(user, invent_dict)
         print(f"context resp {context['resp']}")
         return render(request, 'owm/inventory.html', context)
+
+class MSMatchingArticle(View):
+    def get(self, request, *args, **kwargs):
+        context = {}
+        if not request.user.is_authenticated:
+            return redirect('login')  # или другая страница
+
+        seller = Seller.objects.filter(user=request.user).first()
+        if seller:
+            parser_data = {
+                'moysklad_api': seller.moysklad_api,
+                'yandex_api': seller.yandex_api,
+                'wildberries_api': seller.wildberries_api,
+                'ozon_api': seller.ozon_api,
+                'ozon_id': seller.client_id,
+            }
+
+            headers = get_headers(parser_data)
+
+            ms_arcticle = ms_get_product(headers)
+            ms_extracted_data = [
+                {"offer_id": item["article"], "barcodes": item["barcodes"]}
+                for item in ms_arcticle['response']['rows']
+            ]
+
+            ozon_article = ozon_get_products(headers)
+            ozon_extracted_data = [
+                {"offer_id": item["offer_id"], "barcodes": item["barcodes"]}
+                for item in ozon_article["items"]
+            ]
+            wb_article = wb_get_products(headers)
+            wb_extracted_data = [
+                {"offer_id": item["vendorCode"], "barcodes": item["sizes"][0]['skus']}
+                for item in wb_article
+            ]
+            yandex_article = yandex_get_products(headers)
+            yandex_extracted_data = [
+                {"offer_id": item["offer_id"], "barcodes": item["barcodes"]}
+                for item in yandex_article["items"]
+            ]
+
+            print(f"ms_extracted_data {ms_extracted_data}")
+
+            context['ms'] = ms_extracted_data
+            context['ozon'] = ozon_article
+            #print(f"ms_arcticle {context['ms']}")
+            #print(f"ozon_article {ozon_article}")
+        return render(request, 'owm/ms/ms_matching_article.html', context)
+
+    def post(self, request):
+        pass
+
+
 
 class AutoupdateSettings(View):
     def get(self, request, *args, **kwargs):
@@ -658,8 +713,15 @@ class PostavkaOzon(View):
     def get(self, request, *args, **kwargs):
         context = {}
         parser = Seller.objects.get(user=request.user)
-        headers = get_headers(parser)
-        data = get_postavka_ozon(headers)
+        parser_data = {
+            'moysklad_api': parser.moysklad_api,
+            'yandex_api': parser.yandex_api,
+            'wildberries_api': parser.wildberries_api,
+            'ozon_api': parser.ozon_api,
+            'ozon_id': parser.client_id,
+        }
+        headers = get_headers(parser_data)
+        data = ozon_get_postavka(headers)
         # print(f"headers {context['headers']}")
         # print(f"all_total {all_totals}")
         context['row'] = data['row']
