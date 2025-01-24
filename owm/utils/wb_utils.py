@@ -220,7 +220,7 @@ def wb_get_products(headers):
             response_json = response.json()
 
             # Обработка результата
-            all_item.extend(['cards'])
+            all_item.extend(response_json['cards'])
 
             # Обновление данных для следующей страницы
             if 'cursor' in response_json and response_json['cursor']:

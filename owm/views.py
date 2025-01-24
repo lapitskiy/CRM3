@@ -19,6 +19,7 @@ from .utils.oz_utils import ozon_get_finance, ozon_get_all_price, ozon_get_posta
 from .utils.wb_utils import wb_get_products
 from .utils.ya_utils import yandex_get_products
 
+from itertools import chain
 
 def get_prod_meta(headers, offer_dict):
     #url = f'https://api.moysklad.ru/api/remap/1.2/entity/assortment?filter=article={article}'
@@ -277,33 +278,90 @@ class MSMatchingArticle(View):
             headers = get_headers(parser_data)
 
             ms_arcticle = ms_get_product(headers)
+
+            #print(f"ms_arcticle['response']['rows'] {ms_arcticle['response']['rows']}")
+
             ms_extracted_data = [
-                {"offer_id": item["article"], "barcodes": item["barcodes"]}
+                {"offer_id": item.get("article", "").lower(), "barcodes": [item["barcodes"][0]['ean13']]}
                 for item in ms_arcticle['response']['rows']
             ]
+
+            print(f"ms_extracted_data {ms_extracted_data}")
+
 
             ozon_article = ozon_get_products(headers)
             ozon_extracted_data = [
                 {"offer_id": item["offer_id"], "barcodes": item["barcodes"]}
                 for item in ozon_article["items"]
             ]
+            print(f"ozon_extracted_data {ozon_extracted_data}")
+
             wb_article = wb_get_products(headers)
+
             wb_extracted_data = [
                 {"offer_id": item["vendorCode"], "barcodes": item["sizes"][0]['skus']}
                 for item in wb_article
             ]
+
             yandex_article = yandex_get_products(headers)
+            #print(f"yandex_article {yandex_article}")
+
             yandex_extracted_data = [
-                {"offer_id": item["offer_id"], "barcodes": item["barcodes"]}
-                for item in yandex_article["items"]
+                {
+                    "offer_id": item["offer"]["offerId"],
+                    "barcodes": item["offer"]["barcodes"]
+                }
+                for item in yandex_article
+                if "offer" in item and "offerId" in item["offer"] and "barcodes" in item["offer"]
             ]
+            #print(f"yandex_extracted_data {yandex_extracted_data}")
 
-            print(f"ms_extracted_data {ms_extracted_data}")
+            all_articles = set(
+                chain.from_iterable(
+                    [dataset_item.get("offer_id") for dataset_item in dataset if "offer_id" in dataset_item]
+                    for dataset in [ozon_extracted_data, ms_extracted_data, wb_extracted_data, yandex_extracted_data]
+                )
+            )
 
-            context['ms'] = ms_extracted_data
-            context['ozon'] = ozon_article
-            #print(f"ms_arcticle {context['ms']}")
-            #print(f"ozon_article {ozon_article}")
+            combined_data = []
+            for current_offer_id in sorted(all_articles):
+                # Найти элементы из каждого источника с текущим артикулом
+                ozon_item = next((item for item in ozon_extracted_data if item.get("offer_id") == current_offer_id), None)
+                ms_item = next((item for item in ms_extracted_data if item.get("offer_id") == current_offer_id), None)
+                wb_item = next((item for item in wb_extracted_data if item.get("offer_id") == current_offer_id), None)
+                yandex_item = next((item for item in yandex_extracted_data if item.get("offer_id") == current_offer_id), None)
+
+                # Проверить совпадение баркодов
+
+                # Проверить пересечение баркодов между всеми источниками
+                barcode_sets = []
+                for item in [ozon_item, ms_item, wb_item, yandex_item]:
+                    if item and "barcodes" in item:
+                        barcodes = item["barcodes"]
+                        if isinstance(barcodes, list):
+                            barcode_sets.append(set(
+                                barcode if isinstance(barcode, str) else str(barcode) for barcode in barcodes
+                            ))
+                print(f'current_offer_id {current_offer_id} barcode_sets {barcode_sets}\n')
+                has_match = False
+                if len(barcode_sets) == 4:  # Убедиться, что все 4 источника присутствуют
+                    intersection = set.intersection(*barcode_sets)
+                    has_match = len(intersection) > 0
+
+                # Добавить объединенные данные в список
+                combined_data.append({
+                    "offer_id": current_offer_id,
+                    "ozon": ozon_item,
+                    "ms": ms_item,
+                    "wb": wb_item,
+                    "yandex": yandex_item,
+                    "has_match": has_match,
+                })
+
+            context = {
+                "combined_data": combined_data,
+            }
+
         return render(request, 'owm/ms/ms_matching_article.html', context)
 
     def post(self, request):

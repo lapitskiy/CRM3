@@ -5,6 +5,24 @@
 {% endblock %}
 {% block content %}
 
+    <style>
+    table {
+        width: 100%;
+        border-collapse: collapse;
+    }
+
+    table th, table td {
+        border-bottom: 1px solid #ccc; /* Полоса под каждой строкой */
+        padding: 8px;
+        text-align: left;
+    }
+
+    table tr.red {
+        background-color: #f8d7da; /* Красная подсветка строк */
+        color: #721c24;
+    }
+</style>
+
     <h1>Сопоставление артиклей и баркодов</h1>
     <br>
 <table>
@@ -17,29 +35,51 @@
         </tr>
     </thead>
     <tbody>
-        {% for i in range(ozon|length) %}
-        <tr>
-            <!-- Ozon: Артикул и Баркоды -->
+        {% for row in combined_data %}
+        <tr class="{% if not row.has_match %}red{% endif %}">
+            <!-- MS -->
             <td>
-                <strong>{{ ozon.i.offer_id }}</strong><br>
-                {% for barcode in ozon.i.barcodes %}
-                    {{ barcode }}<br>
-                {% endfor %}
+                {% if row.ms %}
+                    <strong>{{ row.ms.offer_id }}</strong><br>
+                    {% for barcode in row.ms.barcodes %}
+                        {{ barcode }}<br>
+                    {% endfor %}
+                {% else %}
+                    <em>Нет данных</em>
+                {% endif %}
             </td>
-            <!-- MS: Артикул и Баркоды -->
+            <!-- Ozon -->
             <td>
-                <strong>{{ ms.i.article }}</strong><br>
-                {% for barcode in ms.i.barcodes %}
-                    {{ barcode.ean13 }}<br>
-                {% endfor %}
+                {% if row.ozon %}
+                    <strong>{{ row.ozon.offer_id }}</strong><br>
+                    {% for barcode in row.ozon.barcodes %}
+                        {{ barcode }}<br>
+                    {% endfor %}
+                {% else %}
+                    <em>Нет данных</em>
+                {% endif %}
             </td>
-            <!-- Цена -->
+            <!-- WB -->
             <td>
-
+                {% if row.wb %}
+                    <strong>{{ row.wb.offer_id }}</strong><br>
+                    {% for barcode in row.wb.barcodes %}
+                        {{ barcode }}<br>
+                    {% endfor %}
+                {% else %}
+                    <em>Нет данных</em>
+                {% endif %}
             </td>
-            <!-- Ссылка -->
+            <!-- Yandex -->
             <td>
-
+                {% if row.yandex %}
+                    <strong>{{ row.yandex.offer_id }}</strong><br>
+                    {% for barcode in row.yandex.barcodes %}
+                        {{ barcode }}<br>
+                    {% endfor %}
+                {% else %}
+                    <em>Нет данных</em>
+                {% endif %}
             </td>
         </tr>
         {% endfor %}

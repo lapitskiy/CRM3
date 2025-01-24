@@ -562,13 +562,9 @@ def ozon_get_products(headers):
         }
 
     response = requests.post(url_barcode, headers=headers['ozon_headers'], json=data).json()
-    extracted_data = [
-        {"offer_id": item["offer_id"], "barcodes": item["barcodes"]}
-        for item in response["items"]
-    ]
     #print(f"extracted_data {extracted_data}")
 
-    return extracted_data
+    return response
 
 def ozon_get_postavka(headers: dict):
     from owm.utils.base_utils import base_delete_files_with_prefix
