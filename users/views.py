@@ -1,7 +1,7 @@
 from django.shortcuts import render
 from django.contrib import messages
 from django.shortcuts import render, redirect
-from .forms import UserRegisterForm, UserLoginForm
+from .forms import UserRegisterForm, UserLoginForm, UserRegisterCompany
 from django.contrib.auth import login, logout
 from django.views.generic import ListView, TemplateView, DetailView
 from plugins.utils import RelatedMixin
@@ -50,8 +50,26 @@ def register(request):
         else:
             messages.error(request, 'Ошибка регистрации')
     else:
+        print('tyt')
         form = UserRegisterForm()
     return render(request, 'users/register.html', {"form": form})
+
+def register_company(request):
+    if request.method == 'POST':
+        form = UserRegisterCompany(request.POST)
+        #print(f'form registr {form}')
+        if form.is_valid():
+            print(f'VALID')
+            form.save()
+            messages.success(request, 'Вы успешно зарегистрировались')
+            return redirect('login')
+        else:
+            print(f'ERROR: {form.errors}')
+            messages.error(request, 'Ошибка регистрации')
+    else:
+        form = UserRegisterCompany()
+        #print(f'form {form}')
+    return render(request, 'users/register_company.html', {"form": form})
 
 def user_login(request):
     context = {}

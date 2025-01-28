@@ -1,10 +1,16 @@
 from django import forms
 from .models import Prints
-from ckeditor.widgets import CKEditorWidget
+from django_ckeditor_5.widgets import CKEditor5Widget
 
 #forms
 class SimplePrintAddForm(forms.ModelForm):
-    contentform = forms.CharField(widget=CKEditorWidget())
+    contentform = forms.CharField(
+        widget=CKEditor5Widget(  # <- Исправлено
+            config_name='default',
+            attrs={"class": "django_ckeditor_5"},
+        ),
+        label="Контент",
+    )
 
     class Meta:
         model = Prints
@@ -12,7 +18,6 @@ class SimplePrintAddForm(forms.ModelForm):
         widgets = {
             'name': forms.TextInput(attrs={'class': 'form-control', 'autocomplete':'off'}),
         }
-
 
 class RelatedAddForm:
     pass

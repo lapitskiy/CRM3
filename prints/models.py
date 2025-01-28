@@ -2,13 +2,13 @@ from django.db import models
 from django.urls import reverse
 from django.core.validators import RegexValidator
 from django.db.models import Q
-from ckeditor_uploader.fields import RichTextUploadingField
+from django_ckeditor_5.fields import CKEditor5Field
 from django.forms.models import model_to_dict
 
 # Create your models here.
 class Prints(models.Model):
     name = models.CharField(max_length=150, blank=True, verbose_name='Название')
-    contentform = RichTextUploadingField()
+    contentform = CKEditor5Field(config_name='default')
     related_uuid = models.JSONField(blank=True, null=True)
     uuid = models.ManyToManyField('RelatedUuid')
 

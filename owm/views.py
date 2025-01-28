@@ -358,8 +358,9 @@ class MSMatchingArticle(View):
                     "has_match": has_match,
                 })
 
+            sorted_combined_data = sorted(combined_data, key=sort_offer_id_key)
             context = {
-                "combined_data": combined_data,
+                "combined_data": sorted_combined_data,
             }
 
         return render(request, 'owm/ms/ms_matching_article.html', context)
@@ -367,7 +368,14 @@ class MSMatchingArticle(View):
     def post(self, request):
         pass
 
-
+# Функция для сортировки
+def sort_offer_id_key(item):
+    offer_id = item["offer_id"]
+    # Разделяем числовую и текстовую части
+    num_part_str = ''.join(filter(str.isdigit, offer_id.split('_')[0]))
+    num_part = int(num_part_str) if num_part_str else 0
+    text_part = offer_id[len(str(num_part)):]  # Остаток строки без числа
+    return (text_part, num_part)
 
 class AutoupdateSettings(View):
     def get(self, request, *args, **kwargs):

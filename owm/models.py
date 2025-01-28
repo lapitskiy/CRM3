@@ -5,7 +5,7 @@ from django.contrib.auth.models import User
 # python manage.py migrate
 
 class Seller(models.Model):
-    user = models.OneToOneField(User, on_delete=models.CASCADE, null=True, blank=True)
+    company = models.OneToOneField(User, on_delete=models.CASCADE, null=True, blank=True)
     moysklad_api = models.CharField(max_length=512, unique=True, verbose_name='API мойсклад')
     yandex_api = models.CharField(max_length=512, unique=True, verbose_name='API Яндекс')
     wildberries_api = models.CharField(max_length=512, unique=True, verbose_name='API wildberries')
@@ -31,6 +31,7 @@ class Awaiting(models.Model):
     status:
     awaiting_deliver - ожидает отгрузки
     '''
+    seller = models.ForeignKey(Seller, on_delete=models.CASCADE, verbose_name='Связанный парсер')
     posting_number = models.CharField(max_length=30, null=False, unique=True)
     status = models.CharField(max_length=30, null=False)
     market = models.CharField(max_length=30, null=False) #ozon, wb, yandex
