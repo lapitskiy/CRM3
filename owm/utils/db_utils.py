@@ -1,5 +1,5 @@
 import contextlib
-from owm.models import Awaiting, Awaiting_product, Metadata
+from owm.models import Awaiting, Awaiting_product, Metadata, Settings
 from typing import Any, Dict
 
 DATABASE_URL = "postgresql+asyncpg://crm3:Billkill13@postgres:5432/postgres"
@@ -123,5 +123,13 @@ def db_get_awaiting(market: str) -> Dict[str, Any]:
             'status': record.status
         })
     result[market] = orders_list
+    return result
+
+
+def db_get_settings(seller, type) -> Dict[str, Any]:
+    result = {}
+    settings = Settings.objects.filter(seller=seller, type=type).first()
+    if settings:
+        result = settings.settings_dict
     return result
 

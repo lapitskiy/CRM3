@@ -28,17 +28,49 @@
                     <span class="menu-title">Инвентаризация FBS</span>
                 </a>
             </div>
-            <div class="menu-item">
-                <a href="{% url 'ms_matching_article' %}" class="menu-link py-3">
+
+            <!--end::Menu item-->
+
+            <!--begin::Menu item-->
+            <div class="menu-item menu-accordion" data-kt-menu-trigger="click">
+                <!--begin::Menu link-->
+                <a href="#" class="menu-link py-3">
                     <span class="menu-bullet">
                         <span class="bullet bullet-dot"></span>
                     </span>
-                    <span class="menu-title">Сопоставлении артиклей</span>
+                    <span class="menu-title">Сопоставления</span>
+                    <span class="menu-arrow"></span>
                 </a>
+                <!--end::Menu link-->
+
+
+
+                <!--begin::Menu sub-->
+                <div class="menu-sub menu-sub-accordion pt-3">
+                    <div class="menu-item">
+                        <a href="{% url 'ms_matching_article' %}" class="menu-link py-3">
+                            <span class="menu-bullet">
+                                <span class="bullet bullet-dot"></span>
+                            </span>
+                            <span class="menu-title">Сопоставлении артиклей</span>
+                        </a>
+                    </div>
+
+                    <!--begin::Menu item-->
+                    <div class="menu-item">
+                        <a href="{% url 'settings_matching_article' %}" class="menu-link py-3">
+                            <span class="menu-bullet">
+                                <span class="bullet bullet-dot"></span>
+                            </span>
+                            <span class="menu-title">Настройки</span>
+                        </a>
+                    </div>
+                    <!--end::Menu item-->
+
+                </div>
+                <!--end::Menu sub-->
             </div>
             <!--end::Menu item-->
-
-
 
             <!--begin::Menu item-->
             <div class="menu-item menu-accordion" data-kt-menu-trigger="click">

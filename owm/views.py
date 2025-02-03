@@ -4,7 +4,7 @@ import requests
 from django.http import HttpResponseRedirect
 from django.shortcuts import render, redirect
 from django.views import View
-from .models import Seller, Crontab
+from .models import Seller, Crontab, Settings
 from owm.utils.base_utils import get_headers
 from django.core.exceptions import ObjectDoesNotExist
 
@@ -12,7 +12,7 @@ from django.http import HttpResponse
 
 from datetime import datetime
 
-from .utils.db_utils import db_update_metadata, db_get_metadata
+from .utils.db_utils import db_update_metadata, db_get_metadata, db_get_settings
 from .utils.ms_utils import ms_update_allstock_to_mp, ms_get_last_enterloss, ms_get_agent_meta, ms_get_organization_meta, ms_get_storage_meta, \
     ms_get_orderstatus_meta, ms_get_product
 from .utils.oz_utils import ozon_get_finance, ozon_get_all_price, ozon_get_postavka, ozon_get_products
@@ -265,7 +265,8 @@ class MSMatchingArticle(View):
         if not request.user.is_authenticated:
             return redirect('login')  # или другая страница
 
-        seller = Seller.objects.filter(user=request.user).first()
+        user_company = request.user.userprofile.company
+        seller = Seller.objects.filter(company=user_company).first()
         if seller:
             parser_data = {
                 'moysklad_api': seller.moysklad_api,
@@ -488,7 +489,7 @@ class SettingsApi(View):
     def get(self, request, *args, **kwargs):
         if not request.user.is_authenticated:
             return redirect('login')  # или другая страница
-        api_list_current_user = Seller.objects.filter(user=request.user).first()
+        api_list_current_user = Seller.objects.filter(company=request.user.userprofile.company).first()
         return render(request, 'owm/settings/settings_api.html', {'api_list_current_user': api_list_current_user})
 
     def post(self, request, *args, **kwargs):
@@ -501,7 +502,8 @@ class SettingsApi(View):
             print('moysklad_api ', moysklad_api)
             print('ozon_api ', ozon_api)
             print('curr user ', request.user)
-            user_api_object = Seller.objects.filter(user=request.user)
+            user_company = request.user.userprofile.company
+            user_api_object = Seller.objects.filter(company=user_company)
             if user_api_object:
                 user_api_object.update(
                     moysklad_api=moysklad_api,
@@ -512,7 +514,7 @@ class SettingsApi(View):
                 )
             else:
                 Seller.objects.update_or_create(
-                    user=request.user,
+                    company=user_company,
                     moysklad_api=moysklad_api,
                     yandex_api=yandex_api,
                     wildberries_api=wildberries_api,
@@ -680,6 +682,54 @@ class SettingsStatus(View):
 
         return redirect('settings_status')  # или другая страница
 
+class SettingsMatchingArticle(View):
+    def get(self, request, *args, **kwargs):
+        if not request.user.is_authenticated:
+            return redirect('login')  # или другая страница
+        context = {}
+        user_company = request.user.userprofile.company
+        seller = Seller.objects.filter(company=user_company).first()
+        if seller:
+            parser_data = {
+                'moysklad_api': seller.moysklad_api,
+                'yandex_api': seller.yandex_api,
+                'wildberries_api': seller.wildberries_api,
+                'ozon_api': seller.ozon_api,
+                'ozon_id': seller.client_id,
+            }
+
+            headers = get_headers(parser_data)
+
+            db_settings = db_get_settings(seller=seller.id, type='matching')
+            if db_settings:
+                context = db_settings
+            else:
+                settings_dict = {'ms': False, 'ozon': False, 'wb': False, 'yandex': False, 'intersection': 'off'}
+                Settings.objects.create(seller=seller, type='matching', settings_dict=settings_dict)
+                context = settings_dict
+            #print(f"contextTYT {context}")
+            #print (f"contextTYT {context}")
+            #print(f"context {context['contragent']}")
+        else:
+            context['DoesNotExist'] = True
+        return render(request, 'owm/settings/settings_matching.html', context)
+
+    def post(self, request, *args, **kwargs):
+        if not request.user.is_authenticated:
+            return redirect('login')  # или другая страница
+        context = {}
+        metadata={}
+        metadata['ms_organization'] = {'id': request.POST.get('organization_select'), 'name': request.POST.get('hidden-organization')}
+        metadata['ms_wb_contragent'] = {'id': request.POST.get('wb_select'), 'name': request.POST.get('hidden-wb')}
+        metadata['ms_ozon_contragent'] = {'id': request.POST.get('ozon_select'), 'name': request.POST.get('hidden-ozon')}
+        metadata['ms_yandex_contragent'] = {'id': request.POST.get('yandex_select'), 'name': request.POST.get('hidden-yandex')}
+
+        seller = Seller.objects.get(user=request.user)
+
+        db_update_metadata(seller=seller, metadata=metadata)
+
+        return redirect('settings_contragent')  # или другая страница
+
 class PriceOzon(View):
     def get(self, request, *args, **kwargs):
         context = {}
@@ -742,8 +792,8 @@ class PriceYandex(View):
 class FinanceOzon(View):
     def get(self, request, *args, **kwargs):
         context = {}
-
-        parser = Seller.objects.get(user=request.user)
+        user_company = request.user.userprofile.company
+        parser = Seller.objects.filter(company=user_company).first()
         parser_data = {
             'moysklad_api': parser.moysklad_api,
             'yandex_api': parser.yandex_api,
@@ -909,12 +959,20 @@ class FinanceWb(View):
     def get(self, request, *args, **kwargs):
         context = {}
         try:
-            parser = Seller.objects.get(user=request.user)
+            user_company = request.user.userprofile.company
+            parser = Seller.objects.filter(company=user_company).first()
             # дальнейшая логика
         except TypeError:
             return HttpResponse('Пользователь не аутентифицирован', status=401)
 
-        headers = get_headers(parser)
+        parser_data = {
+            'moysklad_api': parser.moysklad_api,
+            'yandex_api': parser.yandex_api,
+            'wildberries_api': parser.wildberries_api,
+            'ozon_api': parser.ozon_api,
+            'ozon_id': parser.client_id,
+        }
+        headers = get_headers(parser_data)
         data = get_finance_wb(headers, period='month')
         context['path'] = data['path']
         context['code'] = data['code']

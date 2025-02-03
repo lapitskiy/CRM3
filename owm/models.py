@@ -3,9 +3,10 @@ from django.contrib.auth.models import User
 
 # python manage.py makemigrations
 # python manage.py migrate
+from users.models import Company
 
 class Seller(models.Model):
-    company = models.OneToOneField(User, on_delete=models.CASCADE, null=True, blank=True)
+    company = models.OneToOneField(Company, on_delete=models.CASCADE, null=True, blank=True)
     moysklad_api = models.CharField(max_length=512, unique=True, verbose_name='API мойсклад')
     yandex_api = models.CharField(max_length=512, unique=True, verbose_name='API Яндекс')
     wildberries_api = models.CharField(max_length=512, unique=True, verbose_name='API wildberries')
@@ -36,7 +37,6 @@ class Awaiting(models.Model):
     status = models.CharField(max_length=30, null=False)
     market = models.CharField(max_length=30, null=False) #ozon, wb, yandex
 
-
 class Awaiting_product(models.Model):
     awaiting = models.ForeignKey(Awaiting, on_delete=models.CASCADE, verbose_name='Связанный заказ')
     offer_id = models.CharField(max_length=50, null=False)
@@ -66,5 +66,21 @@ class Metadata(models.Model):
         constraints = [
             models.UniqueConstraint(fields=['seller', 'name'], name='unique_metadata')
         ]
+
+class Settings(models.Model):
+    '''
+        type:
+        matching - сопоставление default = {'ms': False 'ozon': False, 'wb': False, 'yandex': False, 'intersection': 'ms'}
+    '''
+    seller = models.ForeignKey(Seller, on_delete=models.CASCADE, verbose_name='Связанный парсер')
+    type = models.CharField(max_length=150, null=True, blank=True)
+    settings_dict = models.JSONField(null=True, blank=True)
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(fields=['seller', 'type'], name='unique_settings')
+        ]
+
+
 
 

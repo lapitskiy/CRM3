@@ -1,7 +1,7 @@
 from django.urls import path
 
 from .views import Enter, Inventory, PriceOzon, PriceWb, PriceYandex, FinanceOzon, PostavkaOzon, FinanceWb, AutoupdateSettings, OtpravlenieOzon, SettingsApi, \
-    SettingsContragent, SettingsStorage, SettingsStatus, MSMatchingArticle
+    SettingsContragent, SettingsStorage, SettingsStatus, MSMatchingArticle, SettingsMatchingArticle
 
 urlpatterns = [
     path('', SettingsApi.as_view(), name='settings_api'),
@@ -10,6 +10,8 @@ urlpatterns = [
     path('settings_status/', SettingsStatus.as_view(), name='settings_status'),
 
     path('ms_matching_article/', MSMatchingArticle.as_view(), name='ms_matching_article'),
+    path('settings_matching_article/', SettingsMatchingArticle.as_view(), name='settings_matching_article'),
+
 
     path('inventory/', Inventory.as_view(), name='inventory'),
     path('autoupdatesettings/', AutoupdateSettings.as_view(), name='autoupdate_settings'),
