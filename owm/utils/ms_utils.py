@@ -352,6 +352,7 @@ def ms_update_allstock_to_mp(headers, seller):
     metadata = db_get_metadata(seller)
 
     stock = ms_get_all_stock(moysklad_headers, metadata)
+    #print(f'stock {stock}')
     context['ozon'] = ozon_update_inventory(headers, stock)
     context['yandex'] = yandex_update_inventory(headers, stock)
     context['wb'] = wb_update_inventory(headers, stock)

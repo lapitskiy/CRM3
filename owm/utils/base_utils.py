@@ -22,13 +22,14 @@ import logging
 logger_info = logging.getLogger('crm3_info')
 logger_error = logging.getLogger('crm3_error')
 
-def get_headers(parser_data):
+def get_headers(seller):
     headers = {}
-    moysklad_api = parser_data.get('moysklad_api')
-    yandex_api = parser_data.get('yandex_api')
-    wildberries_api = parser_data.get('wildberries_api')
-    ozon_api = parser_data.get('ozon_api')
-    ozon_id = parser_data.get('ozon_id')
+
+    moysklad_api = seller.moysklad_api
+    yandex_api = seller.yandex_api
+    wildberries_api = seller.wildberries_api
+    ozon_api = seller.ozon_api
+    ozon_id = seller.client_id
 
     if moysklad_api:
         headers['moysklad_headers'] = {

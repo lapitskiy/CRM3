@@ -12,7 +12,7 @@ from django.http import HttpResponse
 
 from datetime import datetime
 
-from .utils.db_utils import db_update_metadata, db_get_metadata, db_get_settings
+from .utils.db_utils import db_update_metadata, db_get_metadata, db_get_settings, db_update_settings
 from .utils.ms_utils import ms_update_allstock_to_mp, ms_get_last_enterloss, ms_get_agent_meta, ms_get_organization_meta, ms_get_storage_meta, \
     ms_get_orderstatus_meta, ms_get_product
 from .utils.oz_utils import ozon_get_finance, ozon_get_all_price, ozon_get_postavka, ozon_get_products
@@ -267,6 +267,7 @@ class MSMatchingArticle(View):
 
         user_company = request.user.userprofile.company
         seller = Seller.objects.filter(company=user_company).first()
+        settings = db_get_settings(seller=seller, type='matching')
         if seller:
             parser_data = {
                 'moysklad_api': seller.moysklad_api,
@@ -359,11 +360,17 @@ class MSMatchingArticle(View):
                     "has_match": has_match,
                 })
 
+            intersection_key = settings.get('intersection')
+            if intersection_key in ['ozon', 'wb', 'yandex']:
+                combined_data = [
+                    item for item in combined_data
+                    if item.get(intersection_key) is not None
+                ]
+
             sorted_combined_data = sorted(combined_data, key=sort_offer_id_key)
             context = {
                 "combined_data": sorted_combined_data,
             }
-
         return render(request, 'owm/ms/ms_matching_article.html', context)
 
     def post(self, request):
@@ -382,25 +389,19 @@ class AutoupdateSettings(View):
     def get(self, request, *args, **kwargs):
         if not request.user.is_authenticated:
             return redirect('login')  # или другая страница
+
+        user_company = request.user.userprofile.company
+        seller = Seller.objects.filter(company=user_company).first()
+
         context = {}
-        obj = Crontab.objects.filter(seller__user=request.user, name='autoupdate').first()
+        obj = Crontab.objects.filter(seller=seller, name='autoupdate').first()
         if obj:
             context['active_yandex'] = obj.yandex
             context['active_ozon'] = obj.ozon
             context['active_wb'] = obj.wb
 
-            parser = obj.seller
-
-            parser_data = {
-                'moysklad_api': parser.moysklad_api,
-                'yandex_api': parser.yandex_api,
-                'wildberries_api': parser.wildberries_api,
-                'ozon_api': parser.ozon_api,
-                'ozon_id': parser.client_id,
-            }
-
             try:
-                headers = get_headers(parser_data)
+                headers = get_headers(parser_data, seller)
             except Exception as e:
                 print("Error occurred:", e)
 
@@ -418,16 +419,17 @@ class AutoupdateSettings(View):
     def post(self, request):
         context = {}
 
+        user_company = request.user.userprofile.company
+        seller = Seller.objects.filter(company=user_company).first()
+
         form_type = request.POST.get("form_type")
-        crontab = Crontab.objects.get(seller__user=request.user, name='autoupdate')
+        crontab = Crontab.objects.get(seller=seller, name='autoupdate')
 
         if form_type == "save_settings":
             sync_checkbox = request.POST.get('sync_checkbox', False)
             sync_checkbox_ozon = request.POST.get('sync_checkbox_ozon', False)
             sync_checkbox_yandex = request.POST.get('sync_checkbox_yandex', False)
             sync_checkbox_wb = request.POST.get('sync_checkbox_wb', False)
-
-
 
             if sync_checkbox == 'on':
                 crontab.active = True
@@ -462,20 +464,12 @@ class AutoupdateSettings(View):
             crontab.save()
 
         elif form_type == "sync_start":
-            parser = crontab.seller  # Асинхронный доступ к связанному объекту
-            parser_data = {
-                'moysklad_api': parser.moysklad_api,
-                'yandex_api': parser.yandex_api,
-                'wildberries_api': parser.wildberries_api,
-                'ozon_api': parser.ozon_api,
-                'ozon_id': parser.client_id,
-            }
             try:
-                headers = get_headers(parser_data)
+                headers = get_headers(seller)
             except Exception as e:
                 print("Error occurred:", e)
-            context['update_data'] = ms_update_allstock_to_mp(headers=headers)
-            print(f"update_data", context['update_data'])
+            context['update_data'] = ms_update_allstock_to_mp(headers=headers, seller=seller)
+            #print(f"update_data", context['update_data'])
             codes = [context['update_data']['wb']['code'], context['update_data']['wb']['code'], context['update_data']['yandex']['code']]
             # Проверка, все ли значения равны 200 или 204
             if all(code in (200, 204, 409) for code in codes):
@@ -483,7 +477,7 @@ class AutoupdateSettings(View):
                 crontab.crontab_dict = result_dict
                 crontab.save()
         context['sync_update'] = True
-        return render(request, 'owm/owm/autoupdate/autoupdate_settings.html', context)
+        return render(request, 'owm/autoupdate/autoupdate_settings.html', context)
 
 class SettingsApi(View):
     def get(self, request, *args, **kwargs):
@@ -712,23 +706,24 @@ class SettingsMatchingArticle(View):
             #print(f"context {context['contragent']}")
         else:
             context['DoesNotExist'] = True
+        print(f'context {context}')
         return render(request, 'owm/settings/settings_matching.html', context)
 
     def post(self, request, *args, **kwargs):
         if not request.user.is_authenticated:
             return redirect('login')  # или другая страница
         context = {}
-        metadata={}
-        metadata['ms_organization'] = {'id': request.POST.get('organization_select'), 'name': request.POST.get('hidden-organization')}
-        metadata['ms_wb_contragent'] = {'id': request.POST.get('wb_select'), 'name': request.POST.get('hidden-wb')}
-        metadata['ms_ozon_contragent'] = {'id': request.POST.get('ozon_select'), 'name': request.POST.get('hidden-ozon')}
-        metadata['ms_yandex_contragent'] = {'id': request.POST.get('yandex_select'), 'name': request.POST.get('hidden-yandex')}
+        sett={}
+        sett['ms'] = (request.POST.get('ms') == 'True')
+        sett['wb'] = (request.POST.get('wb') == 'True')
+        sett['ozon'] = (request.POST.get('ozon') == 'True')
+        sett['yandex'] = (request.POST.get('yandex') == 'True')
+        sett['intersection'] = request.POST.get('intersection')
 
-        seller = Seller.objects.get(user=request.user)
-
-        db_update_metadata(seller=seller, metadata=metadata)
-
-        return redirect('settings_contragent')  # или другая страница
+        user_company = request.user.userprofile.company
+        seller = Seller.objects.filter(company=user_company).first()
+        db_update_settings(seller=seller, type='matching', settings_dict=sett)
+        return redirect('settings_matching_article')  # или другая страница
 
 class PriceOzon(View):
     def get(self, request, *args, **kwargs):

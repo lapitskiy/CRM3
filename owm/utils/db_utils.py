@@ -133,3 +133,12 @@ def db_get_settings(seller, type) -> Dict[str, Any]:
         result = settings.settings_dict
     return result
 
+def db_update_settings(seller, type, settings_dict):
+    settings = Settings.objects.filter(seller=seller, type=type).first()
+    if settings:
+        settings.settings_dict = settings_dict
+        settings.save()
+
+
+
+

@@ -26,7 +26,6 @@ def ozon_update_inventory(headers,stock):
     #print(f'update_inventory_ozon stock {stock}')
     invalid_offer_ids = []
 
-
     for key, value in stock.items():
         if value and 'stock' in value:
             if value['stock'] < 0:
@@ -40,6 +39,10 @@ def ozon_update_inventory(headers,stock):
             ozon_stocks.append(dict_)
         else:
             print(f"Пропущен ключ {key} из-за отсутствия данных 'stock' или пустого словаря.")
+    result_json = []
+
+    print(f'ozon_stocks {ozon_stocks}')
+
     for i in range(0,len(ozon_stocks),100):
         data = {
             'stocks': ozon_stocks[i:i+99],
@@ -49,10 +52,14 @@ def ozon_update_inventory(headers,stock):
     #print('#####')
     #print(f'ozon_data #### {data}')
     #print(f'data stock {data}')
-    response = requests.post(url, headers=headers['ozon_headers'], json=data)
+        response = requests.post(url, headers=headers['ozon_headers'], json=data)
+        resp = response.json()
+        print(f'#####')
+        print(f' resp { resp}')
+        result_json.append(resp['result'])
     context = {
+        'json': result_json,
         'code': response.status_code,
-        'json': response.json(),
         'invalid': invalid_offer_ids
     }
     #print(f'OZON response {response.json()}')
